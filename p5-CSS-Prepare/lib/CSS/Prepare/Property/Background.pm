@@ -17,9 +17,7 @@ sub parse {
     given ( $property ) {
         when ( 'background-color'      ) { $canonical{ $property } = $value; }
         when ( 'background-image'      ) { $canonical{ $property } = $value; }
-        when ( 'background-color'      ) { $canonical{ $property } = $value; }
         when ( 'background-repeat'     ) { $canonical{ $property } = $value; }
-        when ( 'background-color'      ) { $canonical{ $property } = $value; }
         when ( 'background-attachment' ) { $canonical{ $property } = $value; }
         when ( 'background-position'   ) { $canonical{ $property } = $value; }
         
@@ -57,6 +55,35 @@ sub parse {
     }
     
     return %canonical;
+}
+
+sub output {
+    my $block = shift;
+    
+    my @properties = qw( background-color background-image background-repeat
+                         background-attachment background-position );
+    my $count = 0;
+    my @values;
+    my $output;
+    
+    foreach my $property ( @properties ) {
+        if ( defined $block->{ $property } ) {
+            push @values, $block->{ $property };
+            $output = $property;
+            $count++;
+        }
+    }
+    
+    if ( 1 == $count ) {
+        my $value = $block->{ $output };
+        $output .= ":${value};";
+    }
+    elsif ( 2 <= $count ) {
+        my $value = join ' ', @values;
+        $output = "background:$value;";
+    }
+    
+    return $output;
 }
 
 1;

@@ -73,6 +73,55 @@ sub parse {
     
     return %canonical;
 }
+sub output {
+    my $block = shift;
+    
+    my $count = 0;
+    my @values;
+    my %directions;
+    my %properties;
+    my $output;
+    
+    foreach my $direction qw( top right bottom left ) {
+        foreach my $aspect qw( width color style ) {
+            my $property = "border-${direction}-${aspect}";
+            my $value = $block->{ $property };
+            
+            if ( defined $value && $value ) {
+                push @values, $value;
+                
+                $directions{ $direction }++;
+                $properties{ $aspect    }++;
+                $count++;
+            }
+        }
+    }
+    
+    if ( 1 == $count ) {
+        my $value = $block->{ $output };
+        $output .= ":${value};";
+    }
+    elsif ( 2 <= $count ) {
+        # if the same property only, and only that, can compress down
+        if ( 1 == scalar keys %properties ) {
+            my( $key, undef ) = each %properties;
+            $output = collapse_border_shorthand_property( $key, $block );
+        }
+
+        # if the same direction only, and only that, can compress down
+        elsif ( 1 == scalar keys %directions ) {
+            my( $key, undef ) = each %directions;
+            $output = collapse_border_shorthand_direction( $key, $block );
+        }
+        
+        # if multiple properties in multiple directions, might compress down
+        else {
+            $output = collapse_border_shorthand( $block );
+        }
+    }
+    
+    return $output;
+}
 
 sub expand_border_shorthand {
     my $side  = shift;
@@ -128,6 +177,116 @@ sub expand_border_shorthand {
     
     return %values;
 }
-
+sub collapse_border_shorthand_property {
+    my $key        = shift;
+    my $block      = shift;
+    my $value_only = shift;
+    
+    my %values;
+    foreach my $direction qw( top right bottom left ) {
+        my $value = $block->{"border-${direction}-${key}"};
+        $values{ $value }++;
+    }
+    
+    given ( scalar keys %values ) {
+        when ( 1 ) {
+            return ( $value_only ? '' : "border-${key}:" )
+                 . $block->{"border-top-${key}"}
+                 . ';';
+        }
+        when ( 2 ) {
+            return ( $value_only ? '' : "border-${key}:" )
+                 . $block->{"border-top-${key}"} 
+                 . ' ' 
+                 . $block->{"border-right-${key}"}
+                 . ';';
+        }
+        when ( 3 ) {
+            return ( $value_only ? '' : "border-${key}:" )
+                 . $block->{"border-top-${key}"} 
+                 . ' ' 
+                 . $block->{"border-right-${key}"}
+                 . ' ' 
+                 . $block->{"border-bottom-${key}"}
+                 . ';';
+        }
+        when ( 4 ) {
+            return ( $value_only ? '' : "border-${key}:" )
+                 . $block->{"border-top-${key}"} 
+                 . ' ' 
+                 . $block->{"border-right-${key}"}
+                 . ' ' 
+                 . $block->{"border-bottom-${key}"}
+                 . ' ' 
+                 . $block->{"border-left-${key}"}
+                 . ';';
+        }
+    }
+}
+sub collapse_border_shorthand_direction {
+    my $direction  = shift;
+    my $block      = shift;
+    my $value_only = shift;
+    
+    my @values;
+    foreach my $property qw( width style color ) {
+        my $key   = "border-${direction}-${property}";
+        my $value = $block->{ $key };
+        
+        if ( defined $value && $value ) {
+            push @values, $block->{ $key };
+        }
+    }
+    
+    return ( $value_only ? '' : "border-${direction}:" )
+         . join( ' ', @values )
+         . ';';
+}
+sub collapse_border_shorthand {
+    my $block = shift;
+    
+    my %properties;
+    foreach my $direction qw( top right bottom left ) {
+        my $output 
+            = collapse_border_shorthand_direction( $direction, $block, 1 );
+        push @{ $properties{ $output } }, $direction;
+    }
+    
+    my $count = scalar keys %properties;
+    given ( $count ) {
+        when ( 1 ) {
+            # it's a complete border shorthand if all directions match
+            my( $key, undef ) = each %properties;
+            return "border:${key}"
+        }
+        when ( 2 || 3 ) {
+            # one or two directions override the complete border
+            my $sort = sub {
+                    my $a_count = scalar @{ $properties{ $a } };
+                    my $b_count = scalar @{ $properties{ $b } };
+                    return $b_count <=> $a_count;
+                };
+            
+            my $first  = 1;
+            my $output;
+            foreach my $value ( sort $sort keys %properties ) {
+                if ( $first ) {
+                    $output .= "border:${value}";
+                    $first   = 0;
+                }
+                else {
+                    foreach my $direction ( @{ $properties{ $value } } ) {
+                        $output .= "border-${direction}:$value";
+                    }
+                }
+            }
+            
+            return $output;
+        }
+        when ( 4 ) {
+            die;
+        }
+    }
+}
 
 1;

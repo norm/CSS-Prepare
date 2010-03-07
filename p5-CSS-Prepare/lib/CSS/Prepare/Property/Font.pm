@@ -49,5 +49,33 @@ sub parse {
     
     return %canonical;
 }
+sub output {
+    my $block = shift;
+    
+    my @properties = qw( font-style font-variant font-weight
+                         font-size font-family );
+    my $count = 0;
+    my @values;
+    my $output;
+    
+    foreach my $property ( @properties ) {
+        if ( defined $block->{ $property } ) {
+            push @values, $block->{ $property };
+            $output = $property;
+            $count++;
+        }
+    }
+    
+    if ( 1 == $count ) {
+        my $value = $block->{ $output };
+        $output .= ":${value};";
+    }
+    elsif ( 2 <= $count ) {
+        my $value = join ' ', @values;
+        $output = "font:$value;";
+    }
+    
+    return $output;
+}
 
 1;

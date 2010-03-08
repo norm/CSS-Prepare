@@ -176,7 +176,8 @@ sub parse_declaration_block {
     
     while ( $string =~ s{$splitter}{}sx ) {
         my %match = %+;
-        my %parsed;
+        my $parsed;
+        my $errors;
         
         # strip possible extraneous whitespace
         $match{'value'} =~ s{  \s+ $}{}x;
@@ -189,7 +190,7 @@ sub parse_declaration_block {
                 no strict 'refs';
 
                 my $try_with = "CSS::Prepare::Property::${property}::parse";
-                   %parsed   = &$try_with( %match );
+                ( $parsed, $errors ) = &$try_with( %match );
             };
             
             push @errors, @$errors
@@ -202,7 +203,7 @@ sub parse_declaration_block {
         if ( %$parsed ) {
             %canonical = (
                     %canonical,
-                    %parsed
+                    %$parsed
                 );
         }
         else {

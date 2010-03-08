@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -44,6 +44,29 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => { 'color' => '#ffffff', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "'colour' value was:\n" . Dumper \@parsed;
+}
+
+# invalid colour values are flagged
+{
+    $css = <<CSS;
+        div { colour: violent; }
+CSS
+    @structure = (
+            {
+                original  => ' colour: violent; ',
+                errors    => [
+                    {
+                        error => "invalid color value 'violent'",
+                    },
+                ],
+                selectors => [ 'div' ],
+                block     => {},
             },
         );
 

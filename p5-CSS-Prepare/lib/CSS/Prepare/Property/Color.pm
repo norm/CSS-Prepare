@@ -2,6 +2,7 @@ package CSS::Prepare::Property::Color;
 
 use Modern::Perl;
 use CSS::Prepare::Property::Expansions;
+use CSS::Prepare::Property::Values;
 
 
 
@@ -11,13 +12,21 @@ sub parse {
     my $property = $declaration{'property'};
     my $value    = $declaration{'value'};
     my %canonical;
+    my @errors;
     
     # allow for the correct spelling of colour
     if ( $property =~ m{^ colo u? r $}x ) {
-        %canonical = ( 'color' => $value );
+        if ( is_colour_value( $value ) ) {
+            %canonical = ( 'color' => $value );
+        }
+        else {
+            push @errors, {
+                    error => "invalid color value '$value'",
+                };
+        }
     }
     
-    return %canonical;
+    return \%canonical, \@errors;
 }
 sub output {
     my $block = shift;

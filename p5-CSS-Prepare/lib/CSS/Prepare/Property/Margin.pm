@@ -27,5 +27,27 @@ sub parse {
     
     return %canonical;
 }
+sub output {
+    my $block = shift;
+    
+    my @directions = qw( top right bottom left );
+    my $count      = 0;
+    my $output;
+    foreach my $direction ( @directions ) {
+        my $key = "margin-${direction}";
+        
+        if ( defined $block->{ $key } ) {
+            my $value = $block->{ $key };
+            $output .= "margin-${direction}:${value};";
+            $count++;
+        }
+    }
+    
+    if ( 4 == $count ) {
+        $output = collapse_trbl_shorthand( 'margin', $block );
+    }
+    
+    return $output;
+}
 
 1;

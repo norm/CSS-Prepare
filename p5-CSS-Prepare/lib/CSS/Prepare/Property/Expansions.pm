@@ -4,7 +4,7 @@ use Modern::Perl;
 use Exporter;
 
 our @ISA    = qw( Exporter );
-our @EXPORT = qw( expand_trbl_shorthand );
+our @EXPORT = qw( expand_trbl_shorthand collapse_trbl_shorthand );
 
 
 
@@ -59,6 +59,46 @@ sub expand_trbl_shorthand {
     }
     
     return %values;
+}
+sub collapse_trbl_shorthand {
+    my $property = shift;
+    my $block    = shift;
+    
+    my %values;
+    foreach my $direction qw( top right bottom left ) {
+        my $value = $block->{"${property}-${direction}"};
+        $values{ $value }++;
+    }
+    
+    my $output;
+    
+    # one value shorthand
+    if ( 1 == scalar keys %values ) {
+        my( $key, undef ) = each %values;
+        $output = "${property}:${key}";
+    }
+    else {
+        my $top          = $block->{"${property}-top"};
+        my $right        = $block->{"${property}-right"};
+        my $bottom       = $block->{"${property}-bottom"};
+        my $left         = $block->{"${property}-left"};
+        my $three_values = $top  ne $bottom;
+        my $four_values  = $left ne $right;
+        
+        # two value shorthand
+        $output = "${property}:${top} ${right}";
+        
+        if ( $three_values or $four_values ) {
+            $output .= " $bottom";
+            
+            if ( $four_values ) {
+                $output .= " $left"
+            }
+        }
+    }
+    # four value shorthand
+    
+    return "$output;";
 }
 
 1;

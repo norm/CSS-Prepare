@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 6;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -119,4 +119,29 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "value overriding was:\n" . Dumper \@parsed;
+}
+
+# less than four values doesn't give a shorthand
+{
+        $css = <<CSS;
+            div {
+                margin-top: 5px;
+                margin-right: 5px;
+                margin-left: 5px;
+            }
+CSS
+    @structure = (
+            {
+                selector => [ 'div' ],
+                block => {
+                    'margin-top'    => '5px',
+                    'margin-right'  => '5px',
+                    'margin-left'   => '5px',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "no shorthand was:\n" . Dumper \@parsed;
 }

@@ -13,16 +13,34 @@ sub parse {
     my %canonical;
     
     given ( $property ) {
-        when ( 'text-indent'     ) { $canonical{ $property } = $value; }
+        when ( 'letter-spacing'  ) { $canonical{ $property } = $value; }
         when ( 'text-align'      ) { $canonical{ $property } = $value; }
         when ( 'text-decoration' ) { $canonical{ $property } = $value; }
-        when ( 'letter-spacing'  ) { $canonical{ $property } = $value; }
-        when ( 'word-spacing'    ) { $canonical{ $property } = $value; }
+        when ( 'text-indent'     ) { $canonical{ $property } = $value; }
         when ( 'text-transform'  ) { $canonical{ $property } = $value; }
         when ( 'white-space'     ) { $canonical{ $property } = $value; }
+        when ( 'word-spacing'    ) { $canonical{ $property } = $value; }
     }
     
     return %canonical;
+}
+sub output {
+    my $block = shift;
+    
+    my @properties = qw(
+            letter-spacing  text-align   text-decoration  text-indent
+            text-transform  white-space  word-spacing
+        );
+    my $output;
+    
+    foreach my $property ( @properties ) {
+        my $value = $block->{ $property };
+
+        $output .= "$property:$value;"
+            if defined $value;
+    }
+    
+    return $output;
 }
 
 1;

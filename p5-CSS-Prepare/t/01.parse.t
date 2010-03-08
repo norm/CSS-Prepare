@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 6;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -47,6 +47,38 @@ CSS
     @structure = (
             {
                 original  => q( 
+            color: 
+                            red; 
+        ),
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "basic declaration with whitespace was:\n" . Dumper \@parsed;
+}
+
+# basic declaration block with comments
+{
+    $css = <<CSS;
+        /* ignore me */
+        h1 { 
+        /* only one rule here
+            background:     blue;
+        */  
+            color: 
+                            red; 
+        }
+CSS
+    @structure = (
+            {
+                original  => q( 
+          
             color: 
                             red; 
         ),

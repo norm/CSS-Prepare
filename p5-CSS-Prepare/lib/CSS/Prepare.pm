@@ -108,6 +108,8 @@ sub parse {
 sub strip_comments {
     my $string = shift;
     
+    $string =~ s{ \/\* .*? \*\/ }{}gsx;
+    
     return $string;
 }
 sub split_into_media_blocks {

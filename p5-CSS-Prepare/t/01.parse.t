@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -179,6 +179,50 @@ CSS
         or say "invalid property 'colur' was:\n" . Dumper \@parsed;
 }
 
+# CSS2.1 4.1.7:
+# For example, since the "&" is not a valid token in a CSS 2.1 selector, a 
+# CSS 2.1 user agent must ignore the whole second line, and not set the color
+# of H3 to red:
+{
+    $css = <<CSS;
+        h1, h2 {color: green }
+        h3, h4 & h5 {color: red }
+        h6 {color: black }
+CSS
+    @structure = (
+            {
+                original  => 'color: green ',
+                selectors => [ 'h1', 'h2' ],
+                errors    => [],
+                block     => {
+                    'color' => 'green',
+                },
+            },
+            {
+                original  => 'color: red ',
+                selectors => [],
+                errors    => [
+                    {
+                        error => 'ignored block -'
+                               . ' unknown selector (CSS 2.1 #4.1.7)',
+                    },
+                ],
+                block     => {},
+            },
+            {
+                original  => 'color: black ',
+                selectors => [ 'h6' ],
+                errors    => [],
+                block     => {
+                    'color' => 'black',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid selector was:\n" . Dumper \@parsed;
+}
 
 # TODO 
 #   -   stylesheet with invalid syntax 

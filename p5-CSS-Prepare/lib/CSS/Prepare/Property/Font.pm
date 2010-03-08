@@ -11,6 +11,7 @@ sub parse {
     my $property = $declaration{'property'};
     my $value    = $declaration{'value'};
     my %canonical;
+    my @errors;
     
     given ( $property ) {
         when ( 'font-style'   ) { $canonical{ $property } = $value; }
@@ -47,7 +48,7 @@ sub parse {
         $canonical{'font-family'} =~ s{ \s+ $}{}x;
     }
     
-    return %canonical;
+    return \%canonical, \@errors;
 }
 sub output {
     my $block = shift;

@@ -192,19 +192,25 @@ sub parse_declaration_block {
                    %parsed   = &$try_with( %match );
             };
             
-            if ( %parsed ) {
-                last PROPERTY;
-            }
+            push @errors, @$errors
+                if @$errors;
+            
+            last PROPERTY
+                if %$parsed or @$errors;
         }
         
-        if ( %parsed ) {
+        if ( %$parsed ) {
             %canonical = (
                     %canonical,
                     %parsed
                 );
         }
         else {
-            push @errors, "invalid property '$match{'property'}'";
+            if ( ! @$errors ) {
+                push @errors, {
+                        error => "invalid property '$match{'property'}'"
+                    };
+            }
         }
     }
     

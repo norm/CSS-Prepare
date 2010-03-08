@@ -12,6 +12,7 @@ sub parse {
     my $property = $declaration{'property'};
     my $value    = $declaration{'value'};
     my %canonical;
+    my @errors;
     
     given ( $property ) {
         
@@ -71,7 +72,7 @@ sub parse {
         }
     }
     
-    return %canonical;
+    return \%canonical, \@errors;
 }
 sub output {
     my $block = shift;

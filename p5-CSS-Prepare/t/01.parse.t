@@ -166,7 +166,9 @@ CSS
                 original  => ' colur: #fff; ',
                 selectors => [ 'div' ],
                 errors    => [
-                    q(invalid property 'colur'),
+                    {
+                        error => q(invalid property 'colur'),
+                    },
                 ],
                 block     => {},
             },

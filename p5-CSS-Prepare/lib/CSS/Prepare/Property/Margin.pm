@@ -11,6 +11,7 @@ sub parse {
     my $property = $declaration{'property'};
     my $value    = $declaration{'value'};
     my %canonical;
+    my @errors;
     
     given ( $property ) {
         when ( 'margin' ) {
@@ -25,7 +26,7 @@ sub parse {
         when ( 'margin-right'  ) { $canonical{ $property } = $value; }
     }
     
-    return %canonical;
+    return \%canonical, \@errors;
 }
 sub output {
     my $block = shift;

@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' margin: 5px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-bottom' => '5px',
@@ -41,8 +43,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' margin: 5px 2px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '5px',
@@ -61,8 +65,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' margin: 5px 2px 0; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '0',
@@ -81,8 +87,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' margin: 5px 2px 0 4px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '0',
@@ -106,8 +114,13 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' 
+            margin: 5px;
+            margin-bottom: 0;
+        ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-bottom' => '0',
@@ -132,8 +145,14 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => '
+                margin-top: 5px;
+                margin-right: 5px;
+                margin-left: 5px;
+            ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-left'   => '5px',

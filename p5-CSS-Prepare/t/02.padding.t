@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' padding: 5px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-bottom' => '5px',
@@ -41,8 +43,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' padding: 5px 2px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '5px',
@@ -61,8 +65,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' padding: 5px 2px 0; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '0',
@@ -81,8 +87,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' padding: 5px 2px 0 4px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '0',
@@ -106,8 +114,13 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' 
+            padding: 5px;
+            padding-bottom: 0;
+        ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-bottom' => '0',
@@ -132,8 +145,14 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => '
+                padding-top: 5px;
+                padding-right: 5px;
+                padding-left: 5px;
+            ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-left'   => '5px',

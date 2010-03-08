@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border-width: thin; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => 'thin',
                     'border-right-width'  => 'thin',
                     'border-bottom-width' => 'thin',
@@ -41,8 +43,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border-color: red white blue; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'red',
                     'border-right-color'  => 'white',
                     'border-bottom-color' => 'blue',
@@ -61,8 +65,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border-style: none dotted dashed solid; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-style'    => 'none',
                     'border-right-style'  => 'dotted',
                     'border-bottom-style' => 'dashed',
@@ -83,8 +89,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border-top: 1px solid black; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width' => '1px',
                     'border-top-style' => 'solid',
                     'border-top-color' => 'black',
@@ -102,8 +110,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border: 1px solid blue; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => '1px',
                     'border-top-style'    => 'solid',
                     'border-top-color'    => 'blue',
@@ -135,8 +145,13 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' 
+            border: 1px solid blue; 
+            border-bottom: none;
+        ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => '1px',
                     'border-top-style'    => 'solid',
                     'border-top-color'    => 'blue',
@@ -183,8 +198,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border: blue; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'blue',
                     'border-top-style'    => '',
                     'border-top-width'    => '',
@@ -211,8 +228,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border: thick; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => '',
                     'border-top-style'    => '',
                     'border-top-width'    => 'thick',
@@ -239,8 +258,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                original  => ' border: dashed red; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'red',
                     'border-top-style'    => 'dashed',
                     'border-top-width'    => '',

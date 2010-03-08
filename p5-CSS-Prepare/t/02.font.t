@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'font-size' => '13px', },
+                original  => ' font-size: 13px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'font-size' => '13px', },
             },
         );
 
@@ -36,8 +38,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'font-style' => 'italic', },
+                original  => ' font-style: italic; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'font-style' => 'italic', },
             },
         );
 
@@ -53,8 +57,11 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 
+                original  => ' font: italic small-caps'
+                           . ' bold 13px/16px "Palatino"; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 
                     'font-style'   => 'italic', 
                     'font-variant' => 'small-caps', 
                     'font-weight'  => 'bold', 

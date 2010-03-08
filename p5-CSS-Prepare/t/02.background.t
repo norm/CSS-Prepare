@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'background-color' => '#000', },
+                original  => ' background-color: #000; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'background-color' => '#000', },
             },
         );
 
@@ -38,8 +40,11 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 
+                original  => ' background: #000 url(blah.gif)'
+                           . ' no-repeat fixed center center; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'background-color'      => '#000', 
                     'background-image'      => 'url(blah.gif)', 
                     'background-repeat'     => 'no-repeat', 
@@ -59,8 +64,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 
+                original  => ' background: #000 url(blah.gif) no-repeat; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
                     'background-color'  => '#000', 
                     'background-image'  => 'url(blah.gif)', 
                     'background-repeat' => 'no-repeat', 

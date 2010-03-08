@@ -21,8 +21,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'color' => '#fff', },
+                original  => ' color: #fff; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'color' => '#fff', },
             },
         );
 
@@ -34,12 +36,14 @@ CSS
 # "colour" also works
 {
     $css = <<CSS;
-        div { colour: #fff; }
+        div { colour: #ffffff; }
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'color' => '#fff', },
+                original  => ' colour: #ffffff; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'color' => '#ffffff', },
             },
         );
 

@@ -22,8 +22,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-indent' => '5px', },
+                original  => ' text-indent: 5px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'text-indent' => '5px', },
             },
         );
 
@@ -37,8 +39,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-align' => 'center', },
+                original  => ' text-align: center; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'text-align' => 'center', },
             },
         );
 
@@ -52,8 +56,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'a' ],
-                block    => { 'text-decoration' => 'none', },
+                original  => ' text-decoration: none; ',
+                errors    => [],
+                selectors => [ 'a' ],
+                block     => { 'text-decoration' => 'none', },
             },
         );
 
@@ -67,8 +73,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'letter-spacing' => '1px', },
+                original  => ' letter-spacing: 1px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'letter-spacing' => '1px', },
             },
         );
 
@@ -82,8 +90,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'word-spacing' => '5px', },
+                original  => ' word-spacing: 5px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'word-spacing' => '5px', },
             },
         );
 
@@ -97,8 +107,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-transform' => 'uppercase', },
+                original  => ' text-transform: uppercase; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'text-transform' => 'uppercase', },
             },
         );
 
@@ -112,8 +124,10 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'white-space' => 'nowrap', },
+                original  => ' white-space: nowrap; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'white-space' => 'nowrap', },
             },
         );
 

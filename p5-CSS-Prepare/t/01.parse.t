@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 5;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -22,8 +22,10 @@ my( $css, @structure, @parsed );
 CSS
     @structure = (
             {
-                selector => [ 'h1' ],
-                block => {
+                original  => ' color: red; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
                     'color' => 'red',
                 },
             },
@@ -31,7 +33,7 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "basic stylesheet was:\n" . Dumper \@parsed;
+        or say "basic declaration was:\n" . Dumper \@parsed;
 }
 
 # basic declaration block with lots of whitespace
@@ -44,8 +46,13 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'h1' ],
-                block => {
+                original  => q( 
+            color: 
+                            red; 
+        ),
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
                     'color' => 'red',
                 },
             },
@@ -53,11 +60,29 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "basic stylesheet was:\n" . Dumper \@parsed;
+        or say "basic declaration with whitespace was:\n" . Dumper \@parsed;
 }
 
-# TODO - declaration block, no semi-colon on last value
-# TODO - declaration block, invalid selector
+# basic declaration block, no semi-colon on last value
+{
+    $css = <<CSS;
+        h1 { color: red }
+CSS
+    @structure = (
+            {
+                original  => ' color: red ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "basic stylesheet no semi-colon was:\n" . Dumper \@parsed;
+}
 
 # multiple declaration blocks
 {
@@ -68,20 +93,26 @@ CSS
 CSS
     @structure = (
             {
-                selector => [ 'h1' ],
-                block => {
+                original  => q( color: red; ),
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
                     'color' => 'red',
                 },
             },
             {
-                selector => [ '#header' ],
-                block => {
+                original  => q( font-size: 13px; ),
+                selectors => [ '#header' ],
+                errors    => [],
+                block     => {
                     'font-size' => '13px',
                 },
             },
             {
-                selector => [ 'p', 'li' ],
-                block => {
+                original  => q( margin-top: 5px; margin-bottom: 5px; ),
+                selectors => [ 'p', 'li' ],
+                errors    => [],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-bottom' => '5px',
                 },
@@ -92,6 +123,28 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "basic stylesheet was:\n" . Dumper \@parsed;
 }
+
+# invalid properties are flagged
+{
+    $css = <<CSS;
+        div { colur: #fff; }
+CSS
+    @structure = (
+            {
+                original  => ' colur: #fff; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    q(invalid property 'colur'),
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid property 'colur' was:\n" . Dumper \@parsed;
+}
+
 
 # TODO 
 #   -   stylesheet with invalid syntax 

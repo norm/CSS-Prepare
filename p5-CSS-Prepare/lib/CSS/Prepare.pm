@@ -75,22 +75,31 @@ sub parse {
     my $stripped     = strip_comments( $string );
     my @media_blocks = split_into_media_blocks( $stripped );
     my @declarations;
+    my @errors;
     
     foreach my $media_block ( @media_blocks ) {
         my @declaration_blocks 
             = split_into_declaration_blocks( $media_block );
         
         foreach my $block ( @declaration_blocks ) {
-            # replace the string with a data
-            # structure of selectors
-            $block->{'selector'} = parse_selectors( $block->{'selector'} );
+            # extract from the string a data structure of selectors
+            my( $selectors, $selectors_errors )
+                = parse_selectors( $block->{'selector'} );
             
-            # replace the string with a data structure of
+            # extract from the string a data structure of
             # declarations and their properties
-            $block->{'block'} 
+            my( $declarations, $declaration_errors )
                 = parse_declaration_block( $block->{'block'} );
             
-            push @declarations, $block;
+            push @declarations, {
+                    original  => $block->{'block'},
+                    selectors => $selectors,
+                    errors    => [ 
+                        @$selectors_errors, 
+                        @$declaration_errors 
+                    ],
+                    block     => $declarations,
+                };
         }
     }
     
@@ -146,11 +155,12 @@ sub parse_selectors {
         push @selectors, $1;
     }
     
-    return \@selectors;
+    return \@selectors, [];
 }
 sub parse_declaration_block {
     my $string = shift;
     my %canonical;
+    my @errors;
     
     my $splitter = qr{
             ^
@@ -165,6 +175,9 @@ sub parse_declaration_block {
     while ( $string =~ s{$splitter}{}sx ) {
         my %match = %+;
         my %parsed;
+        
+        # strip possible extraneous whitespace
+        $match{'value'} =~ s{  \s+ $}{}x;
         
         PROPERTY:
         foreach my $property ( @PROPERTIES ) {
@@ -188,16 +201,12 @@ sub parse_declaration_block {
                     %parsed
                 );
         }
-        # what breaks without the fall-through?
-        # else {
-        #     %canonical = (
-        #             %canonical,
-        #             $match{'property'} => $match{'value'},
-        #         );
-        # }
+        else {
+            push @errors, "invalid property '$match{'property'}'";
+        }
     }
     
-    return \%canonical;
+    return \%canonical, \@errors;
 }
 
 1;

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 10;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -229,6 +229,65 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "invalid property 'colur' was:\n" . Dumper \@parsed;
+}
+
+# test all selectors work
+{
+    $css = <<CSS;
+        body *,
+        div,
+        #warning,
+        #main p,
+        .alert,
+        p.warning,
+        li > p.alert,
+        li:first-child,
+        a:link,
+        a:visited,
+        a:active,
+        a:hover,
+        a:focus,
+        a:lang(en),
+        p + p,
+        p[class],
+        p[class="blah"],
+        p[class~="blah"]
+             { background: #fff; }
+CSS
+    
+    @structure = (
+            {
+                original  => ' background: #fff; ',
+                selectors => [ 
+                    'body *',
+                    'div',
+                    '#warning',
+                    '#main p',
+                    '.alert',
+                    'p.warning',
+                    'li > p.alert',
+                    'li:first-child',
+                    'a:link',
+                    'a:visited',
+                    'a:active',
+                    'a:hover',
+                    'a:focus',
+                    'a:lang(en)',
+                    'p + p',
+                    'p[class]',
+                    'p[class="blah"]',
+                    'p[class~="blah"]',
+                ],
+                errors    => [],
+                block     => {
+                    'background-color' => '#fff',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "valid selectors was:\n" . Dumper \@parsed;
 }
 
 # CSS2.1 4.1.7:

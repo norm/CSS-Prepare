@@ -86,10 +86,17 @@ sub parse {
             my( $selectors, $selectors_errors )
                 = parse_selectors( $block->{'selector'} );
             
-            # extract from the string a data structure of
-            # declarations and their properties
-            my( $declarations, $declaration_errors )
-                = parse_declaration_block( $block->{'block'} );
+            my $declarations       = {};
+            my $declaration_errors = [];
+            
+            # CSS2.1 4.1.6: "the whole statement should be ignored if
+            # there is an error anywhere in the selector"
+            if ( ! @$selectors_errors ) {
+                # extract from the string a data structure of
+                # declarations and their properties
+                ( $declarations, $declaration_errors )
+                    = parse_declaration_block( $block->{'block'} );
+            }
             
             push @declarations, {
                     original  => $block->{'block'},
@@ -188,7 +195,19 @@ sub parse_selectors {
         }sx;
     
     while ( $string =~ s{$splitter}{}sx ) {
-        push @selectors, $1;
+        # CSS2.1 4.1.6: "the whole statement should be ignored if
+        # there is an error anywhere in the selector"
+        if ( ! is_valid_selector( $1 ) ) {
+            return [], [
+                    {
+                        error => 'ignored block - '
+                               . 'unknown selector (CSS 2.1 #4.1.7)',
+                    }
+                ];
+        }
+        else {
+            push @selectors, $1;
+        }
     }
     
     return \@selectors, [];
@@ -252,6 +271,55 @@ sub parse_declaration_block {
     }
     
     return \%canonical, \@errors;
+}
+
+sub is_valid_selector {
+    my $test = shift;
+    
+    use re 'eval';
+    
+    my $nmchar          = qr{ (?: [_a-z0-9-] ) }x;
+    my $ident           = qr{ -? [_a-z] $nmchar * }x;
+    my $element         = qr{ (?: $ident | \* ) }x;
+    my $hash            = qr{ \# $nmchar + }x;
+    my $class           = qr{ \. $ident }x;
+    my $string          = qr{ (?: \' $ident \' | \" $ident \" ) }x;
+    my $pseudo          = qr{
+            \:
+            (?:
+                $ident
+                |
+                # TODO - I am deliberately ignoring FUNCTION here for now
+                # FUNCTION \s* (?: $ident \s* )? \)
+                $ident \( .* \)
+            )
+        }x;
+    my $attrib          = qr{
+            \[
+                \s* $ident \s*
+                (?:
+                    (?: \= | \~\= | \|\= ) \s*
+                    (?: $ident | $string ) \s*
+                )?
+                \s*
+            \]
+        }x;
+    my $parts           = qr{ (?: $hash | $class | $attrib | $pseudo ) }x;
+    my $simple_selector = qr{ (?: $element $parts * | $parts + ) }x;
+    my $combinator      = qr{ (?: \+ \s* | \> \s* ) }x;
+    my $selector        = qr{
+            $simple_selector
+            (?:
+                $combinator (??{ $selector })
+                |
+                \s+ (?: $combinator ? (??{ $selector }) )?
+            )?
+        }x;
+    
+    
+    return 1
+        if $test =~ m{^ $selector $}x;
+    return 0;
 }
 
 1;

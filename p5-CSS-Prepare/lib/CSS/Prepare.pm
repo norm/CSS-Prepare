@@ -10,6 +10,8 @@ use CSS::Prepare::Property::Formatting;
 use CSS::Prepare::Property::Margin;
 use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Text;
+use FileHandle;
+use File::Basename;
 
 my @PROPERTIES
     = qw( Background Border Color Font Formatting Margin Padding Text );
@@ -27,9 +29,53 @@ sub new {
     
     return $self;
 }
+sub set_base_directory {
+    my $self = shift;
+    
+    $self->{'base_directory'} = shift;
+}
+sub get_base_directory {
+    my $self = shift;
+    
+    return $self->{'base_directory'};
+}
 
 
 
+sub parse_file {
+    my $self = shift;
+    my $file = shift;
+    
+    my $string = $self->read_file( $file );
+    return $self->parse( $string )
+        if defined $string;
+    
+    return;
+}
+sub parse_file_structure {
+    my $self = shift;
+    my $file = shift;
+    
+    my $base = $self->get_base_directory();
+    return undef
+        unless defined $base && -d $base;
+    
+    my $stylesheet = basename( $file );
+    my $directory  = dirname( $file );
+    my @blocks;
+    my $path;
+    
+    foreach my $section ( split m{/}, $directory ) {
+           $path  .= "${section}/";
+        my $target = "${base}${path}${stylesheet}";
+        
+        my @file_blocks = $self->parse_file( $target );
+        push @blocks, @file_blocks
+            if @file_blocks;    # non-existent file is not an error
+    }
+    
+    return @blocks;
+}
 sub parse_string {
     my $self   = shift;
     my $string = shift;
@@ -68,6 +114,26 @@ sub output_block_as_string {
     
     my $selector = join ',', @{ $block->{'selectors'} };
     return "${selector}\{${output}\}\n";
+}
+
+sub get_stylesheet {
+    
+}
+sub read_file {
+    my $self = shift;
+    my $file = shift;
+    
+    my $handle = FileHandle->new( $file );
+    if ( defined $handle ) {
+        local $/;
+        
+        return <$handle>;
+    }
+    
+    return;
+}
+sub http_fetch {
+    
 }
 
 sub parse {

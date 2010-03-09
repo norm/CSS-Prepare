@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => 'thin',
                     'border-right-width'  => 'thin',
                     'border-bottom-width' => 'thin',
@@ -31,8 +31,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'red',
                     'border-right-color'  => 'white',
                     'border-bottom-color' => 'blue',
@@ -51,8 +51,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-style'    => 'none',
                     'border-right-style'  => 'dotted',
                     'border-bottom-style' => 'dashed',
@@ -73,8 +73,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width' => '1px',
                     'border-top-style' => 'solid',
                     'border-top-color' => 'black',
@@ -92,8 +92,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => '1px',
                     'border-top-style'    => 'solid',
                     'border-top-color'    => 'blue',
@@ -122,8 +122,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-width'    => '1px',
                     'border-top-style'    => 'solid',
                     'border-top-color'    => 'blue',
@@ -164,8 +164,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'blue',
                     'border-top-style'    => '',
                     'border-top-width'    => '',
@@ -192,8 +192,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => '',
                     'border-top-style'    => '',
                     'border-top-width'    => 'thick',
@@ -220,8 +220,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'border-top-color'    => 'red',
                     'border-top-style'    => 'dashed',
                     'border-top-width'    => '',

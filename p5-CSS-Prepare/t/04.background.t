@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'background-color' => '#000', },
+                selectors => [ 'div' ],
+                block     => { 'background-color' => '#000', },
             },
         );
     $css = <<CSS;
@@ -28,8 +28,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 
+                selectors => [ 'div' ],
+                block     => {
                     'background-color'      => '#000', 
                     'background-image'      => 'url(blah.gif)', 
                     'background-repeat'     => 'no-repeat', 
@@ -49,8 +49,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 
+                selectors => [ 'div' ],
+                block     => {
                     'background-color'  => '#000', 
                     'background-image'  => 'url(blah.gif)', 
                     'background-repeat' => 'no-repeat', 

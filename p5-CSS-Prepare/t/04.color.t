@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'color' => '#ffffff',
                 },
             },
@@ -28,8 +28,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'color' => '#000080',
                 },
             },
@@ -45,8 +45,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'color' => 'rgb( 204, 0, 0 )',
                 },
             },
@@ -62,8 +62,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'color' => 'rgb( 60%, 40%, 80% )',
                 },
             },
@@ -81,8 +81,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'color' => '#ff0fff',
                 },
             },

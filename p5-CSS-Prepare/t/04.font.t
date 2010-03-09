@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'font-size' => '13px', },
+                selectors => [ 'div' ],
+                block     => { 'font-size' => '13px', },
             },
         );
     $css = <<CSS;
@@ -26,8 +26,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'font-style' => 'italic', },
+                selectors => [ 'div' ],
+                block     => { 'font-style' => 'italic', },
             },
         );
      $css = <<CSS;
@@ -43,8 +43,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => {
+                selectors => [ 'div' ],
+                block     => {
                     'font-style'   => 'italic',
                     'font-variant' => 'small-caps',
                     'font-weight'  => 'bold',

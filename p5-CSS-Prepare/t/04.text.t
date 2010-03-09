@@ -12,8 +12,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-indent' => '5px', },
+                selectors => [ 'div' ],
+                block     => { 'text-indent' => '5px', },
             },
         );
     $css = <<CSS;
@@ -26,8 +26,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-align' => 'center', },
+                selectors => [ 'div' ],
+                block     => { 'text-align' => 'center', },
             },
         );
     $css = <<CSS;
@@ -41,8 +41,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'a' ],
-                block    => { 'text-decoration' => 'none', },
+                selectors => [ 'a' ],
+                block     => { 'text-decoration' => 'none', },
             },
         );
     $css = <<CSS;
@@ -56,8 +56,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'letter-spacing' => '1px', },
+                selectors => [ 'div' ],
+                block     => { 'letter-spacing' => '1px', },
             },
         );
     $css = <<CSS;
@@ -71,8 +71,8 @@ CSS
 {
       @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'word-spacing' => '5px', },
+                selectors => [ 'div' ],
+                block     => { 'word-spacing' => '5px', },
             },
         );
     $css = <<CSS;
@@ -86,8 +86,8 @@ CSS
 {
       @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'text-transform' => 'uppercase', },
+                selectors => [ 'div' ],
+                block     => { 'text-transform' => 'uppercase', },
             },
         );
     $css = <<CSS;
@@ -101,8 +101,8 @@ CSS
 {
       @structure = (
             {
-                selector => [ 'div' ],
-                block    => { 'white-space' => 'nowrap', },
+                selectors => [ 'div' ],
+                block     => { 'white-space' => 'nowrap', },
             },
         );
     $css = <<CSS;

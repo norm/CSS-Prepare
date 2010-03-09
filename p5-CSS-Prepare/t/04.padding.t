@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-bottom' => '5px',
@@ -31,8 +31,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '5px',
@@ -51,8 +51,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '0',
@@ -71,8 +71,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '2px',
                     'padding-bottom' => '0',
@@ -93,8 +93,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-bottom' => '0',
@@ -115,8 +115,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'padding-top'    => '5px',
                     'padding-right'  => '5px',
                     'padding-left'   => '5px',

@@ -64,7 +64,7 @@ sub output_block_as_string {
         }
     }
     
-    my $selector = join ',', @{ $block->{'selector'} };
+    my $selector = join ',', @{ $block->{'selectors'} };
     return "${selector}\{${output}\}\n";
 }
 

@@ -11,8 +11,8 @@ my( $css, @structure, $output );
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-bottom' => '5px',
@@ -31,8 +31,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '5px',
@@ -51,8 +51,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '0',
@@ -71,8 +71,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '2px',
                     'margin-bottom' => '0',
@@ -93,8 +93,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-bottom' => '0',
@@ -115,8 +115,8 @@ CSS
 {
     @structure = (
             {
-                selector => [ 'div' ],
-                block => {
+                selectors => [ 'div' ],
+                block     => {
                     'margin-top'    => '5px',
                     'margin-right'  => '5px',
                     'margin-left'   => '5px',

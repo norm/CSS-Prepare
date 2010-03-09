@@ -156,6 +156,58 @@ CSS
         or say "basic stylesheet was:\n" . Dumper \@parsed;
 }
 
+# braces within rules or comments should not be seen as block delimiters
+{
+    $css = <<CSS;
+        /* div { color: #000; } */
+        div { color: #333; }
+        li:after { content: "}"; }
+CSS
+    @structure = (
+            {
+                original  => ' color: #333; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color' => '#333',
+                },
+            },
+            {
+                original  => ' content: "%-RIGHTBRACE-%"; ',
+                selectors => [ 'li:after' ],
+                errors    => [],
+                block     => {
+                    'content' => '"}"',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "braces not as delimiters was:\n" . Dumper \@parsed;
+}
+
+# escaped quotes within quotes are passed through
+{
+    $css = <<CSS;
+        li:before { content: "a\\"b"; }
+CSS
+    @structure = (
+            {
+                original  => ' content: "a\"b"; ',
+                selectors => [ 'li:before' ],
+                errors    => [],
+                block     => {
+                    'content' => '"a\"b"',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "braces not as delimiters was:\n" . Dumper \@parsed;
+}
+
 # invalid properties are flagged
 {
     $css = <<CSS;

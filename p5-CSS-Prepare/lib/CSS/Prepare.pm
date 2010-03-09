@@ -73,9 +73,9 @@ sub parse {
     my $string = shift;
     
     my $stripped     = strip_comments( $string );
-    my @media_blocks = split_into_media_blocks( $stripped );
+       $string       = escape_braces_in_strings( $stripped );
+    my @media_blocks = split_into_media_blocks( $string );
     my @declarations;
-    my @errors;
     
     foreach my $media_block ( @media_blocks ) {
         my @declaration_blocks 
@@ -109,6 +109,40 @@ sub strip_comments {
     my $string = shift;
     
     $string =~ s{ \/\* .*? \*\/ }{}gsx;
+    
+    return $string;
+}
+sub escape_braces_in_strings {
+    my $string = shift;
+    
+    my $strip_next_string = qr{
+            ^
+            ( .*?  )        # $1: everything before the string
+            ( ['"] )        # $2: the string delimiter
+            ( .*?  )        # $3: the content of the string
+            (?<! \\ ) \2    # the string delimiter (but not escaped ones)
+        }sx;
+    
+    # find all strings, and tokenise the braces within
+    my $return;
+    while ( $string =~ s{$strip_next_string}{}sx ) {
+        my $before  = $1;
+        my $delim   = $2;
+        my $content = $3;
+        
+        $content =~ s{ \{ }{\%-LEFTBRACE-\%}gsx;
+        $content =~ s{ \} }{\%-RIGHTBRACE-\%}gsx;
+        $return .= "${before}${delim}${content}${delim}";
+    }
+    $return .= $string;
+    
+    return $return;
+}
+sub unescape_braces {
+    my $string = shift;
+    
+    $string =~ s{\%-LEFTBRACE-\%}{\{}gs;
+    $string =~ s{\%-RIGHTBRACE-\%}{\}}gs;
     
     return $string;
 }
@@ -164,6 +198,8 @@ sub parse_declaration_block {
     my %canonical;
     my @errors;
     
+    $string = unescape_braces( $string );
+    
     my $splitter = qr{
             ^
             \s*
@@ -180,7 +216,7 @@ sub parse_declaration_block {
         my $errors;
         
         # strip possible extraneous whitespace
-        $match{'value'} =~ s{  \s+ $}{}x;
+        $match{'value'} =~ s{ \s+ $}{}x;
         
         PROPERTY:
         foreach my $property ( @PROPERTIES ) {

@@ -21,6 +21,7 @@ sub parse {
         when ( 'text-transform'  ) { $canonical{ $property } = $value; }
         when ( 'white-space'     ) { $canonical{ $property } = $value; }
         when ( 'word-spacing'    ) { $canonical{ $property } = $value; }
+        when ( 'content'         ) { $canonical{ $property } = $value; }
     }
     
     return \%canonical, \@errors;
@@ -29,8 +30,8 @@ sub output {
     my $block = shift;
     
     my @properties = qw(
-            letter-spacing  text-align   text-decoration  text-indent
-            text-transform  white-space  word-spacing
+            content      letter-spacing  text-align   text-decoration
+            text-indent  text-transform  white-space  word-spacing
         );
     my $output;
     

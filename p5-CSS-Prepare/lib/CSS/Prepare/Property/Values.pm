@@ -9,6 +9,7 @@ our @EXPORT = qw(
         is_colour_value
         is_length_value
         is_percentage_value
+        is_distance_value
         is_url_value
         is_string_value
         
@@ -20,6 +21,13 @@ our @EXPORT = qw(
         is_font_style_value
         is_font_variant_value
         is_font_weight_value
+        is_display_value
+        is_position_value
+        is_float_value
+        is_clear_value
+        is_width_value
+        is_offset_value
+        is_zindex_value
     );
 
 
@@ -84,6 +92,13 @@ sub is_percentage_value {
         if $value =~ m{^ [\d\.]+ % $}x;
     
     return 0;
+}
+sub is_distance_value {
+    my $value = shift;
+    
+    return is_length_value( $value ) 
+        || is_percentage_value( $value )
+        || 'auto' eq $value;
 }
 sub is_url_value {
     my $value = shift;
@@ -201,6 +216,77 @@ sub is_font_weight_value {
     foreach my $weights ( @weights ) {
         return 1
             if $weights eq $value;
+    }
+    
+    return 0;
+}
+sub is_display_value {
+    my $value = shift;
+    
+    return in_values( 
+            $value,
+            qw(
+                block               inline              inline-block
+                inline-table        list-item           none
+                run-in              table               table-caption
+                table-cell          table-column        table-column-group
+                table-footer-group  table-header-group  table-row
+                table-row-group
+            )
+        );
+}
+sub is_position_value {
+    my $value = shift;
+    
+    return in_values( 
+            $value,
+            qw( absolute  fixed  relative  static )
+        );
+}
+sub is_float_value {
+    my $value = shift;
+    
+    return in_values( 
+            $value,
+            qw( left  right  none )
+        );
+}
+sub is_clear_value {
+    my $value = shift;
+    
+    return in_values( 
+            $value,
+            qw( left  right  both  none )
+        );
+}
+sub is_width_value {
+    my $value = shift;
+    
+    return is_distance_value( $value );
+}
+sub is_offset_value {
+    my $value = shift;
+    
+    return is_distance_value( $value );
+}
+sub is_zindex_value {
+    my $value = shift;
+    
+    return $value =~ m{^ \d+ $}x
+        || 'auto'    eq $value
+        || 'inherit' eq $value;
+}
+
+sub in_values {
+    my $value = shift;
+    my @types = @_;
+    
+    # can always inherit
+    push @types, 'inherit';
+    
+    foreach my $type ( @types ) {
+        return 1
+            if $type eq $value;
     }
     
     return 0;

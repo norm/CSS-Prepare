@@ -18,14 +18,28 @@ my @PROPERTIES
 
 
 
-# boilerplate new function
 sub new {
-    my $proto = shift;
-    my $args  = shift;
+    my $class = shift;
+    my %args  = @_;
     
-    my $class = ref $proto || $proto;
-    my $self  = {};
+    my $self = {
+            %args
+        };
     bless $self, $class;
+    
+    my %http_providers = (
+            lite => 'HTTP::Lite',
+            lwp  => 'LWP::UserAgent',
+        );
+    
+    foreach my $provider ( keys %http_providers ) {
+        my $module = $http_providers{ $provider };
+        
+        eval "require $module";
+        unless ($@) {
+            $self->{'http_provider'} = $provider;
+        }
+    }
     
     return $self;
 }
@@ -39,8 +53,26 @@ sub get_base_directory {
     
     return $self->{'base_directory'};
 }
-
-
+sub set_base_url {
+    my $self = shift;
+    
+    $self->{'base_url'} = shift;
+}
+sub get_base_url {
+    my $self = shift;
+    
+    return $self->{'base_url'};
+}
+sub has_http {
+    my $self = shift;
+    
+    return defined $self->{'http_provider'};
+}
+sub get_http_provider {
+    my $self = shift;
+    
+    return $self->{'http_provider'};
+}
 
 sub parse_file {
     my $self = shift;
@@ -76,6 +108,40 @@ sub parse_file_structure {
     
     return @blocks;
 }
+sub parse_url {
+    my $self = shift;
+    my $url  = shift;
+    
+    my $string = $self->read_url( $url );
+    return $self->parse( $string )
+        if defined $string;
+    
+    return;
+}
+sub parse_url_structure {
+    my $self = shift;
+    my $file = shift;
+    
+    my $base = $self->get_base_url();
+    return undef
+        unless defined $base && $base =~ m{https?://};
+    
+    my $stylesheet = basename( $file );
+    my $directory  = dirname( $file );
+    my @blocks;
+    my $path;
+    
+    foreach my $section ( split m{/}, $directory ) {
+           $path  .= "${section}/";
+        my $target = "${base}${path}${stylesheet}";
+        
+        my @file_blocks = $self->parse_url( $target );
+        push @blocks, @file_blocks
+            if @file_blocks;    # non-existent url is not an error
+    }
+    
+    return @blocks;
+}
 sub parse_string {
     my $self   = shift;
     my $string = shift;
@@ -93,8 +159,6 @@ sub output_as_string {
     
     return $output;
 }
-
-
 sub output_block_as_string {
     my $block = shift;
     
@@ -132,8 +196,50 @@ sub read_file {
     
     return;
 }
-sub http_fetch {
+sub read_url {
+    my $self = shift;
+    my $url  = shift;
     
+    my $provider = $self->get_http_provider();
+    given ( $provider ) {
+        when ( 'lite' ) { return $self->get_url_lite( $url ); }
+        when ( 'lwp'  ) { return $self->get_url_lwp( $url ); }
+    }
+    
+    return;
+}
+sub get_url_lite {
+    my $self = shift;
+    my $url  = shift;
+    
+    my $http = HTTP::Lite->new();
+    my $code = $http->request( $url );
+    
+    given ( $code ) {
+        when ( 200 ) { return $http->body(); }
+        when ( 404 ) { return; }
+        default {
+            # TODO proper error handling
+            die "http code $code";
+        }
+    }
+}
+sub get_url_lwp {
+    my $self = shift;
+    my $url  = shift;
+    
+    my $http = LWP::UserAgent->new();
+    my $resp = $http->get( $url );
+    my $code = $resp->code();
+    
+    given ( $code ) {
+        when ( 200 ) { return $resp->decoded_content(); }
+        when ( 404 ) { return; }
+        default {
+            # TODO proper error handling
+            die $resp->status_line;
+        }
+    }
 }
 
 sub parse {

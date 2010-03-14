@@ -159,8 +159,8 @@ CSS
 # > style, and color. Since the color value is not given by the 'border-left'
 # > property, it will be taken from the 'color' property. The fact that the
 # > 'color' property is set after the 'border-left' property is not relevant.
-# 
-# shorthands with missing values work
+
+# shorthands with empty values work
 {
     @structure = (
             {
@@ -182,12 +182,12 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-color:blue;}
+div{border:blue;}
 CSS
     
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
-        or say "shorthand properties was:\n" . $output;
+        or say "border shorthand color was:\n" . $output;
 }
 {
     @structure = (
@@ -210,12 +210,12 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-width:thick;}
+div{border:thick;}
 CSS
     
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
-        or say "shorthand properties was:\n" . $output;
+        or say "border shorthand width was:\n" . $output;
 }
 {
     @structure = (

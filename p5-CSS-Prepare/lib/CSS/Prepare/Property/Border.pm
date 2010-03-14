@@ -88,7 +88,7 @@ sub output {
             my $property = "border-${direction}-${aspect}";
             my $value = $block->{ $property };
             
-            if ( defined $value && $value ) {
+            if ( defined $value ) {
                 push @values, $value;
                 
                 $directions{ $direction }++;

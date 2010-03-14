@@ -19,6 +19,7 @@ our @EXPORT = qw(
         is_bidi_value
         is_border_style_value
         is_clear_value
+        is_clip_value
         is_direction_value
         is_display_value
         is_float_value
@@ -28,9 +29,13 @@ our @EXPORT = qw(
         is_font_weight_value
         is_lineheight_value
         is_offset_value
+        is_overflow_value
         is_position_value
         is_valign_value
+        is_visibility_value
         is_zindex_value
+        
+        expand_clip
     );
 
 
@@ -197,6 +202,12 @@ sub is_clear_value {
             qw( left  right  both  none )
         );
 }
+sub is_clip_value {
+    my $value = shift;
+    
+    my %values = CSS::Prepare::Property::Effects::expand_clip( $value );
+    return scalar %values;
+}
 sub is_direction_value {
     my $value = shift;
     
@@ -283,6 +294,14 @@ sub is_offset_value {
     
     return is_distance_value( $value );
 }
+sub is_overflow_value {
+    my $value = shift;
+    
+    return in_values(
+            $value,
+            qw( auto  hidden  scroll  visible )
+        );
+}
 sub is_position_value {
     my $value = shift;
     
@@ -300,6 +319,14 @@ sub is_valign_value {
             $value,
             qw( baseline    sub     super   top
                 text-top    middle  bottom  text-bottom )
+        );
+}
+sub is_visibility_value {
+    my $value = shift;
+    
+    return in_values(
+            $value,
+            qw( collapse  hidden  visible )
         );
 }
 sub is_zindex_value {
@@ -323,6 +350,39 @@ sub in_values {
     }
     
     return 0;
+}
+
+sub expand_clip {
+    my $value = shift;
+    
+    my %values;
+    my $get_clip_values = qr{
+            ^
+                \s* rect \( \s*
+                    ( [ \s \d \. , % aceimnoptux ]+? )
+                \s* \) \s*
+            $
+        }x;
+    
+    if ( $value =~ $get_clip_values ) {
+        my @values  = split ( m{,\s*}, $1 );
+        my $correct = 1;
+        
+        foreach my $part ( @values ) {
+            $correct = 0
+                unless is_length_value( $part )
+                    || 'auto' eq $part;
+        }
+        
+        if ( $correct && 4 == scalar @values ) {
+            $values{'clip-rect-top'}    = shift @values;
+            $values{'clip-rect-right'}  = shift @values;
+            $values{'clip-rect-bottom'} = shift @values;
+            $values{'clip-rect-left'}   = shift @values;
+        }
+    }
+    
+    return %values;
 }
 
 1;

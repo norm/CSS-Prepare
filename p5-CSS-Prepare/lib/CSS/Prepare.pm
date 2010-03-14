@@ -12,6 +12,7 @@ use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Text;
 use FileHandle;
 use File::Basename;
+use Storable            qw( dclone );
 
 my @PROPERTIES
     = qw( Background Border Color Font Formatting Margin Padding Text );
@@ -162,22 +163,31 @@ sub output_as_string {
 sub output_block_as_string {
     my $block = shift;
     
-    my $output = '';
+    my %properties = output_properties( $block->{'block'} );
+    my $output     = join '', sort keys %properties;
+    my $selector   = join ',', @{ $block->{'selectors'} };
+    
+    return "${selector}\{${output}\}\n";
+}
+sub output_properties {
+    my $block = shift;
+    
+    my %properties;
     foreach my $property ( @PROPERTIES ) {
         my $string;
+        
         eval {
             no strict 'refs';
-    
+            
             my $try_with = "CSS::Prepare::Property::${property}::output";
-               $string   = &$try_with( $block->{'block'} );
+               $string   = &$try_with( $block );
         };
-        if ( defined $string ) {
-            $output .= $string;
-        }
+        
+        $properties{ $string }++
+            if defined $string;
     }
     
-    my $selector = join ',', @{ $block->{'selectors'} };
-    return "${selector}\{${output}\}\n";
+    return %properties;
 }
 
 sub get_stylesheet {
@@ -445,6 +455,224 @@ sub parse_declaration_block {
     }
     
     return \%canonical, \@errors;
+}
+
+sub optimise {
+    my $self = shift;
+    my @data = @_;
+    
+    my %styles     = $self->sort_blocks_into_hash( @data );
+    my @properties = array_of_properties( %styles );
+    my %state      = get_optimal_state( @properties );
+    my @optimised  = $self->get_blocks_from_state( %state );
+    
+    return @optimised;
+}
+sub sort_blocks_into_hash {
+    my $self = shift;
+    my @data = @_;
+    
+    my %styles;
+    foreach my $block ( @data ) {
+        foreach my $property ( keys %{ $block->{'block'} } ) {
+            my $value = $block->{'block'}{ $property };
+            
+            foreach my $selector ( @{ $block->{'selectors'} } ) {
+                $styles{ $selector }{ $property } = $value;
+            }
+        }
+    }
+    
+    return %styles;
+}
+sub array_of_properties {
+    my %styles = @_;
+    
+    my @properties;
+    
+    foreach my $selector ( keys %styles ) {
+        my %properties = output_properties( $styles{ $selector } );
+        
+        foreach my $property ( keys %properties ) {
+            push @properties, $selector, $property;
+        }
+    }
+    
+    return @properties;
+}
+sub get_optimal_state {
+    my @properties = @_;
+    
+    my %by_property   = get_selectors_by_property( @properties );
+    my $found_savings = 1;
+    my $total_savings = 0;
+    
+    while ( $found_savings ) {
+        ( $found_savings, %by_property )
+            = mix_biggest_properties( %by_property );
+        
+        $total_savings += $found_savings;
+    }
+    
+    return %by_property;
+}
+sub get_selectors_by_property {
+    my @properties = @_;
+    
+    my %by_property;
+    while ( @properties ) {
+        my $selector = shift @properties;
+        my $property = shift @properties;
+        
+        $by_property{ $property }{ $selector } = 1;
+    }
+    
+    return %by_property;
+}
+sub mix_biggest_properties {
+    my %by_property = @_;
+    
+    my $num_children = sub {
+            my $a_children = scalar keys %{$by_property{ $a }};
+            my $b_children = scalar keys %{$by_property{ $b }};
+            return $b_children <=> $a_children;
+        };
+    my @sorted_properties = sort $num_children keys %by_property;
+    
+    foreach my $property ( @sorted_properties ) {
+        my( $mix_with, $saving )
+            = get_biggest_saving_if_mixed( $property, %by_property );
+            
+        if ( defined $mix_with ) {
+            my %properties
+                = mix_properties( $property, $mix_with, %by_property );
+            return( $saving, %properties );
+        }
+    }
+    
+    return( 0, %by_property );
+}
+sub get_biggest_saving_if_mixed {
+    my $property   = shift;
+    my %properties = @_;
+    
+    my $unmixed_property_length
+        = output_string_length( $property, keys %{$properties{ $property }} );
+    my %savings;
+    
+    foreach my $examine ( keys %properties ) {
+        next if $property eq $examine;
+        
+        my @common_selectors
+            = get_common_selectors( $property, $examine, %properties );
+        my @property_remaining
+            = get_remaining_selectors( $examine, $property, %properties );
+        my @examine_remaining
+            = get_remaining_selectors( $property, $examine, %properties );
+        
+        my $unmixed_examine_length
+            = output_string_length(
+                  $examine, keys %{$properties{ $examine }} );
+        my $mixed_common_length
+            = output_string_length( "$property,$examine", @common_selectors );
+        my $mixed_selector_length
+            = output_string_length( $property, @property_remaining );
+        my $mixed_examine_length
+            = output_string_length( $examine, @examine_remaining );
+        
+        my $unmixed = $unmixed_property_length + $unmixed_examine_length;
+        my $mixed   = $mixed_common_length
+                      + $mixed_selector_length
+                      + $mixed_examine_length;
+        
+        $savings{ $examine }
+            = ( $unmixed - $mixed );
+    }
+    
+    my $largest_value = 0;
+    my $largest;
+    foreach my $key ( keys %savings ) {
+        my $value = $savings{ $key };
+        
+        if ( $value > $largest_value ) {
+            $largest_value = $value;
+            $largest       = $key;
+        }
+    }
+    
+    return( $largest, $largest_value );
+}
+sub output_string_length {
+    my $property  = shift;
+    my @selectors = @_;
+    
+    return 0
+        unless scalar @selectors;
+    
+    my $string = sprintf '%s{%s}',
+            join( ',', @selectors ),
+            $property;
+    
+    return length $string;
+}
+sub get_common_selectors {
+    my $property   = shift;
+    my $examine    = shift;
+    my %properties = @_;
+    
+    my @common = grep {
+            $_ if defined $properties{ $property }{ $_};
+        } keys %{$properties{ $examine }};
+    
+    return @common;
+}
+sub get_remaining_selectors {
+    my $property   = shift;
+    my $examine    = shift;
+    my %properties = @_;
+    
+    my @remaining = grep {
+            $_ if !defined $properties{ $property }{ $_};
+        } keys %{$properties{ $examine }};
+    
+    return @remaining;
+}
+sub mix_properties {
+    my $property   = shift;
+    my $mix_with   = shift;
+    my %properties = @_;
+    
+    my $mixed_property = join '', sort( $property, $mix_with );
+    my @common_selectors
+        = get_common_selectors( $property, $mix_with, %properties );
+    
+    foreach my $selector ( @common_selectors ) {
+        $properties{ $mixed_property }{ $selector } = 1;
+        delete $properties{ $property }{ $selector };
+        delete $properties{ $mix_with }{ $selector };
+    }
+    
+    delete $properties{ $property }
+        unless scalar keys %{$properties{ $property }};
+    delete $properties{ $mix_with }
+        unless scalar keys %{$properties{ $mix_with }};
+    
+    return %properties;
+}
+sub get_blocks_from_state {
+    my $self       = shift;
+    my %properties = @_;
+    
+    my @blocks;
+    foreach my $property ( sort keys %properties ) {
+        my @selectors = sort keys %{$properties{ $property }};
+        my $css       = join( ',', @selectors )
+                      . "{$property}";
+        
+        push @blocks, $self->parse_string( $css );
+    }
+    
+    return @blocks;
 }
 
 sub is_valid_selector {

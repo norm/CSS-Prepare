@@ -34,10 +34,28 @@ sub parse {
             }
         };
     
-    foreach my $type qw( clear display float position width ) {
+    foreach my $type qw( clear direction display float position ) {
         &$valid_property_or_error( $type )
             if $type eq $property;
     }
+    
+    my @types = qw( height width max-height min-height max-width min-width );
+    foreach my $type ( @types ) {
+        &$valid_property_or_error( 'distance' )
+            if $type eq $property;
+    }
+    
+    &$valid_property_or_error( 'valign' )
+        if 'vertical-align' eq $property;
+    
+    &$valid_property_or_error( 'lineheight' )
+        if 'line-height' eq $property;
+    
+    &$valid_property_or_error( 'direction' )
+        if 'direction' eq $property;
+    
+    &$valid_property_or_error( 'bidi' )
+        if 'unicode-bidi' eq $property;
     
     &$valid_property_or_error( 'zindex' )
         if 'z-index' eq $property;
@@ -54,16 +72,11 @@ sub output {
     my $output;
     
     my @properties = qw(
-            bottom
-            clear
-            display
-            float
-            left
-            position
-            right
-            top
-            width
-            z-index
+            bottom          clear       direction   display
+            float           height      left        line-height
+            max-height      max-width   min-height  min-width
+            position        right       top         unicode-bidi
+            vertical-align  width       z-index
         );
     
     foreach my $property ( @properties ) {

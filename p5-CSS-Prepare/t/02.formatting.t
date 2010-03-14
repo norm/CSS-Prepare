@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -116,5 +116,128 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "display property was:\n" . Dumper \@parsed;
+        or say "z-index property was:\n" . Dumper \@parsed;
 }
+{
+    $css = <<CSS;
+        div { direction: rtl; }
+CSS
+    @structure = (
+            {
+                original  => ' direction: rtl; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'direction' => 'rtl', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "direction property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { unicode-bidi: embed; }
+CSS
+    @structure = (
+            {
+                original  => ' unicode-bidi: embed; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'unicode-bidi' => 'embed', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "unicode-bidi property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { vertical-align: baseline; }
+CSS
+    @structure = (
+            {
+                original  => ' vertical-align: baseline; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'vertical-align' => 'baseline', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "vertical-align property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { line-height: 1.3; }
+CSS
+    @structure = (
+            {
+                original  => ' line-height: 1.3; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'line-height' => '1.3', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "line-height property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { width: 50%; min-width: 100px; max-width: 350px; }
+CSS
+    @structure = (
+            {
+                original  => ' width: 50%; min-width: 100px; max-width: 350px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 
+                    'width'     => '50%', 
+                    'min-width' => '100px', 
+                    'max-width' => '350px', 
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "width property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { height: 50%; min-height: 100px; max-height: 350px; }
+CSS
+    @structure = (
+            {
+                original  => ' height: 50%; min-height: 100px; max-height: 350px; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 
+                    'height'     => '50%', 
+                    'min-height' => '100px', 
+                    'max-height' => '350px', 
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "height property was:\n" . Dumper \@parsed;
+}
+
+# TODO
+#   *   add overflow
+#   *   add clipping
+#   *   add visibility
+#   *   add cursor
+#   *   add outline
+#   *   add quotes
+#   *   add counters
+
+#   *   test for errors with invalid values
+
+

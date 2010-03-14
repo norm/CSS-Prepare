@@ -10,6 +10,7 @@ our @EXPORT = qw(
         is_length_value
         is_percentage_value
         is_distance_value
+        is_lineheight_value
         is_url_value
         is_string_value
         
@@ -28,6 +29,10 @@ our @EXPORT = qw(
         is_width_value
         is_offset_value
         is_zindex_value
+        is_lineheight_value
+        is_valign_value
+        is_direction_value
+        is_bidi_value
     );
 
 
@@ -275,6 +280,41 @@ sub is_zindex_value {
     return $value =~ m{^ \d+ $}x
         || 'auto'    eq $value
         || 'inherit' eq $value;
+}
+sub is_lineheight_value {
+    my $value = shift;
+    
+    return $value =~ m{^ \d+ $}x
+        || is_length_value( $value )
+        || is_percentage_value( $value )
+        || 'inherit' eq $value;
+}
+sub is_valign_value {
+    my $value = shift;
+    
+    return is_length_value( $value )
+        || is_percentage_value( $value )
+        || in_values(
+            $value,
+            qw( baseline    sub     super   top
+                text-top    middle  bottom  text-bottom )
+        );
+}
+sub is_direction_value {
+    my $value = shift;
+    
+    return in_values(
+            $value,
+            qw( ltr  rtl )
+        );
+}
+sub is_bidi_value {
+    my $value = shift;
+    
+    return in_values(
+            $value,
+            qw( normal  embed  bidi-override )
+        );
 }
 
 sub in_values {

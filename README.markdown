@@ -1,7 +1,8 @@
 CSS Prepare
 ===========
 
-A minifier/preprocessor for CSS:
+A "work in progress" (ie. not yet ready for prime-time) minifier/preprocessor
+for CSS:
 
 *   parses CSS from multiple files, including a limited form of inheritence
     to enable base stylesheets to be used intelligently

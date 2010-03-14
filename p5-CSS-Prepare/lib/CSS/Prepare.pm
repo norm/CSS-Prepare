@@ -286,7 +286,7 @@ sub parse {
             }
             
             push @declarations, {
-                    original  => $block->{'block'},
+                    original  => unescape_braces( $block->{'block'} ),
                     selectors => $selectors,
                     errors    => [ 
                         @$selectors_errors, 

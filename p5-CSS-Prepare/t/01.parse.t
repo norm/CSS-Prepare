@@ -173,7 +173,7 @@ CSS
                 },
             },
             {
-                original  => ' content: "%-RIGHTBRACE-%"; ',
+                original  => ' content: "}"; ',
                 selectors => [ 'li:after' ],
                 errors    => [],
                 block     => {

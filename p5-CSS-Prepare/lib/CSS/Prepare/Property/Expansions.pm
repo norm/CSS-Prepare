@@ -1,10 +1,11 @@
 package CSS::Prepare::Property::Expansions;
 
 use Modern::Perl;
+use CSS::Prepare::Property::Values;
 use Exporter;
 
 our @ISA    = qw( Exporter );
-our @EXPORT = qw( expand_trbl_shorthand collapse_trbl_shorthand );
+our @EXPORT = qw( expand_trbl_shorthand collapse_trbl_shorthand expand_clip );
 
 
 
@@ -99,6 +100,31 @@ sub collapse_trbl_shorthand {
     # four value shorthand
     
     return "$output;";
+}
+
+sub expand_clip {
+    my $value = shift;
+    
+    my %values;
+    my $get_clip_values = qr{
+            ^
+                rect \( \s*
+                    ( $length_value | auto ) \s* \, \s*
+                    ( $length_value | auto ) \s* \, \s*
+                    ( $length_value | auto ) \s* \, \s*
+                    ( $length_value | auto ) \s*
+                \)
+            $
+        }x;
+    
+    if ( $value =~ $get_clip_values ) {
+        $values{'clip-rect-top'}    = $1;
+        $values{'clip-rect-right'}  = $2;
+        $values{'clip-rect-bottom'} = $3;
+        $values{'clip-rect-left'}   = $4;
+    }
+    
+    return %values;
 }
 
 1;

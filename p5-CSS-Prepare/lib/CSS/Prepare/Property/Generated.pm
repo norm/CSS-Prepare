@@ -40,12 +40,11 @@ sub parse {
             if $type eq $property;
     }
 
-    foreach my $type qw( counter-increment  counter-reset ) {
-        if ( $type eq $property ) {
-            &$valid_property_or_error( 'counter' );
-            get_counter_values( $value );
-        }
-    }
+    &$valid_property_or_error( 'counter_increment' )
+        if 'counter-increment' eq $property;
+    
+    &$valid_property_or_error( 'counter_reset' )
+        if 'counter-reset' eq $property;
     
     &$valid_property_or_error( 'list_style_type' )
         if 'list-style-type' eq $property;
@@ -113,35 +112,6 @@ sub output {
     return $output;
 }
 
-sub get_counter_values {
-    my $value = shift;
-    
-    return $value
-        if 'none' eq $value;
-    return $value
-        if 'inherit' eq $value;
-    
-    my $counter_value = qr{
-            ( $identifier_value )           # $1: the ident
-            (?:    
-                \s+ ( $integer_value )      # $2: the integer
-            )?
-        }x;
-    
-    my $values;
-    while ( $value =~ s{^ \s* $counter_value }{}x ) {
-        my $identifier = $1;
-        my $integer    = $2 // 1;
-        
-        $values .= $identifier
-                 . ( 1 == $integer ? '' : " $integer" );
-    }
-    
-    return $values
-        unless length $value;
-    
-    return;
-}
 sub expand_list_style {
     my $value = shift;
     

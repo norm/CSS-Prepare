@@ -39,25 +39,37 @@ sub parse {
             if $type eq $property;
     }
     
-    my @types = qw( height width max-height min-height max-width min-width );
-    foreach my $type ( @types ) {
-        &$valid_property_or_error( 'distance' )
-            if $type eq $property;
-    }
+    &$valid_property_or_error( 'height' )
+        if 'height' eq $property;
     
-    &$valid_property_or_error( 'valign' )
+    &$valid_property_or_error( 'max_height' )
+        if 'max-height' eq $property;
+    
+    &$valid_property_or_error( 'min_height' )
+        if 'min-height' eq $property;
+    
+    &$valid_property_or_error( 'width' )
+        if 'width' eq $property;
+    
+    &$valid_property_or_error( 'max_width' )
+        if 'max-width' eq $property;
+    
+    &$valid_property_or_error( 'min_width' )
+        if 'min-width' eq $property;
+    
+    &$valid_property_or_error( 'vertical_align' )
         if 'vertical-align' eq $property;
     
-    &$valid_property_or_error( 'lineheight' )
+    &$valid_property_or_error( 'line_height' )
         if 'line-height' eq $property;
     
     &$valid_property_or_error( 'direction' )
         if 'direction' eq $property;
     
-    &$valid_property_or_error( 'bidi' )
+    &$valid_property_or_error( 'unicode_bidi' )
         if 'unicode-bidi' eq $property;
     
-    &$valid_property_or_error( 'zindex' )
+    &$valid_property_or_error( 'z_index' )
         if 'z-index' eq $property;
     
     foreach my $offset qw( top right bottom left ) {

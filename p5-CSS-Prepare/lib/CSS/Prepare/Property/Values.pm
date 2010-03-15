@@ -5,63 +5,298 @@ use Exporter;
 
 our @ISA    = qw( Exporter );
 our @EXPORT = qw(
-        get_value_type
-        is_colour_value
-        is_distance_value
-        is_identifier_value
-        is_integer_value
         is_length_value
         is_percentage_value
         is_string_value
         is_url_value
         
-        get_property_type
         is_background_attachment_value
+        is_background_colour_value
+        is_background_image_value
+        is_background_position_value
         is_background_repeat_value
-        is_bidi_value
+        is_border_collapse_value
+        is_border_colour_value
+        is_border_spacing_value
         is_border_style_value
+        is_border_width_value
+        is_caption_side_value
         is_clear_value
         is_clip_value
+        is_colour_value
         is_content_value
-        is_counter_value
+        is_counter_increment_value
+        is_counter_reset_value
         is_direction_value
         is_display_value
+        is_empty_cells_value
         is_float_value
+        is_font_family_value
+        is_font_size_line_height_value
         is_font_size_value
         is_font_style_value
         is_font_variant_value
         is_font_weight_value
-        is_lineheight_value
+        is_height_value
+        is_letter_spacing_value
+        is_line_height_value
         is_list_style_image_value
         is_list_style_position_value
         is_list_style_type_value
+        is_margin_width_value
+        is_max_height_value
+        is_max_width_value
+        is_min_height_value
+        is_min_width_value
         is_offset_value
         is_overflow_value
+        is_padding_width_value
         is_position_value
         is_quotes_value
-        is_valign_value
+        is_table_layout_value
+        is_text_align_value
+        is_text_decoration_value
+        is_text_indent_value
+        is_text_transform_value
+        is_unicode_bidi_value
+        is_vertical_align_value
         is_visibility_value
-        is_zindex_value
+        is_white_space_value
+        is_width_value
+        is_word_spacing_value
+        is_z_index_value
         
-        expand_clip
-        
-        $integer_value
-        $identifier_value
-        $string_value
+        $length_value
         $list_style_type_value
         $list_style_image_value
         $list_style_position_value
     );
 
-our $integer_value             = qr{ [+-]? [0-9]+ }x;
-our $identifier_value          = qr{ [a-z][a-zA-z0-9_-]* }x;
-our $url_value                 = qr{ url \( [^\)]+ \) }x;
-our $string_value              = qr{
-        (?<quote> ['"] )        # string delimiter
-        .*?                     # content of string
-        (?<! \\ ) \k{quote}     # first matching quote that is not escaped
+# primitive types
+my $integer_value     = qr{ [+-]? [0-9]+ }x;
+my $identifier_value  = qr{ [a-z][a-zA-z0-9_-]* }x;
+my $number_value      = qr{
+        (?:
+            (?: $integer_value )
+            |
+            (?: $integer_value )?
+            \. [0-9]+
+        )
     }x;
-our $list_style_type_value     = qr{
+our $length_value     = qr{
+        (?:
+            0
+            |
+            $number_value
+            (?: px | em | ex | in | cm | mm | pt | pc )
+        )
+    }x;
+my $percentage_value  = qr{ $number_value % }x;
+my $colour_value      = qr{
+        (?:
+              aqua | black  | blue | fuchsia | gray   | green
+            | lime | maroon | navy | olive   | orange | purple
+            | red  | silver | teal | white   | yellow
+            |
+            \# [0-9a-fA-F]{3}
+            |
+            \# [0-9a-fA-F]{6}
+            |
+            rgb\(
+                (?:
+                    (?: (?: $number_value | $percentage_value ) , \s* ){2}
+                    (?: $number_value | $percentage_value )
+                )
+            \)
+        )
+    }x;
+my $string_value      = qr{
+        (?:
+            \' (?: \\ \' | [^'] )* \'   # single-quoted
+            |                           # or
+            \" (?: \\ \" | [^"] )* \"   # double-quoted
+        )
+    }x;
+my $url_value         = qr{
+        url \( \s*
+        (?:
+            $string_value \s* \)    # either a string
+            |
+            [^'"\)] .*?             # or text not including a right paren
+            (?<! \\ ) \)            # (unless it is escaped)
+        )
+    }x;
+
+# descriptive value types
+my $background_attachment_value = qr{ (?: scroll | fixed | inherit ) }x;
+my $background_colour_value
+    = qr{ (?: transparent | inherit | $colour_value ) }x;
+my $background_image_value = qr{ (?: none | inherit | $url_value ) }x;
+my $background_repeat_value
+    = qr{ (?: repeat | repeat-x | repeat-y | no-repeat | inherit ) }x;
+my $background_positions_horizontal
+    = qr{ (?: left | center | centre | right ) }x;
+my $background_positions_vertical
+    = qr{ (?: top | center | centre | bottom ) }x;
+my $background_position_value = qr{
+        (?:
+                (?:
+                    (?:
+                        $percentage_value
+                        | $length_value
+                        | $background_positions_horizontal
+                    )
+                    (?:
+                        \s+
+                        (?:
+                              $percentage_value
+                            | $length_value
+                            | $background_positions_vertical
+                        )
+                    )?
+                )
+            |
+                (?:
+                      $background_positions_horizontal
+                    | $background_positions_vertical
+                )
+                \s+
+                (?:
+                      $background_positions_horizontal
+                    | $background_positions_vertical
+                )
+            |
+                inherit
+        )
+    }x;
+
+my $border_collapse_value = qr{ (?: collapse | separate | inherit ) }x;
+my $border_colour_value = qr{ (?: transparent | inherit | $colour_value ) }x;
+my $border_spacing_value = qr{
+        (?:
+              $length_value
+            | $length_value \s+ $length_value
+            | inherit
+        )
+    }x;
+my $border_style_value = qr{
+        (?:
+              dashed | dotted | double | groove | hidden
+            | inset  | outset | ridge  | solid
+
+            | none | inherit
+        )
+    }x;
+my $border_width_value
+    = qr{ (?: thin | medium | thick | $length_value | inherit ) }x;
+
+my $caption_side_value = qr{ (?: top | bottom | inherit ) }x;
+my $clear_value = qr{ (?: left | right | both | none | inherit ) }x;
+my $shape_value = qr{
+        (?:
+            rect \( \s*
+                (?: $length_value | auto )
+                (?: \s* \, \s* (?: $length_value | auto ) ){3}
+            \s* \)
+        )
+    }x;
+my $clip_value = qr{ (?: $shape_value | auto | inherit ) }x;
+my $content_repeatable = qr{
+        (?:
+              open-quote | close-quote | no-open-quote | no-close-quote
+            | attr \( $identifier_value \)
+            | $string_value | $url_value | $identifier_value
+        )
+    }x;
+my $content_value = qr{
+        (?:
+              normal | none | inherit
+            | $content_repeatable
+            | (?:
+                  $content_repeatable
+                  (?: \s+ $content_repeatable )+
+              )
+        )
+    }x;
+my $counter_value = qr{
+        (?:
+              $identifier_value
+            | $identifier_value \s+ $integer_value
+        )
+    }x;
+my $counter_value_content = qr{
+        (?:
+              $counter_value
+            | $counter_value
+              (?: \s+ $counter_value )+
+            | none
+            | inherit
+        )
+    }x;
+my $counter_reset_value = qr{ $counter_value_content }x;
+my $counter_increment_value = qr{ $counter_value_content }x;
+
+my $direction_value = qr{ (?: ltr | rtl | inherit ) }x;
+my $display_value = qr{
+        (?:
+              block              | inline             | inline-block
+            | inline-table       | list-item          | none
+            | run-in             | table              | table-caption
+            | table-cell         | table-column       | table-column-group
+            | table-footer-group | table-header-group | table-row
+            | table-row-group
+            
+            | none | inherit
+        )
+    }x;
+my $empty_cells_value = qr{ (?: show | hide | inherit ) }x;
+
+my $float_value = qr{ (?: left | right | none | inherit ) }x;
+my $font_family = qr{
+        (?:
+              serif | sans-serif | cursive | fantasy | monospace
+            | $string_value
+            | inherit
+        )
+    }x;
+my $font_family_value = qr{
+        (?:
+            $font_family
+            |
+            (?: $font_family (?: \s* \, \s* $font_family )+ )
+        )
+    }x;
+my $line_height_value = qr{
+        (?:   normal
+            | $number_value | $length_value | $percentage_value
+            | inherit
+        )
+    }x;
+my $font_size_value = qr{
+        (?:
+              xx-small | x-small | small  | medium | large | x-large
+            | xx-large | smaller | larger | inherit
+            | $length_value | $percentage_value
+        )
+    }x;
+my $font_size_line_height_value
+    = qr{ $font_size_value / $line_height_value }x;
+my $font_style_value = qr{ (?: italic | oblique | normal | inherit ) }x;
+my $font_variant_value = qr{ (?: normal | small-caps | inherit ) }x;
+my $font_weight_value = qr{
+        (?:
+              normal | bold | bolder | lighter
+            | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+            | inherit
+        )
+    }x;
+
+my $height_value
+    = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+my $letter_spacing_value = qr{ (?: normal | $length_value | inherit ) }x;
+our $list_style_image_value = qr{ (?: $url_value | none | inherit ) }x;
+our $list_style_position_value = qr{ (?: inside | outside | inherit ) }x;
+our $list_style_type_value = qr{
         (?:
               armenian    | circle      | decimal     | decimal-leading-zero
             | disc        | georgian    | lower-alpha | lower-greek
@@ -71,311 +306,202 @@ our $list_style_type_value     = qr{
             | none | inherit
         )
     }x;
-our $list_style_image_value    = qr{ (?: $url_value | none | inherit ) }x;
-our $list_style_position_value = qr{ (?: inside | outside | inherit ) }x;
+
+my $margin_width_value
+    = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+my $max_height_value
+    = qr{ (?: $length_value | $percentage_value | none | inherit ) }x;
+my $max_width_value
+    = qr{ (?: $length_value | $percentage_value | none | inherit ) }x;
+my $min_height_value
+    = qr{ (?: $length_value | $percentage_value | inherit ) }x;
+my $min_width_value
+    = qr{ (?: $length_value | $percentage_value | inherit ) }x;
+
+my $offset_value
+    = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+my $overflow_value = qr{ (?: visible | hidden | scroll | auto | inherit ) }x;
+my $padding_width_value
+    = qr{ (?: $length_value | $percentage_value | inherit ) }x;
+my $position_value
+    = qr{ (?: absolute | fixed | relative | static | inherit ) }x;
+my $quotes_value = qr{
+        (?:
+              (?:
+                  (?: $string_value \s+ $string_value )
+                  (?: \s+ $string_value \s+ $string_value )*
+              )
+            | none | inherit
+        )
+    }x;
+
+my $table_layout_value = qr{ (?: auto | fixed | inherit ) }x;
+my $text_align_value
+    = qr{ (?: left | right | center | justify | inherit ) }x;
+my $text_decoration_value = qr{
+       (?: none | underline | overline | line-through | blink | inherit )
+   }x;
+my $text_indent_value
+    = qr{ (?: $length_value | $percentage_value | inherit ) }x;
+my $text_transform_value
+    = qr{ (?: capitalize | uppercase | lowercase | none | inherit ) }x;
+
+my $unicode_bidi_value
+    = qr{ (?: normal | embed | bidi-override | inherit ) }x;
+my $vertical_align_value = qr{
+        (?:
+              baseline | sub    | super  | top
+            | text-top | middle | bottom | text-bottom
+            | $length_value | $percentage_value
+            | inherit
+        )
+    }x;
+my $visibility_value = qr{ (?: visible | hidden | collapse | inherit ) }x;
+my $white_space_value
+    = qr{ (?: normal | pre | nowrap | pre-wrap | pre-line | inherit ) }x;
+my $width_value
+    = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+my $word_spacing_value = qr{ (?: normal | $length_value | inherit ) }x;
+my $z_index_value = qr{ (?: $integer_value | auto | inherit ) }x;
 
 
-sub get_value_type {
-    my $value = shift;
-    
-    if ( is_colour_value( $value ) ) {
-        return 'color';
-    }
-    elsif ( is_length_value( $value ) ) {
-        return 'length';
-    }
-    elsif ( is_percentage_value( $value ) ) {
-        return 'percentage';
-    }
-    elsif ( is_url_value( $value ) ) {
-        return 'url';
-    }
-    elsif ( is_string_value( $value ) ) {
-        return 'string';
-    }
-}
-sub is_colour_value {
-    my $value = shift;
 
-    # is RGB in hex
-    return 1
-        if $value =~ m{^ \# [0-9a-fA-F]{3} $}x;
-    return 1
-        if $value =~ m{^ \# [0-9a-fA-F]{6} $}x;
-
-    # is RGB in functional
-    return 1
-        if $value =~ m{^ rgb \( }x;
-
-    # is colour keyword
-    my @colours = qw( 
-            aqua    black   blue    fuchsia gray    green
-            lime    maroon  navy    olive   orange  purple
-            red     silver  teal    white   yellow
-        );
-    foreach my $colour ( @colours ) {
-        return 1
-            if $colour eq $value;
-    }
-
-    return 0;
-}
-sub is_distance_value {
-    my $value = shift;
-    
-    return is_length_value( $value )
-        || is_percentage_value( $value )
-        || 'auto' eq $value;
-}
-sub is_identifier_value {
-    my $value = shift;
-    
-    return $value =~ m{^ $identifier_value $}x;
-}
-sub is_integer_value {
-    my $value = shift;
-    
-    return $value =~ m{^ $integer_value $}x;
-}
 sub is_length_value {
     my $value = shift;
-    
-    return 1
-        if $value =~ m{^ [-]? [\d\.]+ (px|em|ex|in|cm|mm|pt|pc)? $}x;
-    
-    return 0;
+    return $value =~ m{^ $length_value $}x;
 }
 sub is_percentage_value {
     my $value = shift;
-    
-    return 1
-        if $value =~ m{^ [\d\.]+ % $}x;
-    
-    return 0;
+    return $value =~ m{^ $percentage_value $}x;
 }
 sub is_string_value {
     my $value = shift;
-    
-    return 1
-        if $value =~ m{^ $string_value $}x;
-    
-    return 0;
+    return $value =~ m{^ $string_value $}x;
 }
 sub is_url_value {
     my $value = shift;
-    
-    return 1
-        if $value =~ m{^ $url_value $}x;
-    
-    return 0;
+    return $value =~ m{^ $url_value $}x;
 }
 
-sub get_property_type {
-    my $value = shift;
-    
-    if ( is_background_attachment_value( $value ) ) {
-        return 'background-attachment';
-    }
-    elsif ( is_background_repeat_value( $value ) ) {
-        return 'background-repeat';
-    }
-    elsif ( is_border_style_value( $value ) ) {
-        return 'border-style';
-    }
-    elsif ( is_font_size_value( $value ) ) {
-        return 'font-size';
-    }
-    elsif ( is_font_style_value( $value ) ) {
-        return 'font-style';
-    }
-    elsif ( is_font_variant_value( $value ) ) {
-        return 'font-variant';
-    }
-    elsif ( is_font_weight_value( $value ) ) {
-        return 'font-weight';
-    }
-}
 sub is_background_attachment_value {
     my $value = shift;
-    
-    my @attachments = qw( scroll fixed );
-    foreach my $attachment ( @attachments ) {
-        return 1
-            if $attachment eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $background_attachment_value $}x;
+}
+sub is_background_colour_value {
+    my $value = shift;
+    return $value =~ m{^ $background_colour_value $}x;
+}
+sub is_background_image_value {
+    my $value = shift;
+    return $value =~ m{^ $background_image_value $}x;
+}
+sub is_background_position_value {
+    my $value = shift;
+    return $value =~ m{^ $background_position_value $}x;
 }
 sub is_background_repeat_value {
     my $value = shift;
-    
-    my @repeats = qw( repeat repeat-x repeat-y no-repeat );
-    foreach my $repeat ( @repeats ) {
-        return 1
-            if $repeat eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $background_repeat_value $}x;
 }
-sub is_bidi_value {
+sub is_border_collapse_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( normal  embed  bidi-override )
-        );
+    return $value =~ m{^ $border_collapse_value $}x;
+}
+sub is_border_colour_value {
+    my $value = shift;
+    return $value =~ m{^ $border_colour_value $}x;
+}
+sub is_border_spacing_value {
+    my $value = shift;
+    return $value =~ m{^ $border_spacing_value $}x;
 }
 sub is_border_style_value {
     my $value  = shift;
-    
-    my @styles = qw(
-            none    hidden  dotted  dashed  solid
-            double  groove  ridge   inset   outset
-        );
-    foreach my $style ( @styles ) {
-        return 1
-            if $style eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $border_style_value $}x;
+}
+sub is_border_width_value {
+    my $value = shift;
+    return $value =~ m{^ $border_width_value $}x;
+}
+sub is_caption_side_value {
+    my $value = shift;
+    return $value =~ m{^ $caption_side_value $}x;
 }
 sub is_clear_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( left  right  both  none )
-        );
+    return $value =~ m{^ $clear_value $}x;
 }
 sub is_clip_value {
     my $value = shift;
-    
-    my %values = CSS::Prepare::Property::Effects::expand_clip( $value );
-    return scalar %values;
+    return $value =~ m{^ $clip_value $}x;
+}
+sub is_colour_value {
+    my $value = shift;
+    return $value =~ m{^ $colour_value $}x;
 }
 sub is_content_value {
     my $value = shift;
-    
-    # TODO
-    #   -   values are repeatable
-    #   -   can be attr
-    #   -   can be uri
-    #   -   can be counter
-    
-    return is_string_value( $value )
-        || is_url_value( $value )
-        || in_values(
-                $value,
-                qw(
-                    close-quote  no-close-quote  no-open-quote
-                    none         normal          open-quote
-                )
-            );
+    return $value =~ m{^ $content_value $}x;
 }
-sub is_counter_value {
+sub is_counter_increment_value {
     my $value = shift;
-    
-    return 1
-        if 'none' eq $value;
-    return 1
-        if 'inherit' eq $value;
-    
-    my $counter_value = qr{
-            ( $identifier_value )           # $1: the ident
-            (?:
-                \s+ ( $integer_value )      # $2: the integer
-            )?
-        }x;
-    
-    while ( $value =~ s{^ \s* $counter_value }{}x ) {
-        # nothing to do, values have been validated and stripped already
-    }
-    
-    return 1
-        unless length $value;
-    
-    return 0;
+    return $value =~ m{^ $counter_increment_value $}x;
+}
+sub is_counter_reset_value {
+    my $value = shift;
+    return $value =~ m{^ $counter_reset_value $}x;
 }
 sub is_direction_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( ltr  rtl )
-        );
+    return $value =~ m{^ $direction_value $}x;
 }
 sub is_display_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw(
-                block               inline              inline-block
-                inline-table        list-item           none
-                run-in              table               table-caption
-                table-cell          table-column        table-column-group
-                table-footer-group  table-header-group  table-row
-                table-row-group
-            )
-        );
+    return $value =~ m{^ $display_value $}x;
+}
+sub is_empty_cells_value {
+    my $value = shift;
+    return $value =~ m{^ $empty_cells_value $}x;
 }
 sub is_float_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( left  right  none )
-        );
+    return $value =~ m{^ $float_value $}x;
+}
+sub is_font_family_value {
+    my $value = shift;
+    return $value =~ m{^ $font_family_value $}x;
+}
+sub is_font_size_line_height_value {
+    my $value = shift;
+    return $value =~ m{^ $font_size_line_height_value $}x;
 }
 sub is_font_size_value {
     my $value = shift;
-    
-    return 1
-        if $value =~ m{^ \d }x;
-    
-    return 0;
+    return $value =~ m{^ $font_size_value $}x;
 }
 sub is_font_style_value {
     my $value = shift;
-    
-    my @styles = qw( italic oblique normal );
-    foreach my $style ( @styles ) {
-        return 1
-            if $style eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $font_style_value $}x;
 }
 sub is_font_variant_value {
     my $value = shift;
-    
-    my @variants = qw( small-caps normal );
-    foreach my $variant ( @variants ) {
-        return 1
-            if $variant eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $font_variant_value $}x;
 }
 sub is_font_weight_value {
     my $value = shift;
-    
-    my @weights 
-        = qw( bold bolder lighter 100 200 300 400 500 600 700 800 900 );
-    foreach my $weights ( @weights ) {
-        return 1
-            if $weights eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $font_weight_value $}x;
 }
-sub is_lineheight_value {
+sub is_height_value {
     my $value = shift;
-    
-    return $value =~ m{^ \d+ $}x
-        || is_length_value( $value )
-        || is_percentage_value( $value )
-        || 'inherit' eq $value;
+    return $value =~ m{^ $height_value $}x;
+}
+sub is_letter_spacing_value {
+    my $value = shift;
+    return $value =~ m{^ $letter_spacing_value $}x;
+}
+sub is_line_height_value {
+    my $value = shift;
+    return $value =~ m{^ $line_height_value $}x;
 }
 sub is_list_style_image_value {
     my $value = shift;
@@ -389,124 +515,93 @@ sub is_list_style_type_value {
     my $value = shift;
     return $value =~ m{$list_style_type_value}x;
 }
+sub is_margin_width_value {
+    my $value = shift;
+    return $value =~ m{^ $margin_width_value $}x;
+}
+sub is_max_height_value {
+    my $value = shift;
+    return $value =~ m{^ $max_height_value $}x;
+}
+sub is_max_width_value {
+    my $value = shift;
+    return $value =~ m{^ $max_width_value $}x;
+}
+sub is_min_height_value {
+    my $value = shift;
+    return $value =~ m{^ $min_height_value $}x;
+}
+sub is_min_width_value {
+    my $value = shift;
+    return $value =~ m{^ $min_width_value $}x;
+}
 sub is_offset_value {
     my $value = shift;
-    
-    return is_distance_value( $value );
+    return $value =~ m{^ $offset_value $}x;
 }
 sub is_overflow_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( auto  hidden  scroll  visible )
-        );
+    return $value =~ m{^ $overflow_value $}x;
+}
+sub is_padding_width_value {
+    my $value = shift;
+    return $value =~ m{^ $padding_width_value $}x;
 }
 sub is_position_value {
     my $value = shift;
-    
-    return in_values( 
-            $value,
-            qw( absolute  fixed  relative  static )
-        );
+    return $value =~ m{^ $position_value $}x;
 }
 sub is_quotes_value {
     my $value = shift;
-    
-    return 1
-        if 'none' eq $value;
-    return 1
-        if 'inherit' eq $value;
-    
-    my $quotes_value = qr{
-            ^
-            \s*
-            $string_value \s+       # open quote
-            $string_value           # close quote
-        }x;
-    
-    while ( $value =~ s{$quotes_value}{}x ) {
-        # nothing to do, values have been validated and stripped already
-    }
-    
-    return 1
-        unless length $value;
-    
-    return 0;
+    return $value =~ m{^ $quotes_value $}x;
 }
-sub is_valign_value {
+sub is_table_layout_value {
     my $value = shift;
-    
-    return is_length_value( $value )
-        || is_percentage_value( $value )
-        || in_values(
-            $value,
-            qw( baseline    sub     super   top
-                text-top    middle  bottom  text-bottom )
-        );
+    return $value =~ m{^ $table_layout_value $}x;
+}
+sub is_text_align_value {
+    my $value = shift;
+    return $value =~ m{^ $text_align_value $}x;
+}
+sub is_text_decoration_value {
+    my $value = shift;
+    return $value =~ m{^ $text_decoration_value $}x;
+}
+sub is_text_indent_value {
+    my $value = shift;
+    return $value =~ m{^ $text_indent_value $}x;
+}
+sub is_text_transform_value {
+    my $value = shift;
+    return $value =~ m{^ $text_transform_value $}x;
+}
+sub is_unicode_bidi_value {
+    my $value = shift;
+    return $value =~ m{^ $unicode_bidi_value $}x;
+}
+sub is_vertical_align_value {
+    my $value = shift;
+    return $value =~ m{^ $vertical_align_value $}x;
 }
 sub is_visibility_value {
     my $value = shift;
-    
-    return in_values(
-            $value,
-            qw( collapse  hidden  visible )
-        );
+    return $value =~ m{^ $visibility_value $}x;
 }
-sub is_zindex_value {
+sub is_white_space_value {
     my $value = shift;
-    
-    return $value =~ m{^ \d+ $}x
-        || 'auto'    eq $value
-        || 'inherit' eq $value;
+    return $value =~ m{^ $white_space_value $}x;
 }
-
-sub in_values {
+sub is_width_value {
     my $value = shift;
-    my @types = @_;
-    
-    # can always inherit
-    push @types, 'inherit';
-    
-    foreach my $type ( @types ) {
-        return 1
-            if $type eq $value;
-    }
-    
-    return 0;
+    return $value =~ m{^ $width_value $}x;
 }
-
-sub expand_clip {
+sub is_word_spacing_value {
     my $value = shift;
-    
-    my %values;
-    my $get_clip_values = qr{
-            ^
-                \s* rect \( \s*
-                    ( [ \s \d \. , % aceimnoptux ]+? )
-                \s* \) \s*
-            $
-        }x;
-    
-    if ( $value =~ $get_clip_values ) {
-        my @values  = split ( m{,\s*}, $1 );
-        my $correct = 1;
-        
-        foreach my $part ( @values ) {
-            $correct = 0
-                unless is_length_value( $part )
-                    || 'auto' eq $part;
-        }
-        
-        if ( $correct && 4 == scalar @values ) {
-            $values{'clip-rect-top'}    = shift @values;
-            $values{'clip-rect-right'}  = shift @values;
-            $values{'clip-rect-bottom'} = shift @values;
-            $values{'clip-rect-left'}   = shift @values;
-        }
-    }
-    
-    return %values;
+    return $value =~ m{^ $word_spacing_value $}x;
+}
+sub is_z_index_value {
+    my $value = shift;
+    return $value =~ m{^ $z_index_value $}x;
 }
 
 1;

@@ -62,11 +62,12 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => { 
-                    'font-style'   => 'italic', 
-                    'font-variant' => 'small-caps', 
-                    'font-weight'  => 'bold', 
-                    'font-size'    => '13px/16px', 
-                    'font-family'  => '"Palatino"', 
+                    'font-style'   => 'italic',
+                    'font-variant' => 'small-caps',
+                    'font-weight'  => 'bold',
+                    'font-size'    => '13px',
+                    'line-height'  => '16px',
+                    'font-family'  => '"Palatino"',
                 },
             },
         );

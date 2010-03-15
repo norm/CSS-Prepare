@@ -31,10 +31,10 @@ sub parse {
             my @partials = split ( m{\s+}, $value );
             
             foreach my $partial ( @partials ) {
-                if ( is_colour_value( $partial ) ) {
+                if ( is_background_colour_value( $partial ) ) {
                     $canonical{'background-color'} = $partial;
                 }
-                elsif ( is_url_value( $partial ) ) {
+                elsif ( is_background_image_value( $partial ) ) {
                     $canonical{'background-image'} = $partial;
                 }
                 elsif ( is_background_repeat_value( $partial ) ) {
@@ -43,8 +43,14 @@ sub parse {
                 elsif ( is_background_attachment_value( $partial ) ) {
                     $canonical{'background-attachment'} = $partial;
                 }
-                else {
+                elsif ( is_background_position_value( $partial ) ) {
                     $canonical{'background-position'} .= "$partial ";
+                    # correct spelling
+                    $canonical{'background-position'} .= "center "
+                        if 'centre' eq $partial;
+                }
+                else {
+                    die;
                 }
             }
         }

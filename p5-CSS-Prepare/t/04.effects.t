@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 

@@ -2,6 +2,7 @@ package CSS::Prepare::Property::Effects;
 
 use Modern::Perl;
 use CSS::Prepare::Property::Values;
+use CSS::Prepare::Property::Expansions;
 
 
 

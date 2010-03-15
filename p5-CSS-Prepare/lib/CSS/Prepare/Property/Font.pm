@@ -33,6 +33,10 @@ sub parse {
                 elsif ( is_font_weight_value( $partial ) ) {
                     $canonical{'font-weight'} = $partial;
                 }
+                elsif ( is_font_size_line_height_value( $partial ) ) {
+                    ( $canonical{'font-size'},
+                      $canonical{'line-height'} ) = split m{/}, $partial;
+                }
                 elsif ( is_font_size_value( $partial ) ) {
                     $canonical{'font-size'} = $partial;
                 }

@@ -63,7 +63,7 @@ sub parse {
         }
         
         when ( 'border' ) {
-            %canonical = (
+             %canonical = (
                     expand_border_shorthand( 'top', $value ),
                     expand_border_shorthand( 'right', $value ),
                     expand_border_shorthand( 'bottom', $value ),
@@ -131,8 +131,8 @@ sub expand_border_shorthand {
     my @values = split ( m{\s+}, $value );
     my %values;
     
-    given ( $#values ) {
-        when ( 0 ) {
+    given ( scalar @values ) {
+        when ( 1 ) {
             # this produces a border
             if ( is_border_style_value( $value ) ) {
                 $values{"border-${side}-width"} = '';
@@ -141,25 +141,36 @@ sub expand_border_shorthand {
             }
             
             # these do not (TODO emit warning)
-            elsif ( is_colour_value( $value ) ) {
+            elsif ( is_border_colour_value( $value ) ) {
                 $values{"border-${side}-width"} = '';
                 $values{"border-${side}-style"} = '';
                 $values{"border-${side}-color"} = $value;
             }
-            else {
-                # not style or color, then width
+            elsif ( is_border_width_value( $value ) ) {
                 $values{"border-${side}-width"} = $value;
                 $values{"border-${side}-style"} = '';
                 $values{"border-${side}-color"} = '';
             }
+            else {
+                die;
+            }
         }
-        when ( 1 ) {
-            my $property1 = is_border_style_value( $values[0] ) ? 'style'
-                          : is_colour_value( $values[0] )       ? 'color'
-                                                                : 'width';
-            my $property2 = is_border_style_value( $values[1] ) ? 'style'
-                          : is_colour_value( $values[1] )       ? 'color'
-                                                                : 'width';
+        when ( 2 ) {
+            my $property1
+                = is_border_style_value( $values[0] )    ? 'style'
+                  : is_border_colour_value( $values[0] ) ? 'color'
+                  : is_border_width_value( $values[0] )  ? 'width'
+                                                         : 'unknown';
+            my $property2
+                = is_border_style_value( $values[1] )    ? 'style'
+                  : is_border_colour_value( $values[1] ) ? 'color'
+                  : is_border_width_value( $values[1] )  ? 'width'
+                                                         : 'unknown';
+            
+            if ( 'unknown' eq $property1 || 'unknown' eq $property2 ) {
+                die;
+            }
+            
             my $property3 
                 = ('style' ne $property1 && 'style' ne $property2) ? 'style'
                 : ('color' ne $property1 && 'color' ne $property2) ? 'color'
@@ -169,7 +180,7 @@ sub expand_border_shorthand {
             $values{"border-${side}-${property2}"} = $values[1];
             $values{"border-${side}-${property3}"} = '';
         }
-        when ( 2 ) {
+        when ( 3 ) {
             $values{"border-${side}-width"} = $values[0];
             $values{"border-${side}-style"} = $values[1];
             $values{"border-${side}-color"} = $values[2];

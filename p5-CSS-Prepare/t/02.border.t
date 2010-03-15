@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 9;
+use Test::More  tests => 10;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -251,6 +251,36 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "value overriding was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        img { border: 0; }
+CSS
+    @structure = (
+            {
+                original  => ' border: 0; ',
+                errors    => [],
+                selectors => [ 'img' ],
+                block     => {
+                    'border-top-color'    => '',
+                    'border-top-style'    => '',
+                    'border-top-width'    => '0',
+                    'border-right-color'  => '',
+                    'border-right-style'  => '',
+                    'border-right-width'  => '0',
+                    'border-bottom-color' => '',
+                    'border-bottom-style' => '',
+                    'border-bottom-width' => '0',
+                    'border-left-color'   => '',
+                    'border-left-style'   => '',
+                    'border-left-width'   => '0',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "border zero was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;

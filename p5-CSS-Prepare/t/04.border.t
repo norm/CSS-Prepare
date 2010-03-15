@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 9;
+use Test::More  tests => 10;
 
 use CSS::Prepare;
 
@@ -216,6 +216,34 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand width was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'img' ],
+                block     => {
+                    'border-top-color'    => '',
+                    'border-top-style'    => '',
+                    'border-top-width'    => '0',
+                    'border-right-color'  => '',
+                    'border-right-style'  => '',
+                    'border-right-width'  => '0',
+                    'border-bottom-color' => '',
+                    'border-bottom-style' => '',
+                    'border-bottom-width' => '0',
+                    'border-left-color'   => '',
+                    'border-left-style'   => '',
+                    'border-left-width'   => '0',
+                },
+            },
+        );
+    $css = <<CSS;
+img{border:0;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border zero width was:\n" . $output;
 }
 {
     @structure = (

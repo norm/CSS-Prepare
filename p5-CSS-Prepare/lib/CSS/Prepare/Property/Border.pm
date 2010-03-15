@@ -245,8 +245,13 @@ sub collapse_border_shorthand_direction {
         my $key   = "border-${direction}-${property}";
         my $value = $block->{ $key };
         
-        if ( defined $value && $value ) {
-            push @values, $block->{ $key };
+        if ( defined $value ) {
+            if ( '0' eq $value ) {
+                push @values, '0';
+            }
+            elsif ( $value ) {
+                push @values, $block->{ $key };
+            }
         }
     }
     

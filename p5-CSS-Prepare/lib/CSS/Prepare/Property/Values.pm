@@ -8,6 +8,8 @@ our @EXPORT = qw(
         get_value_type
         is_colour_value
         is_distance_value
+        is_identifier_value
+        is_integer_value
         is_length_value
         is_percentage_value
         is_string_value
@@ -20,6 +22,8 @@ our @EXPORT = qw(
         is_border_style_value
         is_clear_value
         is_clip_value
+        is_content_value
+        is_counter_value
         is_direction_value
         is_display_value
         is_float_value
@@ -28,16 +32,47 @@ our @EXPORT = qw(
         is_font_variant_value
         is_font_weight_value
         is_lineheight_value
+        is_list_style_image_value
+        is_list_style_position_value
+        is_list_style_type_value
         is_offset_value
         is_overflow_value
         is_position_value
+        is_quotes_value
         is_valign_value
         is_visibility_value
         is_zindex_value
         
         expand_clip
+        
+        $integer_value
+        $identifier_value
+        $string_value
+        $list_style_type_value
+        $list_style_image_value
+        $list_style_position_value
     );
 
+our $integer_value             = qr{ [+-]? [0-9]+ }x;
+our $identifier_value          = qr{ [a-z][a-zA-z0-9_-]* }x;
+our $url_value                 = qr{ url \( [^\)]+ \) }x;
+our $string_value              = qr{
+        (?<quote> ['"] )        # string delimiter
+        .*?                     # content of string
+        (?<! \\ ) \k{quote}     # first matching quote that is not escaped
+    }x;
+our $list_style_type_value     = qr{
+        (?:
+              armenian    | circle      | decimal     | decimal-leading-zero
+            | disc        | georgian    | lower-alpha | lower-greek
+            | lower-latin | lower-roman | upper-alpha | upper-latin
+            | upper-roman
+            
+            | none | inherit
+        )
+    }x;
+our $list_style_image_value    = qr{ (?: $url_value | none | inherit ) }x;
+our $list_style_position_value = qr{ (?: inside | outside | inherit ) }x;
 
 
 sub get_value_type {
@@ -92,6 +127,16 @@ sub is_distance_value {
         || is_percentage_value( $value )
         || 'auto' eq $value;
 }
+sub is_identifier_value {
+    my $value = shift;
+    
+    return $value =~ m{^ $identifier_value $}x;
+}
+sub is_integer_value {
+    my $value = shift;
+    
+    return $value =~ m{^ $integer_value $}x;
+}
 sub is_length_value {
     my $value = shift;
     
@@ -112,7 +157,7 @@ sub is_string_value {
     my $value = shift;
     
     return 1
-        if $value =~ m{^ (['"]) [^\1]+ \1 $}x;
+        if $value =~ m{^ $string_value $}x;
     
     return 0;
 }
@@ -120,7 +165,7 @@ sub is_url_value {
     my $value = shift;
     
     return 1
-        if $value =~ m{^ url \( [^\)]+ \) $}x;
+        if $value =~ m{^ $url_value $}x;
     
     return 0;
 }
@@ -208,6 +253,49 @@ sub is_clip_value {
     my %values = CSS::Prepare::Property::Effects::expand_clip( $value );
     return scalar %values;
 }
+sub is_content_value {
+    my $value = shift;
+    
+    # TODO
+    #   -   values are repeatable
+    #   -   can be attr
+    #   -   can be uri
+    #   -   can be counter
+    
+    return is_string_value( $value )
+        || is_url_value( $value )
+        || in_values(
+                $value,
+                qw(
+                    close-quote  no-close-quote  no-open-quote
+                    none         normal          open-quote
+                )
+            );
+}
+sub is_counter_value {
+    my $value = shift;
+    
+    return 1
+        if 'none' eq $value;
+    return 1
+        if 'inherit' eq $value;
+    
+    my $counter_value = qr{
+            ( $identifier_value )           # $1: the ident
+            (?:
+                \s+ ( $integer_value )      # $2: the integer
+            )?
+        }x;
+    
+    while ( $value =~ s{^ \s* $counter_value }{}x ) {
+        # nothing to do, values have been validated and stripped already
+    }
+    
+    return 1
+        unless length $value;
+    
+    return 0;
+}
 sub is_direction_value {
     my $value = shift;
     
@@ -289,6 +377,18 @@ sub is_lineheight_value {
         || is_percentage_value( $value )
         || 'inherit' eq $value;
 }
+sub is_list_style_image_value {
+    my $value = shift;
+    return $value =~ m{$list_style_image_value}x;
+}
+sub is_list_style_position_value {
+    my $value = shift;
+    return $value =~ m{$list_style_position_value}x;
+}
+sub is_list_style_type_value {
+    my $value = shift;
+    return $value =~ m{$list_style_type_value}x;
+}
 sub is_offset_value {
     my $value = shift;
     
@@ -309,6 +409,30 @@ sub is_position_value {
             $value,
             qw( absolute  fixed  relative  static )
         );
+}
+sub is_quotes_value {
+    my $value = shift;
+    
+    return 1
+        if 'none' eq $value;
+    return 1
+        if 'inherit' eq $value;
+    
+    my $quotes_value = qr{
+            ^
+            \s*
+            $string_value \s+       # open quote
+            $string_value           # close quote
+        }x;
+    
+    while ( $value =~ s{$quotes_value}{}x ) {
+        # nothing to do, values have been validated and stripped already
+    }
+    
+    return 1
+        unless length $value;
+    
+    return 0;
 }
 sub is_valign_value {
     my $value = shift;

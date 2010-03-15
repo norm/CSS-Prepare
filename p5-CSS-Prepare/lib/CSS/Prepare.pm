@@ -8,6 +8,7 @@ use CSS::Prepare::Property::Color;
 use CSS::Prepare::Property::Effects;
 use CSS::Prepare::Property::Font;
 use CSS::Prepare::Property::Formatting;
+use CSS::Prepare::Property::Generated;
 use CSS::Prepare::Property::Margin;
 use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Text;
@@ -16,8 +17,8 @@ use File::Basename;
 use Storable            qw( dclone );
 
 my @PROPERTIES = qw(
-        Background  Border  Color    Effects  Font
-        Formatting  Margin  Padding  Text
+        Background  Border     Color    Effects  Font
+        Formatting  Generated  Margin  Padding  Text
     );
 
 

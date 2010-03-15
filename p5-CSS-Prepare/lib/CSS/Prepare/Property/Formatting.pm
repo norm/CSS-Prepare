@@ -83,12 +83,14 @@ sub output {
     my $block = shift;
     my $output;
     
+    # line-height is dealt with in Font.pm not here; this so
+    # it can be collapsed into font shorthand if possible
     my @properties = qw(
-            bottom          clear       direction   display
-            float           height      left        line-height
-            max-height      max-width   min-height  min-width
-            position        right       top         unicode-bidi
-            vertical-align  width       z-index
+            bottom      clear       direction     display
+            float       height      left          max-height
+            max-width   min-height  min-width     position
+            right       top         unicode-bidi  vertical-align
+            width       z-index
         );
     
     foreach my $property ( @properties ) {

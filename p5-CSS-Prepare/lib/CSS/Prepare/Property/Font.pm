@@ -13,43 +13,80 @@ sub parse {
     my %canonical;
     my @errors;
     
-    given ( $property ) {
-        when ( 'font-style'   ) { $canonical{ $property } = $value; }
-        when ( 'font-variant' ) { $canonical{ $property } = $value; }
-        when ( 'font-weight'  ) { $canonical{ $property } = $value; }
-        when ( 'font-size'    ) { $canonical{ $property } = $value; }
-        when ( 'font-family'  ) { $canonical{ $property } = $value; }
-        
-        when ( 'font' ) {
-            my @partials = split ( m{\s+}, $value );
+    my $valid_property_or_error = sub {
+            my $type  = shift;
             
-            foreach my $partial ( @partials ) {
-                if ( is_font_style_value( $partial ) ) {
-                    $canonical{'font-style'} = $partial;
-                }
-                elsif ( is_font_variant_value( $partial ) ) {
-                    $canonical{'font-variant'} = $partial;
-                }
-                elsif ( is_font_weight_value( $partial ) ) {
-                    $canonical{'font-weight'} = $partial;
-                }
-                elsif ( is_font_size_line_height_value( $partial ) ) {
-                    ( $canonical{'font-size'},
-                      $canonical{'line-height'} ) = split m{/}, $partial;
-                }
-                elsif ( is_font_size_value( $partial ) ) {
-                    $canonical{'font-size'} = $partial;
-                }
-                else {
-                    $canonical{'font-family'} .= "$partial ";
-                }
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = $value;
             }
-        }
-    }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+        };
     
-    # simple concatenation leaves us with extra space, remove it
-    if ( defined $canonical{'font-family'} ) {
-        $canonical{'font-family'} =~ s{ \s+ $}{}x;
+    &$valid_property_or_error( 'font_style' )
+        if 'font-style' eq $property;
+    
+    &$valid_property_or_error( 'font_variant' )
+        if 'font-variant' eq $property;
+    
+    &$valid_property_or_error( 'font_weight' )
+        if 'font-weight' eq $property;
+    
+    &$valid_property_or_error( 'font_size' )
+        if 'font-size' eq $property;
+    
+    &$valid_property_or_error( 'font_family' )
+        if 'font-family' eq $property;
+    
+    if ( 'font' eq $property ) {
+        my $shorthand_properties = qr{
+                ^
+                (?: (?'style'       $font_style_value ) \s+ )?
+                (?: (?'variant'     $font_variant_value ) \s+ )?
+                (?: (?'weight'      $font_weight_value ) \s+ )?
+                (?:
+                    (?'size'        $font_size_value )
+                    (?: /
+                        (?'height'  $line_height_value )
+                    )?
+                    \s+
+                )?
+                (?: (?'family'      $font_family_value ) )?
+                $
+            }x;
+        
+        if ( $value =~ m{$shorthand_properties}x ) {
+            my %values = %+;
+
+            $canonical{'font-style'} = $values{'style'}
+                if defined $values{'style'};
+            $canonical{'font-variant'} = $values{'variant'}
+                if defined $values{'variant'};
+            $canonical{'font-weight'} = $values{'weight'}
+                if defined $values{'weight'};
+            $canonical{'font-size'} = $values{'size'}
+                if defined $values{'size'};
+            $canonical{'line-height'} = $values{'height'}
+                if defined $values{'height'};
+            $canonical{'font-family'} = $values{'family'}
+                if defined $values{'family'};
+        }
+        else {
+            push @errors, {
+                    error => "invalid font property: ${value}"
+                };
+        }
     }
     
     return \%canonical, \@errors;
@@ -57,27 +94,51 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my @properties = qw( font-style font-variant font-weight
-                         font-size font-family );
-    my $count = 0;
-    my @values;
+    my @font_properties = qw(
+            font-style  font-variant  font-weight
+            font-size   line-height   font-family
+       );
+    my $font_shorthand  = '';
+    my $font_styles     = '';
+    my $has_line_height = 0;
+    my $has_font_size   = 0;
+    my $count           = 0;
     my $output;
     
-    foreach my $property ( @properties ) {
-        if ( defined $block->{ $property } ) {
-            push @values, $block->{ $property };
-            $output = $property;
+    foreach my $property ( @font_properties ) {
+        my $value = $block->{ $property };
+        
+        if ( defined $value ) {
             $count++;
+            $font_styles .= "${property}:${value};";
+            
+            if ( $value ) {
+                $has_font_size = 1
+                    if 'font-size' eq $property;
+                
+                if ( 'line-height' eq $property ) {
+                    if ( $has_font_size ) {
+                        $has_line_height = 1;
+                        $font_shorthand .= "/$value";
+                    }
+                }
+                else {
+                    $font_shorthand .= " $value";
+                }
+            }
         }
     }
     
-    if ( 1 == $count ) {
-        my $value = $block->{ $output };
-        $output .= ":${value};";
+    my $can_shorthand = ( 6 == $count )
+                             || ( 5 == $count && !$has_line_height );
+    if ( $can_shorthand ) {
+        $font_shorthand =~ s{^\s+}{};
+        $output .= "font:${font_shorthand};";
+        $output .= "line-height:$block->{'line-height'};"
+            if !$has_font_size;
     }
-    elsif ( 2 <= $count ) {
-        my $value = join ' ', @values;
-        $output = "font:$value;";
+    elsif ( $count ) {
+        $output .= $font_styles;
     }
     
     return $output;

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -17,6 +17,43 @@ my( $css, @structure, @parsed );
 # individual properties work
 {
     $css = <<CSS;
+        body { font-family: sans-serif; }
+CSS
+    @structure = (
+            {
+                original  => ' font-family: sans-serif; ',
+                errors    => [],
+                selectors => [ 'body' ],
+                block     => { 'font-family' => 'sans-serif', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "font-family was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        body { font-family: "Arial", "Helvetica", "clean", sans-serif; }
+CSS
+    @structure = (
+            {
+                original  => ' font-family: "Arial", "Helvetica", "clean", sans-serif; ',
+                errors    => [],
+                selectors => [ 'body' ],
+                block     => { 
+                    'font-family' 
+                        => '"Arial", "Helvetica", "clean", sans-serif', 
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "font-family multiple families was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
         div { font-size: 13px; }
 CSS
     @structure = (
@@ -30,7 +67,7 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "font size property was:\n" . Dumper \@parsed;
+        or say "font-size was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;
@@ -47,9 +84,43 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "font size property was:\n" . Dumper \@parsed;
+        or say "font-style was:\n" . Dumper \@parsed;
 }
- 
+{
+    $css = <<CSS;
+        h1 { font-variant: small-caps; }
+CSS
+    @structure = (
+            {
+                original  => ' font-variant: small-caps; ',
+                errors    => [],
+                selectors => [ 'h1' ],
+                block     => { 'font-variant' => 'small-caps', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "font-variant was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        h1 { font-weight: 900; }
+CSS
+    @structure = (
+            {
+                original  => ' font-weight: 900; ',
+                errors    => [],
+                selectors => [ 'h1' ],
+                block     => { 'font-weight' => '900', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "font-weight was:\n" . Dumper \@parsed;
+}
+
 # shorthand works
 {
     $css = <<CSS;

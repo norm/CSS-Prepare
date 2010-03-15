@@ -66,7 +66,14 @@ our @EXPORT = qw(
         is_word_spacing_value
         is_z_index_value
         
+        $font_family_value
+        $font_style_value
+        $font_size_value
+        $font_style_value
+        $font_variant_value
+        $font_weight_value
         $length_value
+        $line_height_value
         $list_style_type_value
         $list_style_image_value
         $list_style_position_value
@@ -259,20 +266,20 @@ my $font_family = qr{
             | inherit
         )
     }x;
-my $font_family_value = qr{
+our $font_family_value = qr{
         (?:
             $font_family
             |
             (?: $font_family (?: \s* \, \s* $font_family )+ )
         )
     }x;
-my $line_height_value = qr{
+our $line_height_value = qr{
         (?:   normal
             | $number_value | $length_value | $percentage_value
             | inherit
         )
     }x;
-my $font_size_value = qr{
+our $font_size_value = qr{
         (?:
               xx-small | x-small | small  | medium | large | x-large
             | xx-large | smaller | larger | inherit
@@ -281,9 +288,9 @@ my $font_size_value = qr{
     }x;
 my $font_size_line_height_value
     = qr{ $font_size_value / $line_height_value }x;
-my $font_style_value = qr{ (?: italic | oblique | normal | inherit ) }x;
-my $font_variant_value = qr{ (?: normal | small-caps | inherit ) }x;
-my $font_weight_value = qr{
+our $font_style_value = qr{ (?: italic | oblique | normal | inherit ) }x;
+our $font_variant_value = qr{ (?: normal | small-caps | inherit ) }x;
+our $font_weight_value = qr{
         (?:
               normal | bold | bolder | lighter
             | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900

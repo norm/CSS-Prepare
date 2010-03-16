@@ -684,6 +684,7 @@ sub is_valid_selector {
     my $test = shift;
     
     use re 'eval';
+    $test = lc $test;
     
     my $nmchar          = qr{ (?: [_a-z0-9-] ) }x;
     my $ident           = qr{ -? [_a-z] $nmchar * }x;
@@ -694,11 +695,11 @@ sub is_valid_selector {
     my $pseudo          = qr{
             \:
             (?:
-                $ident
-                |
                 # TODO - I am deliberately ignoring FUNCTION here for now
                 # FUNCTION \s* (?: $ident \s* )? \)
                 $ident \( .* \)
+                |
+                $ident
             )
         }x;
     my $attrib          = qr{
@@ -711,22 +712,19 @@ sub is_valid_selector {
                 \s*
             \]
         }x;
-    my $parts           = qr{ (?: $hash | $class | $attrib | $pseudo ) }x;
+    my $parts           = qr{ (?: $pseudo | $hash | $class | $attrib ) }x;
     my $simple_selector = qr{ (?: $element $parts * | $parts + ) }x;
     my $combinator      = qr{ (?: \+ \s* | \> \s* ) }x;
-    my $selector        = qr{
-            $simple_selector
-            (?:
-                $combinator (??{ $selector })
-                |
-                \s+ (?: $combinator ? (??{ $selector }) )?
-            )?
+    my $next_selector = qr{
+            \s* (?: $combinator )? $simple_selector \s*
         }x;
     
+    while ( $test =~ s{^ $next_selector }{}x ) {
+        # do nothing, already validated by the regexp
+    }
     
-    return 1
-        if $test =~ m{^ $selector $}x;
-    return 0;
+    return 0 if length $test;
+    return 1;
 }
 
 1;

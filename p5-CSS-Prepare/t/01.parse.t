@@ -231,53 +231,15 @@ CSS
         or say "invalid property 'colur' was:\n" . Dumper \@parsed;
 }
 
-# test all selectors work
+# test multiple selectors
 {
     $css = <<CSS;
-        body *,
-        div,
-        #warning,
-        #main p,
-        .alert,
-        p.warning,
-        li > p.alert,
-        li:first-child,
-        a:link,
-        a:visited,
-        a:active,
-        a:hover,
-        a:focus,
-        a:lang(en),
-        p + p,
-        p[class],
-        p[class="blah"],
-        p[class~="blah"]
-             { background: #fff; }
+        div p p { background: #fff; }
 CSS
-    
     @structure = (
             {
                 original  => ' background: #fff; ',
-                selectors => [ 
-                    'body *',
-                    'div',
-                    '#warning',
-                    '#main p',
-                    '.alert',
-                    'p.warning',
-                    'li > p.alert',
-                    'li:first-child',
-                    'a:link',
-                    'a:visited',
-                    'a:active',
-                    'a:hover',
-                    'a:focus',
-                    'a:lang(en)',
-                    'p + p',
-                    'p[class]',
-                    'p[class="blah"]',
-                    'p[class~="blah"]',
-                ],
+                selectors => [ 'div p p' ],
                 errors    => [],
                 block     => {
                     'background-color' => '#fff',
@@ -287,7 +249,7 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "valid selectors was:\n" . Dumper \@parsed;
+        or say "invalid property 'colur' was:\n" . Dumper \@parsed;
 }
 
 # CSS2.1 4.1.7:
@@ -315,7 +277,7 @@ CSS
                 errors    => [
                     {
                         error => 'ignored block -'
-                               . ' unknown selector (CSS 2.1 #4.1.7)',
+                               . ' unknown selector h4 & h5 (CSS 2.1 #4.1.7)',
                     },
                 ],
                 block     => {},
@@ -344,3 +306,13 @@ CSS
 
 # TODO - check CSS spec for behaviour on =>  errors and ignoring properties
 #        and create more tests for those
+
+# TODO - newlines
+# > It is possible to break strings over several lines, for aesthetic
+# > or other reasons, but in such a case the newline itself has to be
+# > escaped with a backslash (\). For instance, the following two
+# > selectors are exactly the same:
+# > 
+# > a[title="a not s\
+# > o very long title"] {/*...*/}
+# > a[title="a not so very long title"] {/*...*/}

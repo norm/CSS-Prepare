@@ -9,6 +9,7 @@ use CSS::Prepare::Property::Effects;
 use CSS::Prepare::Property::Font;
 use CSS::Prepare::Property::Formatting;
 use CSS::Prepare::Property::Generated;
+use CSS::Prepare::Property::Hacks;
 use CSS::Prepare::Property::Margin;
 use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Tables;
@@ -19,10 +20,9 @@ use FileHandle;
 use File::Basename;
 use Storable            qw( dclone );
 
-my @PROPERTIES = qw(
-        Background  Border     Color    Effects  Font  Formatting
-        Generated   Margin     Padding  Tables   Text  UI
-        Vendor
+my @MODULES = qw(
+        Background  Border  Color    Effects  Font  Formatting  Hacks
+        Generated   Margin  Padding  Tables   Text  UI          Vendor
     );
 
 
@@ -171,8 +171,19 @@ sub output_as_string {
 sub output_block_as_string {
     my $block = shift;
     
+    my $hacks_last = sub {
+            my $a_hack     = ( $a =~ m{^[_\*]} );
+            my $b_hack     = ( $b =~ m{^[_\*]} );
+            my $hack_count = $a_hack + $b_hack;
+            
+            if ( 1 == $hack_count ) {
+                return $a_hack ? 1 : -1;
+            }
+            return $a cmp $b;
+        };
+    
     my %properties = output_properties( $block->{'block'} );
-    my $output     = join '', sort keys %properties;
+    my $output     = join '', sort $hacks_last keys %properties;
     my $selector   = join ',', @{ $block->{'selectors'} };
     
     return "${selector}\{${output}\}\n";
@@ -181,13 +192,13 @@ sub output_properties {
     my $block = shift;
     
     my %properties;
-    foreach my $property ( @PROPERTIES ) {
+    foreach my $module ( @MODULES ) {
         my $string;
         
         eval {
             no strict 'refs';
             
-            my $try_with = "CSS::Prepare::Property::${property}::output";
+            my $try_with = "CSS::Prepare::Property::${module}::output";
                $string   = &$try_with( $block );
         };
         
@@ -290,6 +301,10 @@ sub parse {
                     = parse_declaration_block( $block->{'block'} );
             }
             
+            my $is_empty = !@$selectors_errors
+                           && !@$declaration_errors
+                           && !%{$declarations};
+            
             push @declarations, {
                     original  => unescape_braces( $block->{'block'} ),
                     selectors => $selectors,
@@ -298,7 +313,8 @@ sub parse {
                         @$declaration_errors 
                     ],
                     block     => $declarations,
-                };
+                }
+                unless $is_empty;
         }
     }
     
@@ -425,34 +441,53 @@ sub parse_declaration_block {
     
     while ( $string =~ s{$splitter}{}sx ) {
         my %match = %+;
-        my $parsed;
+        my $parsed_as;
         my $errors;
+        
+        my $star_hack       = 0;
+        my $underscore_hack = 0;
+        
+        $star_hack = 1
+            if $match{'property'} =~ s{^\*}{};
+        $underscore_hack = 1
+            if $match{'property'} =~ s{^_}{};
         
         # strip possible extraneous whitespace
         $match{'value'} =~ s{ \s+ $}{}x;
         
         PROPERTY:
-        foreach my $property ( @PROPERTIES ) {
+        foreach my $module ( @MODULES ) {
             my $found = 0;
             
             eval {
                 no strict 'refs';
 
-                my $try_with = "CSS::Prepare::Property::${property}::parse";
-                ( $parsed, $errors ) = &$try_with( %match );
+                my $try_with = "CSS::Prepare::Property::${module}::parse";
+                ( $parsed_as, $errors ) = &$try_with( %match );
             };
             
             push @errors, @$errors
                 if @$errors;
             
             last PROPERTY
-                if %$parsed or @$errors;
+                if %$parsed_as or @$errors;
         }
         
-        if ( %$parsed ) {
+        my %parsed;
+        foreach my $property ( keys %$parsed_as ) {
+            my $value = $parsed_as->{ $property };
+            $property = "_$property"
+                if $underscore_hack;
+            $property = "*$property"
+                if $star_hack;
+            
+            $parsed{ $property } = $value;
+        }
+        
+        if ( %parsed ) {
             %canonical = (
                     %canonical,
-                    %$parsed
+                    %parsed,
                 );
         }
         else {

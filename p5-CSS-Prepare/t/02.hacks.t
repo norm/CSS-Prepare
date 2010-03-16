@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 1;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -50,5 +50,49 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "box model hack was:\n" . Dumper \@parsed;
+}
+
+# parse 'star hack'
+{
+    $css = <<CSS;
+        div { color: red; *color: blue; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; *color: blue; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color'  => 'red', 
+                    '*color' => 'blue',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "star hack was:\n" . Dumper \@parsed;
+}
+
+# parse 'underscore hack'
+{
+    $css = <<CSS;
+        div { color: red; _color: blue; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; _color: blue; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color'  => 'red', 
+                    '_color' => 'blue',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "underscore hack was:\n" . Dumper \@parsed;
 }
 

@@ -384,13 +384,15 @@ sub parse_selectors {
         }sx;
     
     while ( $string =~ s{$splitter}{}sx ) {
+        my $selector = $1;
+        
         # CSS2.1 4.1.6: "the whole statement should be ignored if
         # there is an error anywhere in the selector"
-        if ( ! is_valid_selector( $1 ) ) {
+        if ( ! is_valid_selector( $selector ) ) {
             return [], [
                     {
                         error => 'ignored block - '
-                               . 'unknown selector (CSS 2.1 #4.1.7)',
+                               . "unknown selector $selector (CSS 2.1 #4.1.7)",
                     }
                 ];
         }

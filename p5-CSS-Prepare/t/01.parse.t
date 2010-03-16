@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -61,6 +61,64 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "basic declaration with whitespace was:\n" . Dumper \@parsed;
+}
+
+# basic declaration block with no whitespace
+{
+    $css = q(h1{color:red;}h1{color:blue;});
+    @structure = (
+            {
+                original  => 'color:red;',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+            {
+                original  => 'color:blue;',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'blue',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "basic declaration with no whitespace was:\n" . Dumper \@parsed;
+}
+
+# skip declaration blocks with no properties
+{
+    $css = <<CSS;
+        div { color: red; }
+        h1  {}
+        div { font-size: 10px; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+            {
+                original  => ' font-size: 10px; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'font-size' => '10px',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "skip empty blocks was:\n" . Dumper \@parsed;
 }
 
 # basic declaration block with comments

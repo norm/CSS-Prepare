@@ -363,7 +363,7 @@ sub split_into_declaration_blocks {
             (?<selector> .*? )
             \s*
             \{
-                (?<block> [^\}]+ )
+                (?<block> [^\}]* )
             \}
         }sx;
     

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 398;
+use Test::More  tests => 443;
 
 use CSS::Prepare::Property::Values;
 
@@ -609,4 +609,56 @@ use CSS::Prepare::Property::Values;
     }
     ok( ! is_visibility_value( 'invisible' ),
         "not visibility: 'invisible'" );
+}
+
+# test user interface
+{
+    my @cursors = qw(
+            auto       crosshair  default    pointer    move       e-resize
+            ne-resize  nw-resize  n-resize   se-resize  sw-resize  s-resize
+            w-resize   text       wait       help       progress
+            inherit
+        );
+    foreach my $value ( @cursors ) {
+        ok( is_cursor_value( $value ),
+            "cursor: '$value'" );
+    }
+    ok( is_cursor_value( 'url(blah.gif) crosshair' ),
+        "cursor: 'url(blah.gif) crosshair'" );
+    ok( ! is_cursor_value( 'url(blah.gif)' ),
+        "not cursor: 'url(blah.gif)'" );
+    ok( ! is_cursor_value( 'crosshair sw-resize' ),
+        "not cursor: 'crosshair sw-resize'" );
+    
+    
+    my @outline_style_values = qw(
+            none     hidden  dotted  dashed  solid
+            double   groove  ridge   inset   outset
+            inherit
+        );
+    foreach my $value ( @outline_style_values ) {
+        ok( is_outline_style_value( $value ),
+            "outline-style: '$value'" );
+    }
+    ok( ! is_outline_style_value( 'groovy' ),
+        "not outline-style: 'groovy'" );
+    
+    # other outline-width values are tested by numerical values above
+    foreach my $value qw( thin  medium  thick  inherit  2px ) {
+        ok( is_outline_width_value( $value ),
+            "outline-width: '$value'" );
+    }
+    ok( ! is_outline_width_value( 'stroke' ),
+        "not outline-width: 'stroke'" );
+    
+    # other outline-color values are tested by colours above
+    my @colours = ( 'inherit', 'invert', 'red', '#000' );
+    foreach my $value ( @colours ) {
+        ok( is_outline_colour_value( $value ),
+            "outline-color: '$value'" );
+    }
+    ok( ! is_outline_colour_value( 'transparent' ),
+        "not outline-color: 'transparent'" );
+    ok( ! is_outline_colour_value( '#cc' ),
+        "not outline-color: '#cc'" );
 }

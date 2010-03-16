@@ -13,13 +13,14 @@ use CSS::Prepare::Property::Margin;
 use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Tables;
 use CSS::Prepare::Property::Text;
+use CSS::Prepare::Property::UI;
 use FileHandle;
 use File::Basename;
 use Storable            qw( dclone );
 
 my @PROPERTIES = qw(
         Background  Border     Color    Effects  Font  Formatting
-        Generated   Margin     Padding  Tables   Text
+        Generated   Margin     Padding  Tables   Text  UI
     );
 
 

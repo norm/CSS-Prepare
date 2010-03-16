@@ -27,6 +27,7 @@ our @EXPORT = qw(
         is_content_value
         is_counter_increment_value
         is_counter_reset_value
+        is_cursor_value
         is_direction_value
         is_display_value
         is_empty_cells_value
@@ -49,6 +50,9 @@ our @EXPORT = qw(
         is_min_height_value
         is_min_width_value
         is_offset_value
+        is_outline_colour_value
+        is_outline_style_value
+        is_outline_width_value
         is_overflow_value
         is_padding_width_value
         is_position_value
@@ -82,6 +86,9 @@ our @EXPORT = qw(
         $list_style_type_value
         $list_style_image_value
         $list_style_position_value
+        $outline_colour_value
+        $outline_style_value
+        $outline_width_value
     );
 
 # primitive types
@@ -247,6 +254,18 @@ my $counter_value_content = qr{
     }x;
 my $counter_reset_value = qr{ $counter_value_content }x;
 my $counter_increment_value = qr{ $counter_value_content }x;
+my $cursor_value = qr{
+        (?:
+              (?: $url_value \s+ )*
+              (?:
+                    auto     | crosshair | default   | e-resize  | help
+                  | move     | n-resize  | ne-resize | nw-resize | pointer
+                  | progress | s-resize  | se-resize | sw-resize | text
+                  | w-resize | wait
+              )
+            | inherit
+        )
+    }x;
 
 my $direction_value = qr{ (?: ltr | rtl | inherit ) }x;
 my $display_value = qr{
@@ -332,6 +351,9 @@ my $min_width_value
 
 my $offset_value
     = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+our $outline_colour_value = qr{ (?: invert | inherit | $colour_value ) }x;
+our $outline_style_value = qr{ (?: $border_style_value ) }x;
+our $outline_width_value = qr{ (?: $border_width_value ) }x;
 my $overflow_value = qr{ (?: visible | hidden | scroll | auto | inherit ) }x;
 my $padding_width_value
     = qr{ (?: $length_value | $percentage_value | inherit ) }x;
@@ -463,6 +485,10 @@ sub is_counter_reset_value {
     my $value = shift;
     return $value =~ m{^ $counter_reset_value $}x;
 }
+sub is_cursor_value {
+    my $value = shift;
+    return $value =~ m{^ $cursor_value $}x;
+}
 sub is_direction_value {
     my $value = shift;
     return $value =~ m{^ $direction_value $}x;
@@ -550,6 +576,18 @@ sub is_min_width_value {
 sub is_offset_value {
     my $value = shift;
     return $value =~ m{^ $offset_value $}x;
+}
+sub is_outline_colour_value {
+    my $value = shift;
+    return $value =~ m{^ $outline_colour_value $}x;
+}
+sub is_outline_style_value {
+    my $value  = shift;
+    return $value =~ m{^ $outline_style_value $}x;
+}
+sub is_outline_width_value {
+    my $value = shift;
+    return $value =~ m{^ $outline_width_value $}x;
 }
 sub is_overflow_value {
     my $value = shift;

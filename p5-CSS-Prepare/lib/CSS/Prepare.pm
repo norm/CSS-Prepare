@@ -14,6 +14,7 @@ use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Tables;
 use CSS::Prepare::Property::Text;
 use CSS::Prepare::Property::UI;
+use CSS::Prepare::Property::Vendor;
 use FileHandle;
 use File::Basename;
 use Storable            qw( dclone );
@@ -21,6 +22,7 @@ use Storable            qw( dclone );
 my @PROPERTIES = qw(
         Background  Border     Color    Effects  Font  Formatting
         Generated   Margin     Padding  Tables   Text  UI
+        Vendor
     );
 
 

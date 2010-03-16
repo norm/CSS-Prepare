@@ -15,50 +15,72 @@ sub parse {
     my %canonical;
     my @errors;
     
-    given ( $property ) {
-        when ( 'background-color'      ) { $canonical{ $property } = $value; }
-        when ( 'background-image'      ) { $canonical{ $property } = $value; }
-        when ( 'background-repeat'     ) { $canonical{ $property } = $value; }
-        when ( 'background-attachment' ) { $canonical{ $property } = $value; }
-        when ( 'background-position'   ) { $canonical{ $property } = $value; }
-        
-        # allow for the correct spelling of colour
-        when ( 'background-colour' ) { 
-            $canonical{'background-color'} = $value; 
-        }
-        
-        when ( 'background' ) {
-            my @partials = split ( m{\s+}, $value );
+    my $valid_property_or_error = sub {
+            my $type  = shift;
             
-            foreach my $partial ( @partials ) {
-                if ( is_background_colour_value( $partial ) ) {
-                    $canonical{'background-color'} = $partial;
-                }
-                elsif ( is_background_image_value( $partial ) ) {
-                    $canonical{'background-image'} = $partial;
-                }
-                elsif ( is_background_repeat_value( $partial ) ) {
-                    $canonical{'background-repeat'} = $partial;
-                }
-                elsif ( is_background_attachment_value( $partial ) ) {
-                    $canonical{'background-attachment'} = $partial;
-                }
-                elsif ( is_background_position_value( $partial ) ) {
-                    $canonical{'background-position'} .= "$partial ";
-                    # correct spelling
-                    $canonical{'background-position'} .= "center "
-                        if 'centre' eq $partial;
-                }
-                else {
-                    die;
-                }
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = $value;
             }
-        }
-    }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+        };
     
-    # simple concatenation leaves us with extra space, remove it
-    if ( defined $canonical{'background-position'} ) {
-        $canonical{'background-position'} =~ s{ \s+ $}{}x;
+    &$valid_property_or_error( 'background_colour' )
+        if 'background-color' eq $property
+           || 'background-colour' eq $property;
+
+    &$valid_property_or_error( 'background_image' )
+        if 'background-image' eq $property;
+
+    &$valid_property_or_error( 'background_repeat' )
+        if 'background-repeat' eq $property;
+
+    &$valid_property_or_error( 'background_attachment' )
+        if 'background-attachment' eq $property;
+
+    &$valid_property_or_error( 'background_position' )
+        if 'background-position' eq $property;
+    
+    if ( 'background' eq $property ) {
+        my $shorthand_properties = qr{
+                ^
+                (?:
+                    (?:
+                          (?'colour'     $background_colour_value )
+                        | (?'image'      $background_image_value )
+                        | (?'repeat'     $background_repeat_value )
+                        | (?'attachment' $background_attachment_value )
+                        | (?'position'   $background_position_value )
+                    )
+                    \s*
+                )+
+            }x;
+        
+        if ( $value  =~ m{$shorthand_properties}x ) {
+            my %values = %+;
+            
+            $canonical{'background-color'} = $values{'colour'}
+                if defined $values{'colour'};
+            $canonical{'background-image'} = $values{'image'}
+                if defined $values{'image'};
+            $canonical{'background-repeat'} = $values{'repeat'}
+                if defined $values{'repeat'};
+            $canonical{'background-attachment'} = $values{'attachment'}
+                if defined $values{'attachment'};
+            $canonical{'background-position'} = $values{'position'}
+                if defined $values{'position'};
+        }
     }
     
     return \%canonical, \@errors;

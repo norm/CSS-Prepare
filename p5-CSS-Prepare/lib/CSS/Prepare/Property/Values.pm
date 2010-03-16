@@ -66,6 +66,11 @@ our @EXPORT = qw(
         is_word_spacing_value
         is_z_index_value
         
+        $background_attachment_value
+        $background_colour_value
+        $background_image_value
+        $background_repeat_value
+        $background_position_value
         $font_family_value
         $font_style_value
         $font_size_value
@@ -135,17 +140,17 @@ my $url_value         = qr{
     }x;
 
 # descriptive value types
-my $background_attachment_value = qr{ (?: scroll | fixed | inherit ) }x;
-my $background_colour_value
+our $background_attachment_value = qr{ (?: scroll | fixed | inherit ) }x;
+our $background_colour_value
     = qr{ (?: transparent | inherit | $colour_value ) }x;
-my $background_image_value = qr{ (?: none | inherit | $url_value ) }x;
-my $background_repeat_value
+our $background_image_value = qr{ (?: none | inherit | $url_value ) }x;
+our $background_repeat_value
     = qr{ (?: repeat | repeat-x | repeat-y | no-repeat | inherit ) }x;
 my $background_positions_horizontal
     = qr{ (?: left | center | centre | right ) }x;
 my $background_positions_vertical
     = qr{ (?: top | center | centre | bottom ) }x;
-my $background_position_value = qr{
+our $background_position_value = qr{
         (?:
                 (?:
                     (?:

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 4;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -31,6 +31,23 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "background color value was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { background-position: top; }
+CSS
+    @structure = (
+            {
+                original  => ' background-position: top; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'background-position' => 'top', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "background-position was:\n" . Dumper \@parsed;
 }
 
 # shorthand works

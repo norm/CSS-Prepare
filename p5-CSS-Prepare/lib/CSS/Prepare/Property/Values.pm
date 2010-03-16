@@ -175,6 +175,8 @@ our $background_position_value = qr{
                     )?
                 )
             |
+                (?: $background_positions_vertical )
+            |
                 (?:
                       $background_positions_horizontal
                     | $background_positions_vertical

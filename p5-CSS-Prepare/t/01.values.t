@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 443;
+use Test::More  tests => 453;
 
 use CSS::Prepare::Property::Values;
 
@@ -119,9 +119,11 @@ use CSS::Prepare::Property::Values;
     
     
     my @positions = (
+            'left', 'center', 'centre', 'right', 'top', 'bottom',
             'left center', 'center center', 'centre centre',
             'left top', 'top left', 'top right',
-            '50% 50%', 'inherit',
+            '50%', '10px', '50% 50%', '10px top', 'left 50%',
+            'inherit',
         );
     foreach my $value ( @positions ) {
         ok( is_background_position_value( $value ),

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 4;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -96,3 +96,23 @@ CSS
         or say "underscore hack was:\n" . Dumper \@parsed;
 }
 
+# parse zoom:1
+{
+    $css = <<CSS;
+        div { zoom: 1; }
+CSS
+    @structure = (
+            {
+                original  => ' zoom: 1; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'zoom'  => '1',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "zoom:1 hack was:\n" . Dumper \@parsed;
+}

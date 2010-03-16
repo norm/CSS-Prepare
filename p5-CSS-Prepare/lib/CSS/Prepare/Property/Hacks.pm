@@ -4,13 +4,32 @@ use Modern::Perl;
 
 
 
+sub parse {
+    my %declaration = @_;
+    
+    my $property = $declaration{'property'};
+    my $value    = $declaration{'value'};
+    my %canonical;
+    my @errors;
+    
+    if ( 'zoom' eq $property ) {
+        $canonical{'zoom'} = $value;
+    }
+    
+    return \%canonical, \@errors;
+}
+
 sub output {
     my $block = shift;
     
     my $output;
     foreach my $property ( keys %{$block} ) {
         if ( $property =~ m{^[_\*]} ) {
-            $output .= "$property:$block->{$property};";
+            $output .= "${property}:$block->{$property};";
+        }
+        
+        if ( 'zoom' eq $property ) {
+            $output .= "${property}:$block->{$property};";
         }
     }
     

@@ -400,9 +400,20 @@ sub strip_charset {
     return ( $charset, $string );
 }
 sub strip_comments {
+    my $self   = shift;
     my $string = shift;
     
+    # remove CDO/CDC markers
+    $string =~ s{ <!-- }{}gsx;
+    $string =~ s{ --> }{}gsx;
+    
+    # remove CSS comments
     $string =~ s{ \/\* .*? \*\/ }{}gsx;
+    
+    if ( $self->support_features ) {
+        # remove line-level comments
+        $string =~ s{ \s // [^\n]+ }{}gmx;
+    }
     
     return $string;
 }

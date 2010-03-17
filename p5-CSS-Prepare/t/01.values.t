@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 456;
+use Test::More  tests => 458;
 
 use CSS::Prepare::Property::Values;
 
@@ -425,6 +425,8 @@ use CSS::Prepare::Property::Values;
             '"Gill Sans"', '"Times New Roman"',
             'serif', 'sans-serif', 'cursive', 'fantasy', 'monospace',
             q("Arial", "Helvetica", sans-serif),
+            q(Arial, Helvetica, sans-serif),
+            q(Arial,Helvetica,sans-serif),
             'inherit',
         );
     foreach my $value ( @font_families ) {

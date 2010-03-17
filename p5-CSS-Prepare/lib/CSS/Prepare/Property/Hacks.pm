@@ -5,6 +5,7 @@ use Modern::Perl;
 
 
 sub parse {
+    my $self        = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};
@@ -12,7 +13,7 @@ sub parse {
     my %canonical;
     my @errors;
     
-    if ( 'zoom' eq $property ) {
+    if ( 'zoom' eq $property && $self->support_hacks ) {
         $canonical{'zoom'} = $value;
     }
     

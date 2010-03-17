@@ -7,6 +7,7 @@ use CSS::Prepare::Property::Expansions;
 
 
 sub parse {
+    my $self        = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};

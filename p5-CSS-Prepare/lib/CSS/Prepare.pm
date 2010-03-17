@@ -32,6 +32,8 @@ sub new {
     my %args  = @_;
     
     my $self = {
+            hacks    => 1,
+            features => 0,
             %args
         };
     bless $self, $class;
@@ -51,6 +53,34 @@ sub new {
     }
     
     return $self;
+}
+sub get_hacks {
+    my $self = shift;
+    return $self->{'hacks'};
+}
+sub set_hacks {
+    my $self = shift;
+    my $hacks = shift // 0;
+    
+    $self->{'hacks'} = $hacks;
+}
+sub support_hacks {
+    my $self = shift;
+    return $self->{'hacks'};
+}
+sub get_features {
+    my $self = shift;
+    return $self->{'features'};
+}
+sub set_features {
+    my $self     = shift;
+    my $features = shift // 0;
+    
+    $self->{'features'} = $features;
+}
+sub support_features {
+    my $self = shift;
+    return $self->{'features'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -329,7 +359,7 @@ sub parse {
                 # extract from the string a data structure of
                 # declarations and their properties
                 ( $declarations, $declaration_errors )
-                    = parse_declaration_block( $block->{'block'} );
+                    = $self->parse_declaration_block( $block->{'block'} );
             }
             
             my $is_empty = !@$selectors_errors
@@ -472,6 +502,7 @@ sub parse_selectors {
     return \@selectors, [];
 }
 sub parse_declaration_block {
+    my $self   = shift;
     my $string = shift;
     my %canonical;
     my @errors;
@@ -496,10 +527,13 @@ sub parse_declaration_block {
         my $underscore_hack = 0;
         my $important       = 0;
         
-        $star_hack = 1
-            if $match{'property'} =~ s{^\*}{};
-        $underscore_hack = 1
-            if $match{'property'} =~ s{^_}{};
+        if ( $self->support_hacks ) {
+            $star_hack = 1
+                if $match{'property'} =~ s{^\*}{};
+            $underscore_hack = 1
+                if $match{'property'} =~ s{^_}{};
+        }
+        
         $important = 1
             if $match{'value'} =~ s{ \! \s* important $}{}x;
         
@@ -514,7 +548,7 @@ sub parse_declaration_block {
                 no strict 'refs';
 
                 my $try_with = "CSS::Prepare::Property::${module}::parse";
-                ( $parsed_as, $errors ) = &$try_with( %match );
+                ( $parsed_as, $errors ) = &$try_with( $self, %match );
             };
             
             push @errors, @$errors

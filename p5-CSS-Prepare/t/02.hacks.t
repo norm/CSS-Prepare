@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 4;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -11,7 +11,8 @@ local $Data::Dumper::Quotekeys = 0;
 local $Data::Dumper::Sortkeys  = 1;
 
 
-my $preparer = CSS::Prepare->new();
+my $preparer_with    = CSS::Prepare->new( hacks => 1 );
+my $preparer_without = CSS::Prepare->new( hacks => 0 );
 my( $css, @structure, @parsed );
 
 # not tripped up by the box model hack
@@ -47,7 +48,10 @@ CSS
             },
         );
 
-    @parsed = $preparer->parse_string( $css );
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "box model hack was:\n" . Dumper \@parsed;
+    @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "box model hack was:\n" . Dumper \@parsed;
 }
@@ -69,7 +73,30 @@ CSS
             },
         );
 
-    @parsed = $preparer->parse_string( $css );
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "star hack was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { color: red; *color: blue; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; *color: blue; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property '*color'),
+                    },
+                ],
+                block     => {
+                    'color'  => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "star hack was:\n" . Dumper \@parsed;
 }
@@ -91,7 +118,30 @@ CSS
             },
         );
 
-    @parsed = $preparer->parse_string( $css );
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "underscore hack was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { color: red; _color: blue; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; _color: blue; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property '_color'),
+                    },
+                ],
+                block     => {
+                    'color'  => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "underscore hack was:\n" . Dumper \@parsed;
 }
@@ -112,7 +162,28 @@ CSS
             },
         );
 
-    @parsed = $preparer->parse_string( $css );
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "zoom:1 hack was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { zoom: 1; }
+CSS
+    @structure = (
+            {
+                original  => ' zoom: 1; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property 'zoom'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "zoom:1 hack was:\n" . Dumper \@parsed;
 }

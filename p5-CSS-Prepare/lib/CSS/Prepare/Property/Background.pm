@@ -8,6 +8,7 @@ use CSS::Prepare::Property::Values;
 
 
 sub parse {
+    my $self        = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};

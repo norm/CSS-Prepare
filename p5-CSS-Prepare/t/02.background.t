@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 6;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -102,9 +102,11 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
-                    'background-color'  => '#000', 
-                    'background-image'  => 'url(blah.gif)', 
-                    'background-repeat' => 'no-repeat', 
+                    'background-attachment' => '',
+                    'background-color'      => '#000',
+                    'background-image'      => 'url(blah.gif)',
+                    'background-position'   => '',
+                    'background-repeat'     => 'no-repeat',
                 },
             },
         );
@@ -112,4 +114,27 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "sparse background shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { background: #fff; }
+CSS
+    @structure = (
+            {
+                original  => ' background: #fff; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'background-attachment' => '',
+                    'background-color'      => '#fff',
+                    'background-image'      => '',
+                    'background-position'   => '',
+                    'background-repeat'     => '',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "almost empty background shorthand was:\n" . Dumper \@parsed;
 }

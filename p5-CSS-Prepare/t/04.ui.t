@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 9;
+use Test::More  tests => 10;
 
 use CSS::Prepare;
 
@@ -95,6 +95,25 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-width was:\n" . $output;
+}
+
+# outline colours are shortened
+{
+    $css = <<CSS;
+div{outline-color:#ccc;}
+CSS
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'outline-color' => '#CCCCCC',
+                },
+            },
+        );
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-color shortened was:\n" . $output;
 }
 
 # outline shorthand property is expanded

@@ -292,22 +292,22 @@ CSS
 # test multiple selectors
 {
     $css = <<CSS;
-        div p p { background: #fff; }
+        div p p { color: #000; }
 CSS
     @structure = (
             {
-                original  => ' background: #fff; ',
+                original  => ' color: #000; ',
                 selectors => [ 'div p p' ],
                 errors    => [],
                 block     => {
-                    'background-color' => '#fff',
+                    'color' => '#000',
                 },
             },
         );
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "invalid property 'colur' was:\n" . Dumper \@parsed;
+        or say "multiple selectors was:\n" . Dumper \@parsed;
 }
 
 # CSS2.1 4.1.7:

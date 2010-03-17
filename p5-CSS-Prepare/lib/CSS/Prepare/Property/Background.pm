@@ -2,7 +2,7 @@ package CSS::Prepare::Property::Background;
 
 use Modern::Perl;
 
-# use CSS::Prepare::Property::Expansions;
+use CSS::Prepare::Property::Expansions;
 use CSS::Prepare::Property::Values;
 
 
@@ -106,6 +106,9 @@ sub output {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
+            $value = shorten_colour_value( $value )
+                if 'background-color' eq $property;
+                
             push @values, "$property:$value;";
             $shorthand .= " $value"
                 if $value;

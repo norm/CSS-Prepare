@@ -1,6 +1,7 @@
 package CSS::Prepare::Property::UI;
 
 use Modern::Perl;
+use CSS::Prepare::Property::Expansions;
 use CSS::Prepare::Property::Values;
 
 
@@ -91,6 +92,8 @@ sub output {
     
     foreach my $property ( @outline_properties ) {
         my $value = $block->{ $property };
+        $value = shorten_colour_value( $value )
+            if 'outline-color' eq $property;
         
         if ( defined $value ) {
             push @outline, "$property:$value;";

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 
@@ -42,6 +42,25 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "important colour was:\n" . $output;
+}
+
+# case is normalised
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'color' => '#FFF',
+                },
+            },
+        );
+    $css = <<CSS;
+div{color:#fff;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "normalised case was:\n" . $output;
 }
 
 # create shorthand colours where possible

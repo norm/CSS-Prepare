@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 
@@ -37,6 +37,23 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "background color value was:\n" . $output;
+}
+
+# colours are shortened
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => { 'color' => '#FFFFFF', },
+            },
+        );
+    $css = <<CSS;
+div{color:#fff;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "background color shortening was:\n" . $output;
 }
 
 # shorthand works

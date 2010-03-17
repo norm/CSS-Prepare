@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 453;
+use Test::More  tests => 456;
 
 use CSS::Prepare::Property::Values;
 
@@ -421,16 +421,18 @@ use CSS::Prepare::Property::Values;
 # test fonts
 {
     my @font_families = (
-            '"Gill Sans"', '"Times New Roman"', q('Monaco'),
+            'Arial', 'Helvetica', q('Monaco'), q("Courier"),
+            '"Gill Sans"', '"Times New Roman"',
             'serif', 'sans-serif', 'cursive', 'fantasy', 'monospace',
-            '"Arial", "Helvetica", sans-serif', 'inherit',
+            q("Arial", "Helvetica", sans-serif),
+            'inherit',
         );
     foreach my $value ( @font_families ) {
         ok( is_font_family_value( $value ),
             "font-family: '$value'" );
     }
-    ok( ! is_font_family_value( 'Monaco' ),
-        "font-family: 'Monaco'" );
+    ok( ! is_font_family_value( 'Gill Sans' ),
+        "font-family: 'Gill Sans'" );
     ok( ! is_font_family_value( '"Arial" sans-serif' ),
         q(font-family: '"Arial" sans-serif') );
     

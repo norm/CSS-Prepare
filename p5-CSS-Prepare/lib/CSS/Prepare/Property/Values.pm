@@ -93,7 +93,7 @@ our @EXPORT = qw(
 
 # primitive types
 my $integer_value     = qr{ [+-]? [0-9]+ }x;
-my $identifier_value  = qr{ [a-z][a-zA-z0-9_-]* }x;
+my $identifier_value  = qr{ [a-z][a-zA-z0-9_-]* }ix;
 my $number_value      = qr{
         (?:
             (?: $integer_value )
@@ -288,6 +288,7 @@ my $float_value = qr{ (?: left | right | none | inherit ) }x;
 my $font_family = qr{
         (?:
               serif | sans-serif | cursive | fantasy | monospace
+            | $identifier_value
             | $string_value
             | inherit
         )

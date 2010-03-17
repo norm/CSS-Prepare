@@ -475,7 +475,7 @@ sub parse_declaration_block {
         $underscore_hack = 1
             if $match{'property'} =~ s{^_}{};
         $important = 1
-            if $match{'value'} =~ s{\!important$}{};
+            if $match{'value'} =~ s{ \! \s* important $}{}x;
         
         # strip possible extraneous whitespace
         $match{'value'} =~ s{ \s+ $}{}x;

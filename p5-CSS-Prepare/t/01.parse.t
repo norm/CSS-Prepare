@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 12;
+use Test::More  tests => 14;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -170,6 +170,48 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "basic stylesheet no semi-colon was:\n" . Dumper \@parsed;
+}
+
+# basic declaration block, with important keyword
+{
+    $css = <<CSS;
+        h1 { color: red !important; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red !important; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'important-color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important declaration was:\n" . Dumper \@parsed;
+}
+
+# basic declaration block, with important keyword using whitespace
+{
+    $css = <<CSS;
+        h1 { color: red ! /* hello */ important; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red !  important; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'important-color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important declaration with whitespace was:\n" . Dumper \@parsed;
 }
 
 # multiple declaration blocks

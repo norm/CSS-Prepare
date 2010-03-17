@@ -455,9 +455,8 @@ sub parse_declaration_block {
     my $splitter = qr{
             ^
             \s*
-            (?<property> [^:]+ )
-            \:
-            \s*
+            (?<property> [^:]+? )
+            \s* \: \s*
             (?<value> [^;]+ )
             \;?
         }sx;

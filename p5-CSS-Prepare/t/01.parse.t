@@ -40,15 +40,13 @@ CSS
 {
     $css = <<CSS;
         h1 { 
-            color: 
-                            red; 
+            color      : red; 
         }
 CSS
     @structure = (
             {
                 original  => q( 
-            color: 
-                            red; 
+            color      : red; 
         ),
                 selectors => [ 'h1' ],
                 errors    => [],

@@ -50,12 +50,12 @@ sub parse {
 }
 sub output {
     my $block = shift;
-    my $output;
+    my @output;
     
     foreach my $property ( qw( overflow  visibility ) ) {
         my $value = $block->{ $property };
         
-        $output .= "$property:$value;"
+        push @output, "$property:$value;"
             if defined $value;
     }
     
@@ -69,10 +69,10 @@ sub output {
     }
     if ( 4 == scalar @values ) {
         my $clipping = join ',', @values;
-        $output .= "clip:rect($clipping);";
+        push @output, "clip:rect($clipping);";
     }
     
-    return $output;
+    return @output;
 }
 
 1;

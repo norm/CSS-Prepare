@@ -191,19 +191,42 @@ sub output_block_as_string {
 sub output_properties {
     my $block = shift;
     
+    # separate out the important rules from the normal, so that they are
+    # not accidentally shorthanded, despite being different values
+    my %normal;
+    my %important;
+    foreach my $key ( keys %{$block} ) {
+        if ( $key =~ m{^important-(.*)$} ) {
+            $important{ $1 } = $block->{ $key };
+        }
+        else {
+            $normal{ $key } = $block->{ $key };
+        }
+    }
+    
     my %properties;
     foreach my $module ( @MODULES ) {
-        my $string;
+        my( @normal, @important );
         
         eval {
             no strict 'refs';
             
             my $try_with = "CSS::Prepare::Property::${module}::output";
-               $string   = &$try_with( $block );
+            
+            @normal    = &$try_with( \%normal );
+            @important = &$try_with( \%important );
         };
         
-        $properties{ $string }++
-            if defined $string;
+        foreach my $property ( @normal ) {
+            $properties{ $property } = 1
+                if defined $property;
+        }
+        foreach my $property ( @important ) {
+            if ( defined $property ) {
+                $property =~ s{;$}{ !important;};
+                $properties{ $property } = 1;
+            }
+        }
     }
     
     return %properties;
@@ -446,11 +469,14 @@ sub parse_declaration_block {
         
         my $star_hack       = 0;
         my $underscore_hack = 0;
+        my $important       = 0;
         
         $star_hack = 1
             if $match{'property'} =~ s{^\*}{};
         $underscore_hack = 1
             if $match{'property'} =~ s{^_}{};
+        $important = 1
+            if $match{'value'} =~ s{\!important$}{};
         
         # strip possible extraneous whitespace
         $match{'value'} =~ s{ \s+ $}{}x;
@@ -480,6 +506,8 @@ sub parse_declaration_block {
                 if $underscore_hack;
             $property = "*$property"
                 if $star_hack;
+            $property = "important-$property"
+                if $important;
             
             $parsed{ $property } = $value;
         }

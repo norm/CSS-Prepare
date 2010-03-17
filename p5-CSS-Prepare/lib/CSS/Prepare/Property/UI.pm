@@ -85,32 +85,32 @@ sub output {
     my @outline_properties = qw(
             outline-width  outline-style  outline-color
         );
-    my $count = 0;
     my $shorthand;
-    my $output;
+    my @outline;
+    my @output;
     
     foreach my $property ( @outline_properties ) {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            $count++;
-            
-            if ( $value ) {
-                $output    .= "$property:$value;";
-                $shorthand .= " $value";
-            }
+            push @outline, "$property:$value;";
+            $shorthand .= " $value"
+                if $value;
         }
     }
     
-    if ( 3 == $count ) {
+    if ( 3 == scalar @outline ) {
         $shorthand =~ s{^\s+}{};
-        $output = "outline:$shorthand;";
+        push @output, "outline:$shorthand;";
+    }
+    else {
+        push @output, @outline;
     }
     
-    $output .= "cursor:$block->{'cursor'};"
+    push @output, "cursor:$block->{'cursor'};"
         if defined $block->{'cursor'};
     
-    return $output;
+    return @output;
 }
 
 1;

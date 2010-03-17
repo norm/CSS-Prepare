@@ -14,6 +14,7 @@ sub parse {
     my %canonical;
     my @errors;
     
+    # TODO - use regexps now for validation of values
     given ( $property ) {
         
         when ( 'border-width' ) {
@@ -81,11 +82,12 @@ sub output {
     my @values;
     my %directions;
     my %properties;
-    my $output;
+    my $property;
+    my @output;
     
     foreach my $direction qw( top right bottom left ) {
         foreach my $aspect qw( width color style ) {
-            my $property = "border-${direction}-${aspect}";
+            $property = "border-${direction}-${aspect}";
             my $value = $block->{ $property };
             
             if ( defined $value ) {
@@ -99,29 +101,29 @@ sub output {
     }
     
     if ( 1 == $count ) {
-        my $value = $block->{ $output };
-        $output .= ":${value};";
+        my $value = $block->{ $property };
+        push @output, ":${value};";
     }
     elsif ( 2 <= $count ) {
         # if the same property only, and only that, can compress down
         if ( 1 == scalar keys %properties ) {
             my( $key, undef ) = each %properties;
-            $output = collapse_border_shorthand_property( $key, $block );
+            push @output, collapse_border_shorthand_property( $key, $block );
         }
 
         # if the same direction only, and only that, can compress down
         elsif ( 1 == scalar keys %directions ) {
             my( $key, undef ) = each %directions;
-            $output = collapse_border_shorthand_direction( $key, $block );
+            push @output, collapse_border_shorthand_direction( $key, $block );
         }
         
         # if multiple properties in multiple directions, might compress down
         else {
-            $output = collapse_border_shorthand( $block );
+            push @output, collapse_border_shorthand( $block );
         }
     }
     
-    return $output;
+    return @output;
 }
 
 sub expand_border_shorthand {

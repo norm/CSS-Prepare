@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 
@@ -22,6 +22,26 @@ my( $css, @structure, $output );
         );
     $css = <<CSS;
 div{margin:5px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "one value margin shorthand was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-margin-top'    => '5px',
+                    'important-margin-right'  => '5px',
+                    'important-margin-bottom' => '5px',
+                    'important-margin-left'   => '5px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{margin:5px !important;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -89,28 +109,6 @@ CSS
         or say "four value margin shorthand was:\n" . $output;
 }
 
-# multiple properties in one block are correctly overridden
-{
-    @structure = (
-            {
-                selectors => [ 'div' ],
-                block     => {
-                    'margin-top'    => '5px',
-                    'margin-right'  => '5px',
-                    'margin-bottom' => '0',
-                    'margin-left'   => '5px',
-                },
-            },
-        );
-    $css = <<CSS;
-div{margin:5px 5px 0;}
-CSS
-
-    $output = $preparer->output_as_string( @structure );
-    ok( $output eq $css )
-        or say "value overriding was:\n" . $output;
-}
-
 # less than four values doesn't give a shorthand
 {
     @structure = (
@@ -124,10 +122,30 @@ CSS
             },
         );
     $css = <<CSS;
-div{margin-top:5px;margin-right:5px;margin-left:5px;}
+div{margin-left:5px;margin-right:5px;margin-top:5px;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "value overriding was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'margin-top'    => '5px',
+                    'important-margin-right'  => '2px',
+                    'margin-bottom' => '0',
+                    'margin-left'   => '4px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{margin-bottom:0;margin-left:4px;margin-right:2px !important;margin-top:5px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "four value margin shorthand was:\n" . $output;
 }

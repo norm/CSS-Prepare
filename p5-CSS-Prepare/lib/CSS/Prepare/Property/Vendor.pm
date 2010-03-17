@@ -21,14 +21,14 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my $output;
+    my @output;
     foreach my $property ( keys %{$block} ) {
         if ( $property =~ m{^-} ) {
-            $output .= "$property:$block->{$property};";
+            push @output, "$property:$block->{$property};";
         }
     }
     
-    return $output;
+    return @output;
 }
 
 1;

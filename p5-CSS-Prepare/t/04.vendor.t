@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 
@@ -14,8 +14,6 @@ div{-moz-background-clip:-moz-initial;}
 CSS
     @structure = (
             {
-                original  => ' -moz-background-clip: -moz-initial; ',
-                errors    => [],
                 selectors => [ 'div' ],
                 block     => { '-moz-background-clip' => '-moz-initial', },
             },
@@ -31,8 +29,6 @@ div{-webkit-border-radius:6px;}
 CSS
     @structure = (
             {
-                original  => ' -webkit-border-radius: 6px; ',
-                errors    => [],
                 selectors => [ 'div' ],
                 block     => { '-webkit-border-radius' => '6px', },
             },
@@ -41,4 +37,19 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "-webkit-border-raduis was:\n" . $output;
+}
+{
+    $css = <<CSS;
+div{-webkit-border-radius:6px !important;}
+CSS
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => { 'important--webkit-border-radius' => '6px', },
+            },
+        );
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important -webkit-border-radius was:\n" . $output;
 }

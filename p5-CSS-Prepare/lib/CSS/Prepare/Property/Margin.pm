@@ -31,24 +31,25 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my @directions = qw( top right bottom left );
-    my $count      = 0;
-    my $output;
-    foreach my $direction ( @directions ) {
+    my @margin;
+    my @output;
+    
+    foreach my $direction qw( top right bottom left ) {
         my $key = "margin-${direction}";
+        my $value = $block->{ $key };
         
-        if ( defined $block->{ $key } ) {
-            my $value = $block->{ $key };
-            $output .= "margin-${direction}:${value};";
-            $count++;
-        }
+        push @margin, "margin-${direction}:${value};"
+            if defined $value;
     }
     
-    if ( 4 == $count ) {
-        $output = collapse_trbl_shorthand( 'margin', $block );
+    if ( 4 == scalar @margin ) {
+        push @output, collapse_trbl_shorthand( 'margin', $block );
+    }
+    else {
+        push @output, @margin;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

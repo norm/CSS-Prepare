@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -134,4 +134,23 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "font size property was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { text-align: justify !important; }
+CSS
+    @structure = (
+            {
+                original  => ' text-align: justify !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important-text-align' => 'justify', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important text-align was:\n" . Dumper \@parsed;
 }

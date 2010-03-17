@@ -31,24 +31,25 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my @directions = qw( top right bottom left );
-    my $count      = 0;
-    my $output;
-    foreach my $direction ( @directions ) {
+    my @padding;
+    my @output;
+    
+    foreach my $direction qw( top right bottom left ) {
         my $key = "padding-${direction}";
+        my $value = $block->{ $key };
         
-        if ( defined $block->{ $key } ) {
-            my $value = $block->{ $key };
-            $output .= "padding-${direction}:${value};";
-            $count++;
-        }
+        push @padding, "padding-${direction}:${value};"
+            if defined $value;
     }
     
-    if ( 4 == $count ) {
-        $output = collapse_trbl_shorthand( 'padding', $block );
+    if ( 4 == scalar @padding ) {
+        push @output, collapse_trbl_shorthand( 'padding', $block );
+    }
+    else {
+        push @output, @padding;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

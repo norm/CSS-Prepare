@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 9;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -179,4 +179,28 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "outline shorthand missing value was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { outline: 2px dashed !important; }
+CSS
+    @structure = (
+            {
+                original  => ' outline: 2px dashed !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-outline-width'    => '2px',
+                    'important-outline-style'    => 'dashed',
+                    'important-outline-color'    => '',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important outline shorthand missing value was:\n"
+               . Dumper \@parsed;
 }

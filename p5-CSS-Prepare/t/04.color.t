@@ -1,11 +1,48 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 
 my $preparer = CSS::Prepare->new();
 my( $css, @structure, $output );
 
+
+
+# basic colour works
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+    $css = <<CSS;
+div{color:red;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "colour was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-color' => 'red',
+                },
+            },
+        );
+    $css = <<CSS;
+div{color:red !important;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important colour was:\n" . $output;
+}
 
 # create shorthand colours where possible
 {

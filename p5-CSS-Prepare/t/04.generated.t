@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 
@@ -28,6 +28,34 @@ CSS
                 selectors => [ 'ol' ],
                 block     => { 
                     'counter-reset' => 'list', 
+                },
+            },
+        );
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "counter with identifier was:\n" . $output;
+}
+{
+    $css = <<CSS;
+div{counter-increment:section !important;}
+ol{counter-reset:list;}
+CSS
+    @structure = (
+            {
+                original  => ' counter-increment: section; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-counter-increment' => 'section',
+                },
+            },
+            {
+                original  => ' counter-reset: list; ',
+                errors    => [],
+                selectors => [ 'ol' ],
+                block     => {
+                    'counter-reset' => 'list',
                 },
             },
         );

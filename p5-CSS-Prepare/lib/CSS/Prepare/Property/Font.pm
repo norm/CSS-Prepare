@@ -94,23 +94,22 @@ sub parse {
 sub output {
     my $block = shift;
     
+    # line-height can be rolled up into a font shorthand
     my @font_properties = qw(
             font-style  font-variant  font-weight
             font-size   line-height   font-family
        );
     my $font_shorthand  = '';
-    my $font_styles     = '';
     my $has_line_height = 0;
     my $has_font_size   = 0;
-    my $count           = 0;
-    my $output;
+    my @font_styles;
+    my @output;
     
     foreach my $property ( @font_properties ) {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            $count++;
-            $font_styles .= "${property}:${value};";
+            push @font_styles, "${property}:${value};";
             
             if ( $value ) {
                 $has_font_size = 1
@@ -129,19 +128,19 @@ sub output {
         }
     }
     
-    my $can_shorthand = ( 6 == $count )
-                             || ( 5 == $count && !$has_line_height );
+    my $can_shorthand = ( 6 == scalar @font_styles )
+                             || ( 5 == @font_styles && !$has_line_height );
     if ( $can_shorthand ) {
         $font_shorthand =~ s{^\s+}{};
-        $output .= "font:${font_shorthand};";
-        $output .= "line-height:$block->{'line-height'};"
+        push @output, "font:${font_shorthand};";
+        push @output, "line-height:$block->{'line-height'};"
             if !$has_font_size;
     }
-    elsif ( $count ) {
-        $output .= $font_styles;
+    elsif ( scalar @font_styles ) {
+        push @output, @font_styles;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

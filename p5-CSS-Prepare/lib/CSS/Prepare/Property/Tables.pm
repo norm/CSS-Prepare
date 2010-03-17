@@ -53,7 +53,7 @@ sub parse {
 }
 sub output {
     my $block = shift;
-    my $output;
+    my @output;
     
     my @properties = qw(
             caption-side    table-layout  border-collapse
@@ -63,11 +63,11 @@ sub output {
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
         
-        $output .= "$property:$value;"
+        push @output, "$property:$value;"
             if defined $value;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

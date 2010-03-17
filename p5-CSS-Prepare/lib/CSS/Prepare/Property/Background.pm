@@ -91,28 +91,31 @@ sub output {
     
     my @properties = qw( background-color background-image background-repeat
                          background-attachment background-position );
-    my $count = 0;
     my @values;
-    my $output;
+    my @output;
+    my $shorthand;
     
     foreach my $property ( @properties ) {
-        if ( defined $block->{ $property } ) {
-            push @values, $block->{ $property };
-            $output = $property;
-            $count++;
+        # TODO 'background-position: center center' could be written
+        #      'background-position: center' (etc)
+        my $value = $block->{ $property };
+        
+        if ( defined $value ) {
+            push @values, "$property:$value;";
+            $shorthand .= " $value"
+                if $value;
         }
     }
     
-    if ( 1 == $count ) {
-        my $value = $block->{ $output };
-        $output .= ":${value};";
+    if ( 5 == scalar @values ) {
+        $shorthand =~ s{^\s+}{};
+        push @output, "background:$shorthand;";
     }
-    elsif ( 2 <= $count ) {
-        my $value = join ' ', @values;
-        $output = "background:$value;";
+    else {
+        push @output, @values;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -95,6 +95,30 @@ CSS
                     'margin-right'  => '2px',
                     'margin-bottom' => '0',
                     'margin-left'   => '4px',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "four value margin shorthand was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { margin: 5px 2px 0 4px !important; }
+CSS
+    @structure = (
+            {
+                original  => ' margin: 5px 2px 0 4px !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-margin-top'    => '5px',
+                    'important-margin-right'  => '2px',
+                    'important-margin-bottom' => '0',
+                    'important-margin-left'   => '4px',
                 },
             },
         );

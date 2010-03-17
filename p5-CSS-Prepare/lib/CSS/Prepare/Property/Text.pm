@@ -33,16 +33,16 @@ sub output {
             content      letter-spacing  text-align   text-decoration
             text-indent  text-transform  white-space  word-spacing
         );
-    my $output;
+    my @output;
     
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
 
-        $output .= "$property:$value;"
+        push @output, "$property:$value;"
             if defined $value;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

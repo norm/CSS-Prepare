@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 4;
+use Test::More  tests => 5;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -25,6 +25,23 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => { 'background-color' => '#000', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "background color value was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { background-color: #000 !important; }
+CSS
+    @structure = (
+            {
+                original  => ' background-color: #000 !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important-background-color' => '#000', },
             },
         );
 

@@ -81,7 +81,7 @@ sub parse {
 }
 sub output {
     my $block = shift;
-    my $output;
+    my @output;
     
     # line-height is dealt with in Font.pm not here; this so
     # it can be collapsed into font shorthand if possible
@@ -96,11 +96,11 @@ sub output {
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
         
-        $output .= "$property:$value;"
+        push @output, "$property:$value;"
             if defined $value;
     }
     
-    return $output;
+    return @output;
 }
 
 1;

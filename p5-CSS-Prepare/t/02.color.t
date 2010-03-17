@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 4;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -50,6 +50,25 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "'colour' value was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { colour: #ffffff !important; }
+CSS
+    @structure = (
+            {
+                original  => ' colour: #ffffff !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important-color' => '#ffffff', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important colour was:\n" . Dumper \@parsed;
 }
 
 # invalid colour values are flagged

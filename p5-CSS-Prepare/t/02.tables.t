@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 6;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -109,4 +109,25 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "empty-cells was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        table { border-collapse: separate !important; }
+CSS
+    @structure = (
+            {
+                original  => ' border-collapse: separate !important; ',
+                errors    => [],
+                selectors => [ 'table' ],
+                block     => {
+                    'important-border-collapse' => 'separate',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "border-collapse was:\n" . Dumper \@parsed;
 }

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 
@@ -32,6 +32,21 @@ CSS
         );
      $css = <<CSS;
 div{font-style:italic;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "font style property was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => { 'important-font-style' => 'italic', },
+            },
+        );
+     $css = <<CSS;
+div{font-style:italic !important;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -113,6 +128,28 @@ CSS
     ok( $output eq $css )
         or say "font shorthand with line-height was:\n" . $output;
 }
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-line-height'  => '16px',
+                    'important-font-style'   => '',
+                    'important-font-variant' => 'small-caps',
+                    'important-font-weight'  => '',
+                    'important-font-size'    => '13px',
+                    'important-font-family'  => '"Palatino" "Times New Roman"',
+                },
+            },
+        );
+    $css = <<CSS;
+div{font:small-caps 13px/16px "Palatino" "Times New Roman" !important;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important font shorthand was:\n" . $output;
+}
 
 # shorthand is not invoked for only some font values
 {
@@ -157,4 +194,26 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "no partial font shorthand was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'line-height'  => '16px',
+                    'important-font-style'   => '',
+                    'important-font-variant' => 'small-caps',
+                    'important-font-weight'  => '',
+                    'important-font-size'    => '13px',
+                    'important-font-family'  => '"Palatino" "Times New Roman"',
+                },
+            },
+        );
+    $css = <<CSS;
+div{font:small-caps 13px "Palatino" "Times New Roman" !important;line-height:16px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "font shorthand with line-height was:\n" . $output;
 }

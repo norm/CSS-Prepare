@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -29,6 +29,28 @@ CSS
                     'border-right-width'  => 'thin',
                     'border-bottom-width' => 'thin',
                     'border-left-width'   => 'thin',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "one value border-width shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { border-width: 2px !important; }
+CSS
+    @structure = (
+            {
+                original  => ' border-width: 2px !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-border-top-width'    => '2px',
+                    'important-border-right-width'  => '2px',
+                    'important-border-bottom-width' => '2px',
+                    'important-border-left-width'   => '2px',
                 },
             },
         );

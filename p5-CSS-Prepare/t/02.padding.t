@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -102,6 +102,30 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "four value padding shorthand was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { padding: 5px 2px 0 4px !important; }
+CSS
+    @structure = (
+            {
+                original  => ' padding: 5px 2px 0 4px !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-padding-top'    => '5px',
+                    'important-padding-right'  => '2px',
+                    'important-padding-bottom' => '0',
+                    'important-padding-left'   => '4px',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important four value padding shorthand was:\n" . Dumper \@parsed;
 }
 
 # multiple properties in one block are correctly overridden

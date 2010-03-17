@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 3;
+use Test::More  tests => 4;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -30,7 +30,7 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "overflow property was:\n" . Dumper \@parsed;
+        or say "overflow was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;
@@ -52,7 +52,7 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "clip property was:\n" . Dumper \@parsed;
+        or say "clip was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;
@@ -69,5 +69,24 @@ CSS
 
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "visibility property was:\n" . Dumper \@parsed;
+        or say "visibility was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { visibility: visible !important; }
+CSS
+    @structure = (
+            {
+                original  => ' visibility: visible !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important-visibility' => 'visible', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important visibility was:\n" . Dumper \@parsed;
 }

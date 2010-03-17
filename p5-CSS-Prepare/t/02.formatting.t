@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -31,6 +31,23 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "display property was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { display: inline-block !important; }
+CSS
+    @structure = (
+            {
+                original  => ' display: inline-block !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important-display' => 'inline-block', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important display property was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;

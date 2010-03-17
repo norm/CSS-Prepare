@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 13;
 
 use CSS::Prepare;
 
@@ -27,6 +27,21 @@ CSS
     @structure = (
             {
                 selectors => [ 'div' ],
+                block     => { 'important-display' => 'block', },
+            },
+        );
+    $css = <<CSS;
+div{display:block !important;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "display property was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
                 block     => { 
                     'position' => 'absolute', 
                     'top'      => '0', 
@@ -38,6 +53,27 @@ CSS
         );
     $css = <<CSS;
 div{bottom:10px;left:10%;position:absolute;right:2em;top:0;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "position property was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-position' => 'absolute',
+                    'top'      => '0',
+                    'right'    => '2em',
+                    'bottom'   => '10px',
+                    'left'     => '10%',
+                },
+            },
+        );
+    $css = <<CSS;
+div{bottom:10px;left:10%;position:absolute !important;right:2em;top:0;}
 CSS
     
     $output = $preparer->output_as_string( @structure );

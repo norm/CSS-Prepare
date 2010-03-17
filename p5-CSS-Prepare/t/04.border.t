@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 15;
 
 use CSS::Prepare;
 
@@ -111,6 +111,61 @@ CSS
         );
     $css = <<CSS;
 div{border:1px solid blue;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-border-top-width'    => '1px',
+                    'important-border-top-style'    => 'solid',
+                    'important-border-top-color'    => 'blue',
+                    'important-border-right-width'  => '1px',
+                    'important-border-right-style'  => 'solid',
+                    'important-border-right-color'  => 'blue',
+                    'important-border-bottom-width' => '1px',
+                    'important-border-bottom-style' => 'solid',
+                    'important-border-bottom-color' => 'blue',
+                    'important-border-left-width'   => '1px',
+                    'important-border-left-style'   => 'solid',
+                    'important-border-left-color'   => 'blue',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border:1px solid blue !important;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important border shorthand was:\n" . $output;
+}
+
+# missing values do not trigger a shorthand
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'border-right-width'  => '1px',
+                    'border-right-style'  => 'solid',
+                    'border-right-color'  => 'blue',
+                    'border-bottom-width' => '1px',
+                    'border-bottom-style' => 'solid',
+                    'border-bottom-color' => 'blue',
+                    'border-left-width'   => '1px',
+                    'border-left-style'   => 'solid',
+                    'border-left-color'   => 'blue',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border-bottom:1px solid blue;border-left:1px solid blue;border-right:1px solid blue;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -273,3 +328,96 @@ CSS
     ok( $output eq $css )
         or say "shorthand properties was:\n" . $output;
 }
+
+TODO: {
+local $TODO = "Logic for collapsing borders quite complex.";
+
+# complex interactions
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'border-top-color'    => 'red',
+                    'border-top-style'    => 'dashed',
+                    'border-top-width'    => '2px',
+                    'border-right-color'  => 'red',
+                    'border-right-style'  => 'dashed',
+                    'border-right-width'  => '1px',
+                    'border-bottom-color' => 'red',
+                    'border-bottom-style' => 'dashed',
+                    'border-bottom-width' => '2px',
+                    'border-left-color'   => 'red',
+                    'border-left-style'   => 'dashed',
+                    'border-left-width'   => '2px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border:2px dashed red;border-right-width:1px;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "complex override one property was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'border-top-color'    => 'red',
+                    'border-top-style'    => 'dashed',
+                    'border-top-width'    => '2px',
+                    'border-right-color'  => 'red',
+                    'border-right-style'  => 'dashed',
+                    'border-right-width'  => '1px',
+                    'border-bottom-color' => 'red',
+                    'border-bottom-style' => 'dashed',
+                    'border-bottom-width' => '2px',
+                    'border-left-color'   => 'red',
+                    'border-left-style'   => 'dashed',
+                    'border-left-width'   => '1px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border:2px dashed red;border-width:2px 1px;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "complex override two properties was:\n" . $output;
+}
+}
+
+# important values do not cause collapsing
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-border-top-color'    => 'blue',
+                    'important-border-top-style'    => '',
+                    'important-border-top-width'    => '',
+                    'border-right-color'  => 'blue',
+                    'border-right-style'  => '',
+                    'border-right-width'  => '',
+                    'border-bottom-color' => 'blue',
+                    'border-bottom-style' => '',
+                    'border-bottom-width' => '',
+                    'border-left-color'   => 'blue',
+                    'border-left-style'   => '',
+                    'border-left-width'   => '',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border-bottom:blue;border-left:blue;border-right:blue;border-top:blue !important;}
+CSS
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand color was:\n" . $output;
+}
+

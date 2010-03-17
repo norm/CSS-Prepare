@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 
@@ -18,6 +18,20 @@ my( $css, @structure, $output );
         );
     $css = <<CSS;
 div{text-indent:5px;}
+CSS
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "text indent property was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => { 'important-text-indent' => '5px', },
+            },
+        );
+    $css = <<CSS;
+div{text-indent:5px !important;}
 CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )

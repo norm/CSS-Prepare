@@ -68,48 +68,40 @@ sub parse {
 }
 sub output {
     my $block = shift;
-    my $output;
+    my @output;
     
-    foreach my $property ( qw( content  quotes  ) ) {
+    my @properties = qw( content  counter-increment  counter-reset  quotes );
+    foreach my $property ( @properties ) {
         my $value = $block->{ $property };
         
-        $output .= "$property:$value;"
-            if defined $value;
-    }
-    
-    foreach my $property ( qw( counter-increment  counter-reset ) ) {
-        my $value = $block->{ $property };
-        
-        $output .= "$property:$value;"
+        push @output, "$property:$value;"
             if defined $value;
     }
     
     my @list_properties = qw(
             list-style-type  list-style-image  list-style-position
         );
-    my $list_shorthand = '';
-    my $list_styles    = '';
-    my $count          = 0;
+    my $list_shorthand;
+    my @list;
     foreach my $property ( @list_properties ) {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            $count++;
-            $list_styles .= "${property}:${value};";
+            push @list, "${property}:${value};";
             $list_shorthand .= " $value"
                 if $value;
         }
     }
     
-    if ( 3 == $count ) {
+    if ( 3 == scalar @list ) {
         $list_shorthand =~ s{^\s+}{};
-        $output .= "list-style:${list_shorthand};"
+        push @output, "list-style:${list_shorthand};"
     }
-    elsif ( $count ) {
-        $output .= $list_styles;
+    else {
+        push @output, @list;
     }
     
-    return $output;
+    return @output;
 }
 
 sub expand_list_style {

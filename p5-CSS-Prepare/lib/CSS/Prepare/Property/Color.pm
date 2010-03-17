@@ -14,6 +14,7 @@ sub parse {
     my %canonical;
     my @errors;
     
+    # TODO - use regexps now for validation of values
     # allow for the correct spelling of colour
     if ( $property =~ m{^ colo u? r $}x ) {
         if ( is_colour_value( $value ) ) {
@@ -31,7 +32,7 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my $output;
+    my @output;
     if ( defined $block->{'color'} ) {
         my $value = $block->{'color'};
         
@@ -41,10 +42,10 @@ sub output {
         $value = keyword_to_hex( $value );
         $value = hex_to_keyword( $value );
         
-        return "color:${value};";
+        push @output, "color:${value};";
     }
     
-    return;
+    return @output;
 }
 
 sub keyword_to_hex {

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 15;
+use Test::More  tests => 16;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -188,6 +188,27 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "content was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        blockquote:before { content: "«" !important; }
+CSS
+    @structure = (
+            {
+                original  => q( content: "«" !important; ),
+                errors    => [],
+                selectors => [ 'blockquote:before' ],
+                block     => {
+                    'important-content' => q("«"),
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important content was:\n" . Dumper \@parsed;
 }
 
 # individual list styles properties work

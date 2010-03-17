@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 6;
 
 use CSS::Prepare;
 
@@ -53,6 +53,23 @@ CSS
         );
     $css = <<CSS;
 table{border-collapse:separate;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border-collapse was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'table' ],
+                block     => {
+                    'important-border-collapse' => 'separate',
+                },
+            },
+        );
+    $css = <<CSS;
+table{border-collapse:separate !important;}
 CSS
 
     $output = $preparer->output_as_string( @structure );

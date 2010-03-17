@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 
@@ -22,6 +22,26 @@ my( $css, @structure, $output );
         );
     $css = <<CSS;
 div{padding:5px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "one value padding shorthand was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-padding-top'    => '5px',
+                    'important-padding-right'  => '5px',
+                    'important-padding-bottom' => '5px',
+                    'important-padding-left'   => '5px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{padding:5px !important;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -89,28 +109,6 @@ CSS
         or say "four value padding shorthand was:\n" . $output;
 }
 
-# multiple properties in one block are correctly overridden
-{
-    @structure = (
-            {
-                selectors => [ 'div' ],
-                block     => {
-                    'padding-top'    => '5px',
-                    'padding-right'  => '5px',
-                    'padding-bottom' => '0',
-                    'padding-left'   => '5px',
-                },
-            },
-        );
-    $css = <<CSS;
-div{padding:5px 5px 0;}
-CSS
-
-    $output = $preparer->output_as_string( @structure );
-    ok( $output eq $css )
-        or say "value overriding was:\n" . $output;
-}
-
 # less than four values doesn't give a shorthand
 {
     @structure = (
@@ -124,7 +122,27 @@ CSS
             },
         );
     $css = <<CSS;
-div{padding-top:5px;padding-right:5px;padding-left:5px;}
+div{padding-left:5px;padding-right:5px;padding-top:5px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "value overriding was:\n" . $output;
+}
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'padding-top'    => '5px',
+                    'important-padding-bottom' => '5px',
+                    'padding-right'  => '5px',
+                    'padding-left'   => '5px',
+                },
+            },
+        );
+    $css = <<CSS;
+div{padding-bottom:5px !important;padding-left:5px;padding-right:5px;padding-top:5px;}
 CSS
 
     $output = $preparer->output_as_string( @structure );

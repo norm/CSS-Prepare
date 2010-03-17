@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -146,4 +146,29 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "full font shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { font: italic small-caps bold 13px/16px "Palatino" !important; }
+CSS
+    @structure = (
+            {
+                original  => ' font: italic small-caps'
+                           . ' bold 13px/16px "Palatino" !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'important-font-style'   => 'italic',
+                    'important-font-variant' => 'small-caps',
+                    'important-font-weight'  => 'bold',
+                    'important-font-size'    => '13px',
+                    'important-line-height'  => '16px',
+                    'important-font-family'  => '"Palatino"',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important full font shorthand was:\n" . Dumper \@parsed;
 }

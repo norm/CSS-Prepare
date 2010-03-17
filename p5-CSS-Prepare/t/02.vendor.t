@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -48,4 +48,23 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "-webkit-border-raduis was:\n" . Dumper \@parsed;
+}
+
+# important
+{
+    $css = <<CSS;
+        div { -webkit-border-radius: 0 !important; }
+CSS
+    @structure = (
+            {
+                original  => ' -webkit-border-radius: 0 !important; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'important--webkit-border-radius' => '0', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important -webkit-border-raduis was:\n" . Dumper \@parsed;
 }

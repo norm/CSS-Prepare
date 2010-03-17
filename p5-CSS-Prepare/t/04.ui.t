@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 9;
 
 use CSS::Prepare;
 
@@ -37,6 +37,23 @@ CSS
                 selectors => [ 'div' ],
                 block     => {
                     'outline-width' => 'thin',
+                },
+            },
+        );
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-width was:\n" . $output;
+}
+{
+    $css = <<CSS;
+div{outline-width:thin !important;}
+CSS
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'important-outline-width' => 'thin',
                 },
             },
         );
@@ -118,4 +135,43 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline shorthand missing value was:\n" . $output;
+}
+
+# outline is not expanded with missing values
+{
+    $css = <<CSS;
+div{outline-color:blue;outline-width:1px;}
+CSS
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'outline-width'    => '1px',
+                    'outline-color'    => 'blue',
+                },
+            },
+        );
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand was:\n" . $output;
+}
+{
+    $css = <<CSS;
+div{outline-color:blue;outline-style:solid !important;outline-width:1px;}
+CSS
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'outline-width'    => '1px',
+                    'important-outline-style'    => 'solid',
+                    'outline-color'    => 'blue',
+                },
+            },
+        );
+    
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand was:\n" . $output;
 }

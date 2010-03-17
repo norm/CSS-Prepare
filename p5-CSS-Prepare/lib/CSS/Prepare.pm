@@ -298,8 +298,16 @@ sub parse {
     my $self   = shift;
     my $string = shift;
     
-    my $stripped     = strip_comments( $string );
-       $string       = escape_braces_in_strings( $stripped );
+    my( $charset, $stripped ) = strip_charset( $string );
+    return { errors => [{ fatal => "Unsupported charset ${charset}" }] }
+        unless 'UTF-8' eq $charset;
+    
+    $stripped = $self->strip_comments( $stripped );
+    $string   = escape_braces_in_strings( $stripped );
+    
+    # TODO - deal with @import statements sanely
+    #        "any @import rules must precede all other rules"
+    # TODO - need a concept of the current media
     my @media_blocks = split_into_media_blocks( $string );
     my @declarations;
     
@@ -342,6 +350,24 @@ sub parse {
     }
     
     return @declarations;
+}
+sub strip_charset {
+    my $string = shift;
+    
+    # "User agents must support at least the UTF-8 encoding."
+    my $charset = "UTF-8";
+    
+    # "Authors using an @charset rule must place the rule at the very beginning 
+    #  of the style sheet, preceded by no characters"
+    if ( $string =~ s{^ \@charset \s " ([^"]+) "; }{}sx ) {
+        $charset = $1;
+    }
+    
+    # "User agents must ignore any @charset rule not at the beginning of the 
+    #  style sheet."
+    $string =~ s{ \@charset \s " ([^"]+) "; }{}gsx;
+    
+    return ( $charset, $string );
 }
 sub strip_comments {
     my $string = shift;

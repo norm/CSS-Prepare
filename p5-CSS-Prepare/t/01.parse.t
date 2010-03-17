@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 14;
+use Test::More  tests => 17;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -394,6 +394,73 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "invalid selector was:\n" . Dumper \@parsed;
 }
+
+# supported character set
+{
+    $css = <<CSS;
+\@charset "UTF-8";
+h1 { color: red; }
+\@charset "US-ASCII";
+\@charset "ISO-8859-1";
+CSS
+    @structure = (
+            {
+                original  => ' color: red; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "supported charset was:\n" . Dumper \@parsed;
+}
+
+# unsupported character set
+{
+    $css = <<CSS;
+\@charset "ISO-8859-1";
+body { color: #000; }
+CSS
+    @structure = (
+            {
+                errors    => [
+                    { fatal => 'Unsupported charset ISO-8859-1', }
+                ],
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "unsupported charset was:\n" . Dumper \@parsed;
+}
+
+# ignore character set after start of document
+{
+    $css = <<CSS;
+        h1 { color: red; }
+        \@charset "UTF-8";
+CSS
+    @structure = (
+            {
+                original  => ' color: red; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid later charset was:\n" . Dumper \@parsed;
+}
+
+
 
 # TODO 
 #   -   stylesheet with invalid syntax 

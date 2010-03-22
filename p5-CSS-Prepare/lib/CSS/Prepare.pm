@@ -238,7 +238,7 @@ sub output_as_string {
     foreach my $block ( @data ) {
         my $type = $block->{'type'} // '';
         
-        if ( 'at-media' eq $type ) {
+        if ( 'at-media' eq $type || 'import' eq $type ) {
             my $string = $self->output_as_string( @{$block->{'blocks'}} );
             $string =~ s{^}{  }gm;
             $output .= "\@media $block->{'query'} {\n${string}}\n";
@@ -651,6 +651,7 @@ sub do_import_rules {
         if ( @styles ) {
             push @blocks, {
                     type   => 'import',
+                    query  => $media,
                     blocks => [ @styles ],
                 };
         }
@@ -882,7 +883,10 @@ sub optimise {
     my @blocks;
     my @complete;
     while ( my $block = shift @data ) {
-        if ( defined $block->{'type'} ) {
+        my $type  = $block->{'type'};
+        my $query = $block->{'query'};
+        
+        if ( defined $type ) {
             # process any previously collected blocks
             my( $savings, @optimised ) = $self->optimise_blocks( @blocks );
             undef @blocks;
@@ -893,10 +897,12 @@ sub optimise {
             ( $savings, @optimised )
                 = $self->optimise_blocks( @{$block->{'blocks'}} );
             
-            if ( 'at-media' eq $block->{'type'} ) {
+            my $output_as_block = 'at-media' eq $type
+                                  || ( 'import' eq $type && defined $query );
+            if ( $output_as_block ) {
                 push @complete, {
-                        type => 'at-media',
-                        query => $block->{'query'},
+                        type   => $type,
+                        query  => $block->{'query'},
                         blocks => [ @optimised ],
                     };
             }

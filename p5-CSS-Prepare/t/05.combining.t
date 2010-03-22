@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 4;
+use Test::More  tests => 5;
 
 use CSS::Prepare;
 
@@ -121,6 +121,21 @@ CSS
     @parsed    = $preparer->parse_file( 't/css/media.css' );
     @structure = $preparer->optimise( @parsed );
     $output    = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "media block was:\n" . $output;
+}
+
+# @import with a media query is output as an @media block
+{
+    $css = <<CSS;
+\@media print {
+  div{color:#000;}
+}
+CSS
+
+    @parsed    = $preparer->parse_file( 't/css/import-media.css' );
+    @structure = $preparer->optimise( @parsed );
+    $output    = $preparer->output_as_string( @parsed );
     ok( $output eq $css )
         or say "media block was:\n" . $output;
 }

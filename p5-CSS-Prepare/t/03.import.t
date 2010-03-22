@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 1;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -21,6 +21,7 @@ my( $css, @structure, @parsed );
     @structure = (
             {
                 type      => 'import',
+                query     => undef,
                 blocks    => [
                     {
                         original  => '
@@ -36,6 +37,7 @@ my( $css, @structure, @parsed );
             },
             {
                 type      => 'import',
+                query     => undef,
                 blocks    => [
                     {
                         original  => '
@@ -51,6 +53,7 @@ my( $css, @structure, @parsed );
             },
             {
                 type      => 'import',
+                query     => 'print',
                 blocks    => [
                     {
                         original  => '
@@ -89,4 +92,78 @@ my( $css, @structure, @parsed );
         or say "multiple \@import was:\n" . Dumper \@parsed;
 }
 
-# TODO - check "@import url() print;"
+# @import does not work within an @media block (even though it is 'first')
+{
+    @structure = (
+            {
+                type      => 'import',
+                query     => undef,
+                blocks    => [
+                    {
+                        original  => '
+    color: green;
+',
+                        selectors => [ 'div' ],
+                        errors    => [],
+                        block     => {
+                            'color' => 'green',
+                        },
+                    },
+                ],
+            },
+            {
+                type      => 'at-media',
+                query     => 'print',
+                blocks    => [
+                    {
+                        errors => [
+                            {
+                                error => '@import rule after statement(s) -- '
+                                         . 'ignored (CSS 2.1 #4.1.5)',
+                            },
+                        ],
+                    },
+                    {
+                        original  => '
+        color: black;
+    ',
+                        selectors => [ 'div' ],
+                        errors    => [],
+                        block     => {
+                            'color' => 'black',
+                        },
+                    },
+                ],
+            },
+        );
+
+    @parsed = $preparer->parse_file( 't/css/broken-import.css' );
+    is_deeply( \@structure, \@parsed )
+        or say "\@import inside \@media was:\n" . Dumper \@parsed;
+}
+
+# @import with a media query
+{
+    @structure = (
+            {
+                type      => 'import',
+                query     => 'print',
+                blocks    => [
+                    {
+                        original  => '
+    color: black;
+',
+                        selectors => [ 'div' ],
+                        errors    => [],
+                        block     => {
+                            'color' => 'black',
+                        },
+                    },
+                ],
+            },
+        );
+
+    @parsed = $preparer->parse_file( 't/css/import-media.css' );
+    is_deeply( \@structure, \@parsed )
+        or say "\@import with media query was:\n" . Dumper \@parsed;
+}

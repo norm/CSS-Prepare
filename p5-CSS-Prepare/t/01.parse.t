@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 17;
+use Test::More  tests => 19;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -14,6 +14,17 @@ local $Data::Dumper::Sortkeys  = 1;
 my $preparer = CSS::Prepare->new();
 my( $css, @structure, @parsed );
 
+
+
+# don't explode on an empty stylesheet
+{
+    $css = q();
+    @structure = ();
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "empty stylesheet was:\n" . Dumper \@parsed;
+}
 
 # basic declaration block
 {
@@ -460,6 +471,56 @@ CSS
         or say "invalid later charset was:\n" . Dumper \@parsed;
 }
 
+# split out media blocks
+{
+    $css = <<CSS;
+body { color: #999; }
+\@media print {
+    body {
+        color: #000;
+    }
+}
+h1 { color: red; }
+CSS
+    @structure = (
+            {
+                original  => ' color: #999; ',
+                selectors => [ 'body' ],
+                errors    => [],
+                block     => {
+                    'color' => '#999',
+                },
+            },
+            {
+                type      => 'at-media',
+                query     => 'print',
+                blocks    => [
+                    {
+                        original  => '
+        color: #000;
+    ',
+                        selectors => [ 'body' ],
+                        errors    => [],
+                        block     => {
+                            'color' => '#000',
+                        },
+                    },
+                ],
+            },
+            {
+                original  => ' color: red; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "\@media block was:\n" . Dumper \@parsed;
+}
 
 
 # TODO 

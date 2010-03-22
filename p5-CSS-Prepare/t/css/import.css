@@ -1,0 +1,7 @@
+@import "first.css";
+@import url("second.css");
+@import url( print.css ) print;
+div {
+    color: teal;
+}
+@import "broken.css";

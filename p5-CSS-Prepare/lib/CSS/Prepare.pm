@@ -15,6 +15,7 @@ use CSS::Prepare::Property::Padding;
 use CSS::Prepare::Property::Tables;
 use CSS::Prepare::Property::Text;
 use CSS::Prepare::Property::UI;
+use CSS::Prepare::Property::Values;
 use CSS::Prepare::Property::Vendor;
 use FileHandle;
 use File::Basename;
@@ -118,7 +119,7 @@ sub parse_file {
     my $file = shift;
     
     my $string = $self->read_file( $file );
-    return $self->parse( $string )
+    return $self->parse( $string, $file )
         if defined $string;
     
     return;
@@ -182,10 +183,22 @@ sub parse_url_structure {
     return @blocks;
 }
 sub parse_string {
-    my $self   = shift;
-    my $string = shift;
+    my $self     = shift;
+    my $string   = shift;
+    my $location = shift;
     
     return $self->parse( $string )
+}
+sub parse_stylesheet {
+    my $self       = shift;
+    my $stylesheet = shift;
+    
+    if ( $stylesheet =~ m{^https?://} ) {
+        return $self->parse_url( $stylesheet );
+    }
+    else {
+        return $self->parse_file( $stylesheet );
+    }
 }
 sub output_as_string {
     my $self = shift;
@@ -325,8 +338,9 @@ sub get_url_lwp {
 }
 
 sub parse {
-    my $self   = shift;
-    my $string = shift;
+    my $self     = shift;
+    my $string   = shift;
+    my $location = shift;
     
     my( $charset, $stripped ) = strip_charset( $string );
     return { errors => [{ fatal => "Unsupported charset ${charset}" }] }
@@ -335,17 +349,50 @@ sub parse {
     $stripped = $self->strip_comments( $stripped );
     $string   = escape_braces_in_strings( $stripped );
     
-    # TODO - deal with @import statements sanely
-    #        "any @import rules must precede all other rules"
-    # TODO - need a concept of the current media
-    my @media_blocks = split_into_media_blocks( $string );
-    my @declarations;
+    my @split = $self->split_into_statements( $string, $location );
     
-    foreach my $media_block ( @media_blocks ) {
-        my @declaration_blocks 
-            = split_into_declaration_blocks( $media_block );
+    my @statements;
+    foreach my $statement ( @split ) {
+        my $type = $statement->{'type'};
         
-        foreach my $block ( @declaration_blocks ) {
+        if ( 'import' eq $type ) {
+            push @statements, $statement;
+        }
+        elsif ( 'rulesets' eq $type ) {
+            my @rule_sets = $self->parse_rule_sets( $statement->{'content'} );
+            
+            push @statements, @rule_sets;
+        }
+        elsif ( 'at-media' eq $type ) {
+            my @rule_sets = $self->parse_rule_sets( $statement->{'content'} );
+            
+            push @{$statement->{'blocks'}}, @rule_sets;
+            delete $statement->{'content'};
+            push @statements, $statement;
+        }
+        else {
+            die "unknown type";
+        }
+    }
+    
+    return @statements;
+}
+sub parse_rule_sets {
+    my $self   = shift;
+    my $styles = shift;
+    
+    return []
+        unless defined $styles;
+    
+    my @declaration_blocks
+        = split_into_declaration_blocks( $styles );
+    
+    my @rule_sets;
+    foreach my $block ( @declaration_blocks ) {
+        if ( defined $block->{'errors'} ) {
+            push @rule_sets, $block;
+        }
+        else {
             # extract from the string a data structure of selectors
             my( $selectors, $selectors_errors )
                 = parse_selectors( $block->{'selector'} );
@@ -366,12 +413,12 @@ sub parse {
                            && !@$declaration_errors
                            && !%{$declarations};
             
-            push @declarations, {
+            push @rule_sets, {
                     original  => unescape_braces( $block->{'block'} ),
                     selectors => $selectors,
-                    errors    => [ 
-                        @$selectors_errors, 
-                        @$declaration_errors 
+                    errors    => [
+                        @$selectors_errors,
+                        @$declaration_errors
                     ],
                     block     => $declarations,
                 }
@@ -379,7 +426,7 @@ sub parse {
         }
     }
     
-    return @declarations;
+    return @rule_sets;
 }
 sub strip_charset {
     my $string = shift;
@@ -451,31 +498,149 @@ sub unescape_braces {
     
     return $string;
 }
-sub split_into_media_blocks {
-    my $string = shift;
+sub split_into_statements {
+    my $self     = shift;
+    my $string   = shift;
+    my $location = shift;
+    
+    # "In CSS 2.1, any @import rules must precede all other rules (except the
+    #  @charset rule, if present)." (CSS 2.1 #6.3)
+    my $directory = ( defined $location ) ? dirname( $location )
+                                          : './';
+    my ( $remainder, @statements )
+        = $self->do_import_rules( $directory, $string );
+    
+    # TODO:
+    # "CSS 2.1 user agents must ignore any '@import' rule that occurs inside a
+    #  block or after any non-ignored statement other than an @charset or an
+    #  @import rule." (CSS 2.1 #4.1.5)
+    my $splitter = qr{
+            ^
+            ( .*? )                 # $1: everything before the media block
+            \@media \s+
+            ( [^ \{ ]+ )            # $2: the media query
+            \s*
+            (                       # $3: (used in the nested expression)
+                \{ (?:              # the content of the media block,
+                    (?> [^\{\}]+ )  # which is a nested recursive match
+                    |               # ...
+                    (?3)            # <-- triggered here "(?3)" means use $3
+                )* \}               # matching again
+            )
+        }sx;
+    
+    while ( $remainder =~ s{$splitter}{}sx ) {
+        my $before = $1;
+        my $query  = $2;
+        my $block  = $3;
+        
+        # strip the outer braces from the media block
+        $block =~ s{^ \{ (.*) \} $}{$1}sx;
+        
+        push @statements, {
+                type => 'rulesets',
+                content => $before,
+            };
+        push @statements, {
+                type => 'at-media',
+                query => $query,
+                content => $block,
+            };
+    }
+    
+    push @statements, {
+            type => 'rulesets',
+            content => $remainder,
+        };
+    
+    return @statements;
+}
+sub do_import_rules {
+    my $self      = shift;
+    my $directory = shift;
+    my $string    = shift;
+    
+    # "In CSS 2.1, any @import rules must precede all other rules (except the
+    #  @charset rule, if present)." (CSS 2.1 #6.3)
+    my $splitter = qr{
+            ^
+            \s* \@import \s*
+            (
+                $string_value
+                |
+                $url_value
+            )
+            (?:
+                \s+
+                ( $media_types_value )
+            )?
+            \s* \;
+        }x;
+    
     my @blocks;
+    while ( $string =~ s{$splitter}{}sx ) {
+        my $import = $1;
+        my $media  = $2;
+        
+        $import =~ s{^ url\( \s* (.*?) \) $}{$1}x;   # strip url()
+        $import =~ s{^ ( ['"] ) (.*?) \1 $}{$2}x;    # strip quotes
+        
+        my $target = "$directory/$import";
+        my @styles = $self->parse_stylesheet( $target );
+        
+        if ( @styles ) {
+            push @blocks, {
+                    type   => 'import',
+                    blocks => [ @styles ],
+                };
+        }
+    }
     
-    push @blocks, $string;
-    
-    return @blocks;
+    return $string, @blocks;
 }
 sub split_into_declaration_blocks {
     my $string = shift;
     my @blocks;
     
-    my $splitter = qr{
+    my $get_import_rule = qr{
             ^
-            \s*
-            (?<selector> .*? )
-            \s*
-            \{
-                (?<block> [^\}]* )
-            \}
+            \s* \@import \s+
+            (?: $string_value | $url_value )
+            (?: \s+ ( $media_types_value ) )?
+            \s* \; \s*
+        }x;
+    my $get_next_block = qr{
+            ^
+            \s* (?<selector> .*? ) \s*
+            \{  (?<block> [^\}]* ) \} \s*
         }sx;
     
-    while ( $string =~ s{$splitter}{}sx ) {
-        my %match = %+;
-        push @blocks, \%match;
+    while ( $string ) {
+        # check for a rogue @import rule
+        if ( $string =~ s{$get_import_rule}{}sx ) {
+            push @blocks, {
+                    errors => [
+                        {
+                            error => '@import rule after statement(s) -- '
+                                     . 'ignored (CSS 2.1 #4.1.5)',
+                        },
+                    ],
+                };
+        }
+        
+        # try and find the next
+        elsif ( $string =~ s{$get_next_block}{}sx ) {
+            my %match = %+;
+            push @blocks, \%match;
+        }
+        else {
+            push @blocks, {
+                    errors => [
+                        error => "Unknown content.\n${string}\n",
+                    ],
+                };
+            $string = undef;
+        }
     }
     
     return @blocks;

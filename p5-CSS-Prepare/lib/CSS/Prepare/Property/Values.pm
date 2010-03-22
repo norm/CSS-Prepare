@@ -86,9 +86,12 @@ our @EXPORT = qw(
         $list_style_type_value
         $list_style_image_value
         $list_style_position_value
+        $media_types_value
         $outline_colour_value
         $outline_style_value
         $outline_width_value
+        $string_value
+        $url_value
     );
 
 # primitive types
@@ -129,14 +132,14 @@ my $colour_value      = qr{
             \)
         )
     }x;
-my $string_value      = qr{
+our $string_value = qr{
         (?:
             \' (?: \\ \' | [^'] )* \'   # single-quoted
             |                           # or
             \" (?: \\ \" | [^"] )* \"   # double-quoted
         )
     }x;
-my $url_value         = qr{
+our $url_value = qr{
         url \( \s*
         (?:
             $string_value \s* \)    # either a string
@@ -144,6 +147,16 @@ my $url_value         = qr{
             [^'"\)] .*?             # or text not including a right paren
             (?<! \\ ) \)            # (unless it is escaped)
         )
+    }x;
+my $media_types = qr{
+        (?:
+              all        | braille | embossed | handheld | print
+            | projection | screen  | speech   | tty      | tv
+        )
+    }x;
+our $media_types_value = qr{
+        $media_types
+        (?: \, \s* $media_types )*
     }x;
 
 # descriptive value types

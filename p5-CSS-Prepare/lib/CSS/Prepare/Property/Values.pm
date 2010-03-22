@@ -86,10 +86,12 @@ our @EXPORT = qw(
         $list_style_type_value
         $list_style_image_value
         $list_style_position_value
+        $margin_width_value
         $media_types_value
         $outline_colour_value
         $outline_style_value
         $outline_width_value
+        $padding_width_value
         $string_value
         $url_value
     );
@@ -354,7 +356,7 @@ our $list_style_type_value = qr{
         )
     }x;
 
-my $margin_width_value
+our $margin_width_value
     = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
 my $max_height_value
     = qr{ (?: $length_value | $percentage_value | none | inherit ) }x;
@@ -371,7 +373,7 @@ our $outline_colour_value = qr{ (?: invert | inherit | $colour_value ) }x;
 our $outline_style_value = qr{ (?: $border_style_value ) }x;
 our $outline_width_value = qr{ (?: $border_width_value ) }x;
 my $overflow_value = qr{ (?: visible | hidden | scroll | auto | inherit ) }x;
-my $padding_width_value
+our $padding_width_value
     = qr{ (?: $length_value | $percentage_value | inherit ) }x;
 my $position_value
     = qr{ (?: absolute | fixed | relative | static | inherit ) }x;

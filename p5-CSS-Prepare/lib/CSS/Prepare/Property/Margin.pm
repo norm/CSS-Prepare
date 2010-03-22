@@ -2,6 +2,7 @@ package CSS::Prepare::Property::Margin;
 
 use Modern::Perl;
 use CSS::Prepare::Property::Expansions;
+use CSS::Prepare::Property::Values;
 
 
 
@@ -14,17 +15,48 @@ sub parse {
     my %canonical;
     my @errors;
     
-    given ( $property ) {
-        when ( 'margin' ) {
+    my $valid_property_or_error = sub {
+            my $type  = shift;
+            
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = shorten_length_value( $value );
+            }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+        };
+    
+    foreach my $direction qw( top right bottom left ) {
+        &$valid_property_or_error( 'margin_width' )
+            if "margin-${direction}" eq $property;
+    }
+    
+    if ( 'margin' eq $property ) {
+        my $shorthand_properties = qr{
+                ^
+                (?: $margin_width_value )
+                (?: \s+ $margin_width_value )?
+                (?: \s+ $margin_width_value )?
+                (?: \s+ $margin_width_value )?
+                $
+            }x;
+        
+        if ( $value =~ m{$shorthand_properties}x ) {
             %canonical = expand_trbl_shorthand(
                     'margin-%s',
                     $value
                 );
         }
-        when ( 'margin-top'    ) { $canonical{ $property } = $value; }
-        when ( 'margin-bottom' ) { $canonical{ $property } = $value; }
-        when ( 'margin-left'   ) { $canonical{ $property } = $value; }
-        when ( 'margin-right'  ) { $canonical{ $property } = $value; }
     }
     
     return \%canonical, \@errors;
@@ -34,7 +66,6 @@ sub output {
     
     my @margin;
     my @output;
-    
     foreach my $direction qw( top right bottom left ) {
         my $key = "margin-${direction}";
         my $value = $block->{ $key };

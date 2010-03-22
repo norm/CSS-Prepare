@@ -2,6 +2,7 @@ package CSS::Prepare::Property::Padding;
 
 use Modern::Perl;
 use CSS::Prepare::Property::Expansions;
+use CSS::Prepare::Property::Values;
 
 
 
@@ -14,17 +15,48 @@ sub parse {
     my %canonical;
     my @errors;
     
-    given ( $property ) {
-        when ( 'padding' ) {
+    my $valid_property_or_error = sub {
+            my $type  = shift;
+            
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = shorten_length_value( $value );
+            }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+        };
+    
+    foreach my $direction qw( top right bottom left ) {
+        &$valid_property_or_error( 'padding_width' )
+            if "padding-${direction}" eq $property;
+    }
+    
+    if ( 'padding' eq $property ) {
+        my $shorthand_properties = qr{
+                ^
+                (?: $padding_width_value )
+                (?: \s+ $padding_width_value )?
+                (?: \s+ $padding_width_value )?
+                (?: \s+ $padding_width_value )?
+                $
+            }x;
+        
+        if ( $value =~ m{$shorthand_properties}x ) {
             %canonical = expand_trbl_shorthand(
                     'padding-%s',
                     $value
                 );
         }
-        when ( 'padding-top'    ) { $canonical{ $property } = $value; }
-        when ( 'padding-bottom' ) { $canonical{ $property } = $value; }
-        when ( 'padding-left'   ) { $canonical{ $property } = $value; }
-        when ( 'padding-right'  ) { $canonical{ $property } = $value; }
     }
     
     return \%canonical, \@errors;
@@ -34,7 +66,6 @@ sub output {
     
     my @padding;
     my @output;
-    
     foreach my $direction qw( top right bottom left ) {
         my $key = "padding-${direction}";
         my $value = $block->{ $key };

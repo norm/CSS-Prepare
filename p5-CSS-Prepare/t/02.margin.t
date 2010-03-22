@@ -61,11 +61,11 @@ CSS
 }
 {
     $css = <<CSS;
-        div { margin: 5px 2px 0; }
+        div { margin: 5px 2px 0px; }
 CSS
     @structure = (
             {
-                original  => ' margin: 5px 2px 0; ',
+                original  => ' margin: 5px 2px 0px; ',
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
@@ -83,11 +83,11 @@ CSS
 }
 {
     $css = <<CSS;
-        div { margin: 5px 2px 0 4px; }
+        div { margin: 5px 2px 0px 4px; }
 CSS
     @structure = (
             {
-                original  => ' margin: 5px 2px 0 4px; ',
+                original  => ' margin: 5px 2px 0px 4px; ',
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
@@ -107,11 +107,11 @@ CSS
 # important
 {
     $css = <<CSS;
-        div { margin: 5px 2px 0 4px !important; }
+        div { margin: 5px 2px 0px 4px !important; }
 CSS
     @structure = (
             {
-                original  => ' margin: 5px 2px 0 4px !important; ',
+                original  => ' margin: 5px 2px 0px 4px !important; ',
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
@@ -133,14 +133,14 @@ CSS
     $css = <<CSS;
         div { 
             margin: 5px;
-            margin-bottom: 0;
+            margin-bottom: 0em;
         }
 CSS
     @structure = (
             {
                 original  => ' 
             margin: 5px;
-            margin-bottom: 0;
+            margin-bottom: 0em;
         ',
                 errors    => [],
                 selectors => [ 'div' ],

@@ -83,11 +83,11 @@ CSS
 }
 {
     $css = <<CSS;
-        div { padding: 5px 2px 0 4px; }
+        div { padding: 5px 2px 0px 4px; }
 CSS
     @structure = (
             {
-                original  => ' padding: 5px 2px 0 4px; ',
+                original  => ' padding: 5px 2px 0px 4px; ',
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
@@ -107,11 +107,11 @@ CSS
 # important
 {
     $css = <<CSS;
-        div { padding: 5px 2px 0 4px !important; }
+        div { padding: 5px 2px 0px 4px !important; }
 CSS
     @structure = (
             {
-                original  => ' padding: 5px 2px 0 4px !important; ',
+                original  => ' padding: 5px 2px 0px 4px !important; ',
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
@@ -133,14 +133,14 @@ CSS
     $css = <<CSS;
         div { 
             padding: 5px;
-            padding-bottom: 0;
+            padding-bottom: 0em;
         }
 CSS
     @structure = (
             {
                 original  => ' 
             padding: 5px;
-            padding-bottom: 0;
+            padding-bottom: 0em;
         ',
                 errors    => [],
                 selectors => [ 'div' ],

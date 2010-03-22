@@ -809,12 +809,14 @@ sub parse_declaration_block {
         my $star_hack       = 0;
         my $underscore_hack = 0;
         my $important       = 0;
+        my $has_hack        = 0;
         
         if ( $self->support_hacks ) {
             $star_hack = 1
                 if $match{'property'} =~ s{^\*}{};
             $underscore_hack = 1
                 if $match{'property'} =~ s{^_}{};
+            $has_hack = $star_hack || $underscore_hack;
         }
         
         $important = 1
@@ -831,7 +833,8 @@ sub parse_declaration_block {
                 no strict 'refs';
 
                 my $try_with = "CSS::Prepare::Property::${module}::parse";
-                ( $parsed_as, $errors ) = &$try_with( $self, %match );
+                ( $parsed_as, $errors )
+                    = &$try_with( $self, $has_hack, %match );
             };
             
             push @errors, @$errors

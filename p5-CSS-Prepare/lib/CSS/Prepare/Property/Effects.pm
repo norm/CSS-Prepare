@@ -8,6 +8,7 @@ use CSS::Prepare::Property::Expansions;
 
 sub parse {
     my $self        = shift;
+    my $has_hack    = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};

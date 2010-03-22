@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 14;
+use Test::More  tests => 18;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -140,27 +140,48 @@ CSS
         or say "underscore hack was:\n" . Dumper \@parsed;
 }
 
-# parse zoom:1
+# parse zoom:1 (not allowed without an IE hack)
 {
     $css = <<CSS;
-        div { zoom: 1; }
+        div { _zoom: 1; }
 CSS
     @structure = (
             {
-                original  => ' zoom: 1; ',
+                original  => ' _zoom: 1; ',
                 selectors => [ 'div' ],
                 errors    => [],
                 block     => {
-                    'zoom'  => '1',
+                    '_zoom'  => '1',
                 },
             },
         );
 
     @parsed = $preparer_with->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "zoom:1 hack was:\n" . Dumper \@parsed;
+        or say "_zoom:1 hack was:\n" . Dumper \@parsed;
 }
 {
+    @structure = (
+            {
+                original  => ' _zoom: 1; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property '_zoom'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "_zoom:1 hack was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { zoom: 1; }
+CSS
     @structure = (
             {
                 original  => ' zoom: 1; ',
@@ -174,32 +195,58 @@ CSS
             },
         );
 
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "zoom:1 hack was:\n" . Dumper \@parsed;
+}
+{
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "zoom:1 hack was:\n" . Dumper \@parsed;
 }
 
-# parse filter
+# parse filter (not allowed without IE hack)
 {
     $css = <<CSS;
-        div { filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); }
+        div { _filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); }
 CSS
     @structure = (
             {
-                original  => ' filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
+                original  => ' _filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
                 selectors => [ 'div' ],
                 errors    => [],
                 block     => {
-                    'filter'  => 'progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344)',
+                    '_filter'  => 'progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344)',
                 },
             },
         );
 
     @parsed = $preparer_with->parse_string( $css );
     is_deeply( \@structure, \@parsed )
+        or say "_filter hack was:\n" . Dumper \@parsed;
+}
+{
+    @structure = (
+            {
+                original  => ' _filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property '_filter'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
         or say "filter hack was:\n" . Dumper \@parsed;
 }
 {
+    $css = <<CSS;
+        div { filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); }
+CSS
     @structure = (
             {
                 original  => ' filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
@@ -213,6 +260,11 @@ CSS
             },
         );
 
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "filter hack was:\n" . Dumper \@parsed;
+}
+{
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "filter hack was:\n" . Dumper \@parsed;

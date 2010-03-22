@@ -1,7 +1,14 @@
 use Modern::Perl;
-use Test::More  tests => 1;
+use Test::More  tests => 2;
 
 use CSS::Prepare;
+use Data::Dumper;
+local $Data::Dumper::Terse     = 1;
+local $Data::Dumper::Indent    = 1;
+local $Data::Dumper::Useqq     = 1;
+local $Data::Dumper::Deparse   = 1;
+local $Data::Dumper::Quotekeys = 0;
+local $Data::Dumper::Sortkeys  = 1;
 
 my $preparer = CSS::Prepare->new( silent => 1 );
 my( @structure, $output, $css );
@@ -14,7 +21,6 @@ if ( ! $preparer->has_http() ) {
 {
     $css = <<CSS;
 body{text-align:center;}
-#bd,#ft,#hd,.yui-g,.yui-gb,.yui-gc,.yui-gd,.yui-ge,.yui-gf{zoom:1;}
 #bd:after,#ft:after,#hd:after,.yui-g:after,.yui-gb:after,.yui-gc:after,.yui-gd:after,.yui-ge:after,.yui-gf:after{clear:both;content:".";display:block;height:0;visibility:hidden;}
 #doc,.yui-t1,.yui-t2,.yui-t3,.yui-t4,.yui-t5,.yui-t6,.yui-t7{margin:auto;width:57.69em;text-align:left;*width:56.25em;}
 #doc2{width:73.076em;*width:71.25em;}
@@ -80,12 +86,17 @@ CSS
                      'http://yui.yahooapis.com/2.8.0r4/build/grids/grids.css'
                  );
     
+    my @errors = (
+            { error => q(invalid property 'zoom') },
+        );
+    my @found_errors;
     foreach my $block ( @structure ) {
         foreach my $error ( @{$block->{'errors'}} ) {
-            my( $type, $text ) = each %{$error};
-            say uc( $type ) . ": $text";
+            push @found_errors, @{$block->{'errors'}};
         }
     }
+    is_deeply( \@errors, \@found_errors )
+        or say "YUI grids 2.8.0r4 errors was:\n" . Dumper \@errors;
     
     @structure = $preparer->optimise( @structure );
     $output    = $preparer->output_as_string( @structure );

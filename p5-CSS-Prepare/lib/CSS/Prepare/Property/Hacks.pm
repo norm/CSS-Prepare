@@ -6,6 +6,7 @@ use Modern::Perl;
 
 sub parse {
     my $self        = shift;
+    my $has_hack    = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};
@@ -13,10 +14,10 @@ sub parse {
     my %canonical;
     my @errors;
     
-    if ( 'zoom' eq $property && $self->support_hacks ) {
+    if ( 'zoom' eq $property && $has_hack ) {
         $canonical{'zoom'} = $value;
     }
-    if ( 'filter' eq $property && $self->support_hacks ) {
+    if ( 'filter' eq $property && $has_hack ) {
         $canonical{'filter'} = $value;
     }
     

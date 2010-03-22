@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -187,4 +187,27 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "no shorthand was:\n" . Dumper \@parsed;
+}
+
+# invalid values are properly flagged
+{
+    $css = <<CSS;
+        div { padding: 2 em; }
+CSS
+    @structure = (
+            {
+                original  => ' padding: 2 em; ',
+                errors    => [
+                    {
+                        error => "invalid padding property: '2 em'"
+                    },
+                ],
+                selectors => [ 'div' ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid value was:\n" . Dumper \@parsed;
 }

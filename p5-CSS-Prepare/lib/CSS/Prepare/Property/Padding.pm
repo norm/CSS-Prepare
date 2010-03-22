@@ -32,7 +32,7 @@ sub parse {
             }
             else {
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };
@@ -57,6 +57,11 @@ sub parse {
                     'padding-%s',
                     $value
                 );
+        }
+        else {
+            push @errors, {
+                    error => "invalid padding property: '${value}'"
+                };
         }
     }
     

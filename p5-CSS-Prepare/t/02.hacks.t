@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -78,9 +78,6 @@ CSS
         or say "star hack was:\n" . Dumper \@parsed;
 }
 {
-    $css = <<CSS;
-        div { color: red; *color: blue; }
-CSS
     @structure = (
             {
                 original  => ' color: red; *color: blue; ',
@@ -123,9 +120,6 @@ CSS
         or say "underscore hack was:\n" . Dumper \@parsed;
 }
 {
-    $css = <<CSS;
-        div { color: red; _color: blue; }
-CSS
     @structure = (
             {
                 original  => ' color: red; _color: blue; ',
@@ -167,9 +161,6 @@ CSS
         or say "zoom:1 hack was:\n" . Dumper \@parsed;
 }
 {
-    $css = <<CSS;
-        div { zoom: 1; }
-CSS
     @structure = (
             {
                 original  => ' zoom: 1; ',
@@ -186,4 +177,67 @@ CSS
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "zoom:1 hack was:\n" . Dumper \@parsed;
+}
+
+# verbatim comments
+{
+    $css = <<CSS;
+/*! IE hack */
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "/* IE hack */",
+            },
+        );
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim comment was:\n" . Dumper \@parsed;
+}
+{
+    @structure = ();
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim comment was:\n" . Dumper \@parsed;
+}
+
+# verbatim blocks
+{
+    $css = <<CSS;
+/*! verbatim */
+div {
+    blah: 0;
+}
+/*! end-verbatim */
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "div {\n    blah: 0;\n}",
+            },
+        );
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
+}
+{
+    @structure = (
+            {
+                original  => "\n    blah: 0;\n",
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property 'blah'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
 }

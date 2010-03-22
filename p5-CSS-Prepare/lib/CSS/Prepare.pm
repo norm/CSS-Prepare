@@ -389,7 +389,11 @@ sub parse_rule_sets {
     
     my @rule_sets;
     foreach my $block ( @declaration_blocks ) {
-        if ( defined $block->{'errors'} ) {
+        my $type           = $block->{'type'} // '';
+        my $preserve_as_is = defined $block->{'errors'}
+                             || 'verbatim' eq $type;
+        
+        if ( $preserve_as_is ) {
             push @rule_sets, $block;
         }
         else {
@@ -450,12 +454,25 @@ sub strip_comments {
     $string =~ s{ <!-- }{}gsx;
     $string =~ s{ --> }{}gsx;
     
-    # remove CSS comments
-    $string =~ s{ \/\* .*? \*\/ }{}gsx;
-    
     if ( $self->support_features ) {
         # remove line-level comments
         $string =~ s{ \s // [^\n]+ }{}gmx;
+    }
+    
+    if ( $self->support_hacks ) {
+        # preserve verbatim comments
+        $string =~ s{ 
+                \/ \* \! ( .*? ) \* \/
+            }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
+    }
+    
+    # remove CSS comments
+    $string =~ s{ \/ \* .*? \* \/ }{}gsx;
+    
+    if ( $self->support_hacks ) {
+        # preserve verbatim comments
+        $string =~ s{%-COMMENT-%}{/*}gsx;
+        $string =~ s{%-ENDCOMMENT-%}{*/}gsx;
     }
     
     return $string;
@@ -600,23 +617,35 @@ sub split_into_declaration_blocks {
     
     my $get_import_rule = qr{
             ^
-            \s* \@import \s+
+            \@import \s+
             (?: $string_value | $url_value )
             (?: \s+ ( $media_types_value ) )?
             \s* \; \s*
         }x;
     my $get_charset_rule = qr{
             ^
-            \s* \@charset \s \" [^"]+ \";
+            \@charset \s \" [^"]+ \";
             \s*
         }x;
-    my $get_next_block = qr{
+    my $get_block = qr{
             ^
-            \s* (?<selector> .*? ) \s*
+            (?<selector> .*? ) \s*
             \{  (?<block> [^\}]* ) \} \s*
         }sx;
-    
+    my $get_comment = qr{
+            ^
+            ( \/ \* (.*?) \* \/ ) \s*
+        }sx;
+    my $get_verbatim = qr{
+            ^
+            \/ \* \s+ verbatim \s+ \*\/
+            \s* ( .*? ) \s*
+            \/ \* \s+ end-verbatim \s+ \*\/
+        }sx;
+        
     while ( $string ) {
+        $string =~ s{^\s*}{}sx;
+        
         # check for a rogue @import rule
         if ( $string =~ s{$get_import_rule}{}sx ) {
             push @blocks, {
@@ -641,14 +670,30 @@ sub split_into_declaration_blocks {
                 };
         }
         
+        # check for verbatim blocks
+        elsif ( $string =~ s{$get_verbatim}{}sx ) {
+            push @blocks, {
+                    type => 'verbatim',
+                    string => $1,
+                };
+        }
+        
+        # check for verbatim comments
+        elsif ( $string =~ s{$get_comment}{}sx ) {
+            push @blocks, {
+                    type => 'verbatim',
+                    string => $1,
+                };
+        }
+        
         # try and find the next declaration
-        elsif ( $string =~ s{$get_next_block}{}sx ) {
+        elsif ( $string =~ s{$get_block}{}sx ) {
             my %match = %+;
             push @blocks, \%match;
         }
         
         # give up
-        else {
+        elsif ( $string ) {
             push @blocks, {
                     errors => [
                         error => "Unknown content.\n${string}\n",

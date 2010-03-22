@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 12;
+use Test::More  tests => 14;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -177,6 +177,45 @@ CSS
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "zoom:1 hack was:\n" . Dumper \@parsed;
+}
+
+# parse filter
+{
+    $css = <<CSS;
+        div { filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); }
+CSS
+    @structure = (
+            {
+                original  => ' filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'filter'  => 'progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344)',
+                },
+            },
+        );
+
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "filter hack was:\n" . Dumper \@parsed;
+}
+{
+    @structure = (
+            {
+                original  => ' filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff9999aa,endColorstr=#ff333344); ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property 'filter'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "filter hack was:\n" . Dumper \@parsed;
 }
 
 # verbatim comments

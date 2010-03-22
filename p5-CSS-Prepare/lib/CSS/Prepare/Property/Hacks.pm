@@ -16,6 +16,9 @@ sub parse {
     if ( 'zoom' eq $property && $self->support_hacks ) {
         $canonical{'zoom'} = $value;
     }
+    if ( 'filter' eq $property && $self->support_hacks ) {
+        $canonical{'filter'} = $value;
+    }
     
     return \%canonical, \@errors;
 }
@@ -30,6 +33,9 @@ sub output {
         }
         
         if ( 'zoom' eq $property ) {
+            push @output, "${property}:$block->{$property};";
+        }
+        if ( 'filter' eq $property ) {
             push @output, "${property}:$block->{$property};";
         }
     }

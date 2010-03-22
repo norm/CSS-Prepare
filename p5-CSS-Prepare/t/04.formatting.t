@@ -197,7 +197,7 @@ CSS
             },
         );
     $css = <<CSS;
-div{max-width:350px;min-width:100px;width:50%;}
+div{width:50%;max-width:350px;min-width:100px;}
 CSS
     
     $output = $preparer->output_as_string( @structure );

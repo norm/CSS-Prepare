@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 15;
+use Test::More  tests => 16;
 
 use CSS::Prepare;
 
@@ -7,7 +7,7 @@ my $preparer = CSS::Prepare->new();
 my( $css, @structure, $output );
 
 
-# # border-something shorthand properties are expanded
+# border-something shorthand properties are expanded
 {
     @structure = (
             {
@@ -421,3 +421,29 @@ CSS
         or say "border shorthand color was:\n" . $output;
 }
 
+# missing values do not trigger a shorthand
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    'border-right-width'  => '1px',
+                    'border-right-style'  => 'solid',
+                    'border-right-color'  => 'blue',
+                    'border-bottom-width' => '1px',
+                    'border-bottom-style' => 'solid',
+                    'border-bottom-color' => 'blue',
+                    'border-left-width'   => '1px',
+                    'border-left-style'   => 'solid',
+                    'border-left-color'   => 'blue',
+                },
+            },
+        );
+    $css = <<CSS;
+div{border-bottom:1px solid blue;border-left:1px solid blue;border-right:1px solid blue;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand was:\n" . $output;
+}

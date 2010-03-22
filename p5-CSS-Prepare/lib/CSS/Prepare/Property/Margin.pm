@@ -75,7 +75,8 @@ sub output {
     }
     
     if ( 4 == scalar @margin ) {
-        push @output, collapse_trbl_shorthand( 'margin', $block );
+        push @output,
+            collapse_trbl_shorthand( 'margin-%s', 'margin', $block );
     }
     else {
         push @output, @margin;

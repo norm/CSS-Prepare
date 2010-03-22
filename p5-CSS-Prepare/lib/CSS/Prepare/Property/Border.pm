@@ -15,62 +15,163 @@ sub parse {
     my %canonical;
     my @errors;
     
-    # TODO - use regexps now for validation of values
-    given ( $property ) {
+    my $valid_property_or_error = sub {
+            my $type  = shift;
+            
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = $value;
+            }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+        };
+    
+    my $shorthand_properties = qr{
+            ^
+            (?:
+                (?:
+                      (?'style'      $border_style_value  )
+                    | (?'width'      $border_width_value  )
+                    | (?'colour'     $border_colour_value )
+                )
+                \s*
+            )+
+            $
+        }x;
+    
+    foreach my $direction qw( top right bottom left ) {
+        &$valid_property_or_error( 'border_colour' )
+            if $property =~ m{border-${direction}-colou?r};
+        &$valid_property_or_error( 'border_style' )
+            if "border-${direction}-style" eq $property;
+        &$valid_property_or_error( 'border_width' )
+            if "border-${direction}-width" eq $property;
         
-        when ( 'border-width' ) {
-            %canonical = expand_trbl_shorthand(
-                    'border-%s-width',
-                    $value 
-                );
+        if ( "border-${direction}" eq $property ) {
+            if ( $value =~ $shorthand_properties ) {
+                my %values = %+;
+                
+                $canonical{"border-${direction}-color"}
+                    = $values{'colour'}  // '';
+                $canonical{"border-${direction}-style"}
+                    = $values{'style'}  // '';
+                $canonical{"border-${direction}-width"}
+                    = $values{'width'}  // '';
+            }
+            else {
+                push @errors, {
+                        error => "invalid border-${direction} property: "
+                                 . $value,
+                    };
+            }
         }
-        when ( 'border-top-width' )    { $canonical{ $property } = $value; }
-        when ( 'border-right-width' )  { $canonical{ $property } = $value; }
-        when ( 'border-bottom-width' ) { $canonical{ $property } = $value; }
-        when ( 'border-left-width' )   { $canonical{ $property } = $value; }
+    }
+    
+    if ( 'border-color' eq $property || 'border-colour' eq $property ) {
+        my $colour_shorthand_properties = qr{
+                ^
+                (?:
+                    $border_colour_value
+                    (?: \s+ $border_colour_value )?
+                    (?: \s+ $border_colour_value )?
+                    (?: \s+ $border_colour_value )?
+                )
+                $
+            }x;
         
-        when ( 'border-color' ) {
+        if ( $value =~ $colour_shorthand_properties ) {
             %canonical = expand_trbl_shorthand(
                     'border-%s-color',
                     $value 
                 );
         }
-        when ( 'border-top-color' )    { $canonical{ $property } = $value; }
-        when ( 'border-right-color' )  { $canonical{ $property } = $value; }
-        when ( 'border-bottom-color' ) { $canonical{ $property } = $value; }
-        when ( 'border-left-color' )   { $canonical{ $property } = $value; }
+        else {
+            push @errors, {
+                    error => "invalid border-color property: "
+                             . $value,
+                };
+        }
+    }
+    
+    if ( 'border-style' eq $property ) {
+        my $style_shorthand_properties = qr{
+                ^
+                (?:
+                    $border_style_value
+                    (?: \s+ $border_style_value )?
+                    (?: \s+ $border_style_value )?
+                    (?: \s+ $border_style_value )?
+                )
+                $
+            }x;
         
-        when ( 'border-style' ) {
+        if ( $value =~ $style_shorthand_properties ) {
             %canonical = expand_trbl_shorthand(
                     'border-%s-style',
                     $value 
                 );
         }
-        when ( 'border-top-style' )    { $canonical{ $property } = $value; }
-        when ( 'border-right-style' )  { $canonical{ $property } = $value; }
-        when ( 'border-bottom-style' ) { $canonical{ $property } = $value; }
-        when ( 'border-left-style' )   { $canonical{ $property } = $value; }
+        else {
+            push @errors, {
+                    error => "invalid border-style property: "
+                             . $value,
+                };
+        }
+    }
+    
+    if ( 'border-width' eq $property ) {
+        my $width_shorthand_properties = qr{
+                ^
+                (?:
+                    $border_width_value
+                    (?: \s+ $border_width_value )?
+                    (?: \s+ $border_width_value )?
+                    (?: \s+ $border_width_value )?
+                )
+                $
+            }x;
         
-        when ( 'border-top' ) {
-            %canonical = expand_border_shorthand( 'top', $value );
-        }
-        when ( 'border-right' ) {
-            %canonical = expand_border_shorthand( 'right', $value );
-        }
-        when ( 'border-bottom' ) {
-            %canonical = expand_border_shorthand( 'bottom', $value );
-        }
-        when ( 'border-left' ) {
-            %canonical = expand_border_shorthand( 'left', $value );
-        }
-        
-        when ( 'border' ) {
-             %canonical = (
-                    expand_border_shorthand( 'top', $value ),
-                    expand_border_shorthand( 'right', $value ),
-                    expand_border_shorthand( 'bottom', $value ),
-                    expand_border_shorthand( 'left', $value ),
+        if ( $value =~ $width_shorthand_properties ) {
+            %canonical = expand_trbl_shorthand(
+                    'border-%s-width',
+                    $value
                 );
+        }
+        else {
+            push @errors, {
+                    error => "invalid border-width property: "
+                             . $value,
+                };
+        }
+    }
+    
+    if ( 'border' eq $property ) {
+        if ( $value =~ $shorthand_properties ) {
+            my %values = %+;
+            
+            foreach my $direction qw( top right bottom left ) {
+                $canonical{"border-${direction}-color"}
+                    = $values{'colour'}  // '';
+                $canonical{"border-${direction}-style"}
+                    = $values{'style'}  // '';
+                $canonical{"border-${direction}-width"}
+                    = $values{'width'}  // '';
+            }
+        }
+        else {
+            push @errors, {
+                    error => "invalid border property: ${value}",
+                };
         }
     }
     
@@ -79,234 +180,136 @@ sub parse {
 sub output {
     my $block = shift;
     
-    my $count = 0;
-    my @values;
-    my %directions;
-    my %properties;
-    my $property;
-    my @output;
+    my( $by_direction, @output_by_direction )
+        = output_shorthand_by_direction( $block );
+    my( $by_property, @output_by_property )
+        = output_shorthand_by_property( $block );
     
-    foreach my $direction qw( top right bottom left ) {
-        foreach my $aspect qw( width color style ) {
-            $property = "border-${direction}-${aspect}";
-            my $value = $block->{ $property };
-            
-            if ( defined $value ) {
-                push @values, $value;
-                
-                $directions{ $direction }++;
-                $properties{ $aspect    }++;
-                $count++;
-            }
-        }
-    }
-    
-    if ( 1 == $count ) {
-        my $value = $block->{ $property };
-        push @output, ":${value};";
-    }
-    elsif ( 2 <= $count ) {
-        # if the same property only, and only that, can compress down
-        if ( 1 == scalar keys %properties ) {
-            my( $key, undef ) = each %properties;
-            push @output, collapse_border_shorthand_property( $key, $block );
-        }
-
-        # if the same direction only, and only that, can compress down
-        elsif ( 1 == scalar keys %directions ) {
-            my( $key, undef ) = each %directions;
-            push @output, collapse_border_shorthand_direction( $key, $block );
-        }
-        
-        # if multiple properties in multiple directions, might compress down
-        else {
-            push @output, collapse_border_shorthand( $block );
-        }
-    }
-    
-    return @output;
+    return ( length( $by_property ) < length( $by_direction ) )
+            ? @output_by_property
+            : @output_by_direction;
 }
 
-sub expand_border_shorthand {
-    my $side  = shift;
-    my $value = shift;
-    
-    my @values = split ( m{\s+}, $value );
-    my %values;
-    
-    given ( scalar @values ) {
-        when ( 1 ) {
-            # this produces a border
-            if ( is_border_style_value( $value ) ) {
-                $values{"border-${side}-width"} = '';
-                $values{"border-${side}-style"} = $value;
-                $values{"border-${side}-color"} = '';
-            }
-            
-            # these do not (TODO emit warning)
-            elsif ( is_border_colour_value( $value ) ) {
-                $values{"border-${side}-width"} = '';
-                $values{"border-${side}-style"} = '';
-                $values{"border-${side}-color"} = $value;
-            }
-            elsif ( is_border_width_value( $value ) ) {
-                $values{"border-${side}-width"} = $value;
-                $values{"border-${side}-style"} = '';
-                $values{"border-${side}-color"} = '';
-            }
-            else {
-                die;
-            }
-        }
-        when ( 2 ) {
-            my $property1
-                = is_border_style_value( $values[0] )    ? 'style'
-                  : is_border_colour_value( $values[0] ) ? 'color'
-                  : is_border_width_value( $values[0] )  ? 'width'
-                                                         : 'unknown';
-            my $property2
-                = is_border_style_value( $values[1] )    ? 'style'
-                  : is_border_colour_value( $values[1] ) ? 'color'
-                  : is_border_width_value( $values[1] )  ? 'width'
-                                                         : 'unknown';
-            
-            if ( 'unknown' eq $property1 || 'unknown' eq $property2 ) {
-                die;
-            }
-            
-            my $property3 
-                = ('style' ne $property1 && 'style' ne $property2) ? 'style'
-                : ('color' ne $property1 && 'color' ne $property2) ? 'color'
-                                                                   : 'width';
-            
-            $values{"border-${side}-${property1}"} = $values[0];
-            $values{"border-${side}-${property2}"} = $values[1];
-            $values{"border-${side}-${property3}"} = '';
-        }
-        when ( 3 ) {
-            $values{"border-${side}-width"} = $values[0];
-            $values{"border-${side}-style"} = $values[1];
-            $values{"border-${side}-color"} = $values[2];
-        }
-    }
-    
-    return %values;
-}
-sub collapse_border_shorthand_property {
-    my $key        = shift;
-    my $block      = shift;
-    my $value_only = shift;
-    
-    my %values;
-    foreach my $direction qw( top right bottom left ) {
-        my $value = $block->{"border-${direction}-${key}"};
-        $values{ $value }++;
-    }
-    
-    given ( scalar keys %values ) {
-        when ( 1 ) {
-            return ( $value_only ? '' : "border-${key}:" )
-                 . $block->{"border-top-${key}"}
-                 . ';';
-        }
-        when ( 2 ) {
-            return ( $value_only ? '' : "border-${key}:" )
-                 . $block->{"border-top-${key}"} 
-                 . ' ' 
-                 . $block->{"border-right-${key}"}
-                 . ';';
-        }
-        when ( 3 ) {
-            return ( $value_only ? '' : "border-${key}:" )
-                 . $block->{"border-top-${key}"} 
-                 . ' ' 
-                 . $block->{"border-right-${key}"}
-                 . ' ' 
-                 . $block->{"border-bottom-${key}"}
-                 . ';';
-        }
-        when ( 4 ) {
-            return ( $value_only ? '' : "border-${key}:" )
-                 . $block->{"border-top-${key}"} 
-                 . ' ' 
-                 . $block->{"border-right-${key}"}
-                 . ' ' 
-                 . $block->{"border-bottom-${key}"}
-                 . ' ' 
-                 . $block->{"border-left-${key}"}
-                 . ';';
-        }
-    }
-}
-sub collapse_border_shorthand_direction {
-    my $direction  = shift;
-    my $block      = shift;
-    my $value_only = shift;
-    
-    my @values;
-    foreach my $property qw( width style color ) {
-        my $key   = "border-${direction}-${property}";
-        my $value = $block->{ $key };
-        
-        if ( defined $value ) {
-            if ( '0' eq $value ) {
-                push @values, '0';
-            }
-            elsif ( $value ) {
-                push @values, $block->{ $key };
-            }
-        }
-    }
-    
-    return ( $value_only ? '' : "border-${direction}:" )
-         . join( ' ', @values )
-         . ';';
-}
-sub collapse_border_shorthand {
+sub output_shorthand_by_direction {
     my $block = shift;
     
-    my %properties;
-    foreach my $direction qw( top right bottom left ) {
-        my $output 
-            = collapse_border_shorthand_direction( $direction, $block, 1 );
-        push @{ $properties{ $output } }, $direction;
+    my @output;
+    my %directions;
+    my %by_value;
+    
+    DIRECTION:
+    foreach my $direction ( @standard_directions ) {
+        my $shorthand;
+        
+        ASPECT:
+        foreach my $aspect qw( width style color ) {
+            my $property = "border-${direction}-${aspect}";
+            my $value    = $block->{ $property };
+            
+            next DIRECTION
+                unless defined $value;
+            
+            $shorthand .= " $value"
+                if '' ne $value;
+        }
+        
+        $shorthand =~ s{^\s+}{};
+        $directions{ $direction } = $shorthand;
+        push @{$by_value{ $shorthand }}, $direction;
     }
     
-    my $count = scalar keys %properties;
-    given ( $count ) {
-        when ( 1 ) {
-            # it's a complete border shorthand if all directions match
-            my( $key, undef ) = each %properties;
-            return "border:${key}"
-        }
-        when ( 2 || 3 ) {
-            # one or two directions override the complete border
-            my $sort = sub {
-                    my $a_count = scalar @{ $properties{ $a } };
-                    my $b_count = scalar @{ $properties{ $b } };
-                    return $b_count <=> $a_count;
-                };
+    # if we have all four directions as shorthand, then we can probably
+    # create a border shorthand
+    if ( 4 == scalar keys %directions ) {
+        # if all directions the same, we have a border shorthand
+        if ( 1 == scalar keys %by_value ) {
+            my( $property, undef ) = each %by_value;
             
-            my $first  = 1;
-            my $output;
-            foreach my $value ( sort $sort keys %properties ) {
-                if ( $first ) {
-                    $output .= "border:${value}";
-                    $first   = 0;
-                }
-                else {
-                    foreach my $direction ( @{ $properties{ $value } } ) {
-                        $output .= "border-${direction}:$value";
-                    }
+            push @output, "border:${property};";
+        }
+        # if at least two directions are the same, we have a border shorthand
+        # that is then overriden by other directions
+        elsif ( 4 != scalar keys %by_value ) {
+            my $num_children = sub {
+                    my $a_children = scalar @{$by_value{ $a }};
+                    my $b_children = scalar @{$by_value{ $b }};
+                    return $b_children <=> $a_children;
+                };
+            my @properties = sort $num_children keys %by_value;
+            
+            my $property = shift @properties;
+            push @output, "border:${property};";
+            
+            foreach $property ( @properties ) {
+                foreach my $direction ( @{$by_value{ $property }} ) {
+                    push @output, "border-${direction}:${property};";
                 }
             }
-            
-            return $output;
         }
-        when ( 4 ) {
-            die;
+        # if all four directions different, we have no border shorthand so
+        # save the by-direction types to compare against the by-property types
+        else {
+            foreach my $property ( sort keys %by_value ) {
+                my $value = $by_value{ $property };
+                push @output, "border-${value}:${property};";
+            }
         }
     }
+    else {
+        foreach my $direction ( @standard_directions ) {
+            my $value = $directions{ $direction };
+            
+            if ( defined $value ) {
+                push @output, "border-${direction}:${value};";
+            }
+            else {
+                foreach my $aspect qw( color style width ) {
+                    my $property = "border-${direction}-${aspect}";
+                    my $value    = $block->{ $property };
+                    
+                    push @output, "${property}:${value};"
+                        if defined $value;
+                }
+            }
+        }
+    }
+    
+    my $output = join '', @output;
+    return( $output, @output );
+}
+
+sub output_shorthand_by_property {
+    my $block = shift;
+    
+    my @output;
+    my %properties;
+    
+    ASPECT:
+    foreach my $aspect qw( color style width ) {
+        my @properties;
+        
+        DIRECTION:
+        foreach my $direction ( @standard_directions ) {
+            my $property = "border-${direction}-${aspect}";
+            my $value    = $block->{ $property };
+            
+            push @properties, "${property}:$value;"
+                if defined $value;
+        }
+        
+        if ( 4 == scalar @properties ) {
+            push @output,
+                collapse_trbl_shorthand(
+                    "border-%s-${aspect}", "border-${aspect}", $block
+                );
+        }
+        else {
+            push @output, @properties;
+        }
+    }
+    
+    my $output = join '', @output;
+    return( $output, @output );
 }
 
 1;

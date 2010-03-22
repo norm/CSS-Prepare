@@ -65,12 +65,14 @@ sub expand_trbl_shorthand {
     return %values;
 }
 sub collapse_trbl_shorthand {
+    my $pattern  = shift;
     my $property = shift;
     my $block    = shift;
     
     my %values;
     foreach my $direction qw( top right bottom left ) {
-        my $value = $block->{"${property}-${direction}"};
+        my $key   = sprintf $pattern, $direction;
+        my $value = $block->{ $key };
         $values{ $value }++;
     }
     
@@ -82,10 +84,14 @@ sub collapse_trbl_shorthand {
         $output = "${property}:${key}";
     }
     else {
-        my $top          = $block->{"${property}-top"};
-        my $right        = $block->{"${property}-right"};
-        my $bottom       = $block->{"${property}-bottom"};
-        my $left         = $block->{"${property}-left"};
+        my $key          = sprintf $pattern, 'top';
+        my $top          = $block->{ $key };
+           $key          = sprintf $pattern, 'right';
+        my $right        = $block->{ $key };
+           $key          = sprintf $pattern, 'bottom';
+        my $bottom       = $block->{ $key };
+           $key          = sprintf $pattern, 'left';
+        my $left         = $block->{ $key };
         my $three_values = $top  ne $bottom;
         my $four_values  = $left ne $right;
         

@@ -70,11 +70,16 @@ our @EXPORT = qw(
         is_word_spacing_value
         is_z_index_value
         
+        @standard_directions
+        
         $background_attachment_value
         $background_colour_value
         $background_image_value
         $background_repeat_value
         $background_position_value
+        $border_colour_value
+        $border_style_value
+        $border_width_value
         $font_family_value
         $font_style_value
         $font_size_value
@@ -95,6 +100,10 @@ our @EXPORT = qw(
         $string_value
         $url_value
     );
+
+
+# shorthands
+our @standard_directions = qw( top right bottom left );
 
 # primitive types
 my $integer_value     = qr{ [+-]? [0-9]+ }x;
@@ -207,7 +216,7 @@ our $background_position_value = qr{
     }x;
 
 my $border_collapse_value = qr{ (?: collapse | separate | inherit ) }x;
-my $border_colour_value = qr{ (?: transparent | inherit | $colour_value ) }x;
+our $border_colour_value = qr{ (?: transparent | inherit | $colour_value ) }x;
 my $border_spacing_value = qr{
         (?:
               $length_value
@@ -215,7 +224,7 @@ my $border_spacing_value = qr{
             | inherit
         )
     }x;
-my $border_style_value = qr{
+our $border_style_value = qr{
         (?:
               dashed | dotted | double | groove | hidden
             | inset  | outset | ridge  | solid
@@ -223,7 +232,7 @@ my $border_style_value = qr{
             | none | inherit
         )
     }x;
-my $border_width_value
+our $border_width_value
     = qr{ (?: thin | medium | thick | $length_value | inherit ) }x;
 
 my $caption_side_value = qr{ (?: top | bottom | inherit ) }x;

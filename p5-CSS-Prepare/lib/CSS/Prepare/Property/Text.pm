@@ -14,16 +14,51 @@ sub parse {
     my %canonical;
     my @errors;
     
-    given ( $property ) {
-        when ( 'letter-spacing'  ) { $canonical{ $property } = $value; }
-        when ( 'text-align'      ) { $canonical{ $property } = $value; }
-        when ( 'text-decoration' ) { $canonical{ $property } = $value; }
-        when ( 'text-indent'     ) { $canonical{ $property } = $value; }
-        when ( 'text-transform'  ) { $canonical{ $property } = $value; }
-        when ( 'white-space'     ) { $canonical{ $property } = $value; }
-        when ( 'word-spacing'    ) { $canonical{ $property } = $value; }
-        when ( 'content'         ) { $canonical{ $property } = $value; }
-    }
+    my $valid_property_or_error = sub {
+            my $type  = shift;
+            
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = $value;
+            }
+            else {
+                push @errors, {
+                        error => "invalid ${type} property: ${value}"
+                    };
+            }
+            return $is_valid;
+        };
+    
+    &$valid_property_or_error( 'letter_spacing' )
+        if 'letter-spacing' eq $property;
+    
+    &$valid_property_or_error( 'text_align' )
+        if 'text-align' eq $property;
+    
+    &$valid_property_or_error( 'text_decoration' )
+        if 'text-decoration' eq $property;
+    
+    &$valid_property_or_error( 'text_indent' )
+        if 'text-indent' eq $property;
+    
+    &$valid_property_or_error( 'text_transform' )
+        if 'text-transform' eq $property;
+    
+    &$valid_property_or_error( 'white_space' )
+        if 'white-space' eq $property;
+    
+    &$valid_property_or_error( 'word_spacing' )
+        if 'word-spacing' eq $property;
+    
+    &$valid_property_or_error( 'content' )
+        if 'content' eq $property;
     
     return \%canonical, \@errors;
 }

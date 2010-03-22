@@ -32,7 +32,7 @@ sub parse {
             }
             else {
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };
@@ -57,6 +57,11 @@ sub parse {
                     'margin-%s',
                     $value
                 );
+        }
+        else {
+            push @errors, {
+                    error => "invalid margin property: '${value}'"
+                };
         }
     }
     

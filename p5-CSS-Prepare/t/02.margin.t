@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 8;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -187,4 +187,27 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "no shorthand was:\n" . Dumper \@parsed;
+}
+
+# invalid values are properly flagged
+{
+    $css = <<CSS;
+        div { margin: 0 px; }
+CSS
+    @structure = (
+            {
+                original  => ' margin: 0 px; ',
+                errors    => [
+                    {
+                        error => "invalid margin property: '0 px'"
+                    },
+                ],
+                selectors => [ 'div' ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid value was:\n" . Dumper \@parsed;
 }

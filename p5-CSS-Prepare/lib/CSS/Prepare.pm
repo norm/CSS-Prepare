@@ -695,9 +695,9 @@ sub split_into_declaration_blocks {
         # give up
         elsif ( $string ) {
             push @blocks, {
-                    errors => [
+                    errors => [{
                         error => "Unknown content.\n${string}\n",
-                    ],
+                    }],
                 };
             $string = undef;
         }

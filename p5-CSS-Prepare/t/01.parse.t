@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 19;
+use Test::More  tests => 20;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -528,13 +528,26 @@ CSS
         or say "\@media block was:\n" . Dumper \@parsed;
 }
 
+# not a stylesheet
+{
+    $css = <<CSS;
+I am not a stylesheet.
+CSS
+    @structure = (
+            {
+                errors => [
+                    {
+                        error => "Unknown content.\n" .
+                                 "I am not a stylesheet.\n\n",
+                    }
+                ],
+            },
+        );
 
-# TODO 
-#   -   stylesheet with invalid syntax 
-#   -   stylesheet with an @media block 
-#   -   stylesheet with broken @media block
-#   -   declaration block that includes a closing curly brace in there
-#   -   other tests that find flaws in the simple regexps
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "not a stylesheet was:\n" . Dumper \@parsed;
+}
 
 # TODO - check CSS spec for behaviour on =>  errors and ignoring properties
 #        and create more tests for those

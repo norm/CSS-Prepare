@@ -75,8 +75,9 @@ sub output {
     }
     
     if ( 4 == scalar @padding ) {
-        push @output,
-            collapse_trbl_shorthand( 'padding-%s', 'padding', $block );
+        my( $output, undef )
+            = collapse_trbl_shorthand( 'padding-%s', 'padding', $block );
+        push @output, $output;
     }
     else {
         push @output, @padding;

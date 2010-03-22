@@ -244,19 +244,30 @@ sub output_as_string {
 sub output_block_as_string {
     my $block = shift;
     
-    my $hacks_last = sub {
+    my $shorthands_first_hacks_last = sub {
             my $a_hack     = ( $a =~ m{^[_\*]} );
             my $b_hack     = ( $b =~ m{^[_\*]} );
             my $hack_count = $a_hack + $b_hack;
             
-            if ( 1 == $hack_count ) {
-                return $a_hack ? 1 : -1;
-            }
+            # sort hacks after normal properties
+            return $a_hack ? 1 : -1
+                if 1 == $hack_count;
+            
+            my $a_shorthand = ( $a =~ m{^ [a-z]+ - }ix );
+            my $b_shorthand = ( $b =~ m{^ [a-z]+ - }ix );
+            my $shorthand_count = $a_shorthand + $b_shorthand;
+            
+            # sort shorthands before specifics
+            return ( $a_shorthand ? 1 : -1 )
+                if 1 == $shorthand_count;
+            
+            # just sort alphabetically
             return $a cmp $b;
         };
-    
+
     my %properties = output_properties( $block->{'block'} );
-    my $output     = join '', sort $hacks_last keys %properties;
+    my $output     = join '', 
+                         sort $shorthands_first_hacks_last keys %properties;
     my $selector   = join ',', @{ $block->{'selectors'} };
     
     return "${selector}\{${output}\}\n";

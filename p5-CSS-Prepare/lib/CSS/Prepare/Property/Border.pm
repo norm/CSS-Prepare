@@ -239,10 +239,19 @@ sub output_shorthand_by_direction {
             
             my $property = shift @properties;
             push @output, "border:${property};";
+            my $shorthand_direction = $by_value{$property}->[0];
             
             foreach $property ( @properties ) {
                 foreach my $direction ( @{$by_value{ $property }} ) {
-                    push @output, "border-${direction}:${property};";
+                    my $difference = output_direction_difference(
+                                         $shorthand_direction,
+                                         $direction,
+                                         $block
+                                     );
+                    
+                    push @output, ( defined $difference
+                                    ? $difference
+                                    : "border-${direction}:${property};" );
                 }
             }
         }
@@ -282,7 +291,8 @@ sub output_shorthand_by_property {
     my $block = shift;
     
     my @output;
-    my %properties;
+    my %shorthands;
+    my %shorthand_count;
     
     ASPECT:
     foreach my $aspect qw( color style width ) {
@@ -298,18 +308,71 @@ sub output_shorthand_by_property {
         }
         
         if ( 4 == scalar @properties ) {
-            push @output,
-                collapse_trbl_shorthand(
+            my( $shorthand, $count ) = collapse_trbl_shorthand(
                     "border-%s-${aspect}", "border-${aspect}", $block
                 );
+            
+            $shorthand_count{ $aspect } = $count;
+            $shorthands{ $aspect } = $shorthand;
         }
         else {
             push @output, @properties;
         }
     }
     
+    # if two of the three properties are 1-value shorthands, we can
+    # create a border shorthand and over-ride the remaining property
+    my $count = grep {
+            defined $shorthand_count{ $_ }
+            && 1 == $shorthand_count{ $_ }
+        } qw( color style width );
+    
+    if ( 2 == $count ) {
+        my $shorthand;
+        my $override;
+        foreach my $aspect qw( width style color ) {
+            if ( 1 == $shorthand_count{ $aspect } ) {
+                my $value = $shorthands{ $aspect };
+                $value =~ s{^.*:(.*);$}{$1};
+                $shorthand .= " $value";
+            }
+            else {
+                $override = $shorthands{ $aspect };
+            }
+        }
+        
+        $shorthand =~ s{^\s+}{};
+        push @output, "border:$shorthand;",
+                      $override;
+    }
+    else {
+        push @output, values %shorthands;
+    }
+    
     my $output = join '', @output;
     return( $output, @output );
+}
+
+sub output_direction_difference {
+    my $shorthand = shift;
+    my $direction = shift;
+    my $block     = shift;
+    
+    # If one and only one aspect is different, it is worth outputting that
+    # as an over-ride. With two or three, the direction shorthand method
+    # is shorter.
+    my $rule;
+    foreach my $aspect qw( color style width ) {
+        my $compare = $block->{"border-${shorthand}-${aspect}"};
+        my $with    = $block->{"border-${direction}-${aspect}"};
+        
+        if ( $compare ne $with ) {
+            return if defined $rule;
+            $rule = "border-${direction}-${aspect}:${with};";
+        }
+    }
+    
+    return $rule;
 }
 
 1;

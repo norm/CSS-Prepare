@@ -329,9 +329,6 @@ CSS
         or say "shorthand properties was:\n" . $output;
 }
 
-TODO: {
-local $TODO = "Logic for collapsing borders quite complex.";
-
 # complex interactions
 {
     @structure = (
@@ -382,13 +379,12 @@ CSS
             },
         );
     $css = <<CSS;
-div{border:2px dashed red;border-width:2px 1px;}
+div{border:dashed red;border-width:2px 1px;}
 CSS
     
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "complex override two properties was:\n" . $output;
-}
 }
 
 # important values do not cause collapsing

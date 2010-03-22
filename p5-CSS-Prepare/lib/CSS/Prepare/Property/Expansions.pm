@@ -108,7 +108,7 @@ sub collapse_trbl_shorthand {
     }
     # four value shorthand
     
-    return "$output;";
+    return( "$output;", scalar keys %values );
 }
 
 sub expand_clip {

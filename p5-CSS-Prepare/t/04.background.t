@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 9;
 
 use CSS::Prepare;
 
@@ -66,12 +66,12 @@ CSS
                     'background-image'      => 'url(blah.gif)', 
                     'background-repeat'     => 'no-repeat', 
                     'background-attachment' => 'fixed', 
-                    'background-position'   => 'center center', 
+                    'background-position'   => 'center right',
                 },
             },
         );
     $css = <<CSS;
-div{background:#000 url(blah.gif) no-repeat fixed center center;}
+div{background:#000 url(blah.gif) no-repeat fixed center right;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -155,12 +155,12 @@ CSS
                     'important-background-image' => 'url(blah.gif)',
                     'background-repeat'          => 'no-repeat',
                     'background-attachment'      => 'fixed',
-                    'background-position'        => 'left center',
+                    'background-position'        => 'left top',
                 },
             },
         );
     $css = <<CSS;
-div{background-attachment:fixed;background-color:#000;background-image:url(blah.gif) !important;background-position:left center;background-repeat:no-repeat;}
+div{background-attachment:fixed;background-color:#000;background-image:url(blah.gif) !important;background-position:left top;background-repeat:no-repeat;}
 CSS
 
     $output = $preparer->output_as_string( @structure );
@@ -168,16 +168,28 @@ CSS
         or say "background shorthanded value was:\n" . $output;
 }
 
-# don't clobber values when requested
-#
-# #thing li { background: ...}
-# #thing li.blah { background-position: x y; background-repeat: none; }
-#
-# breaks "#thing li.blah" from using other bg values set in "#thing li"
-# as they will be reset to initial values
-# 
-# #thing li.blah {
-#     background-position: x y; 
-#     background-repeat: none;
-#     -cssprep-no-shorthand: 1;
-# }
+# don't emit second value when it is center for background-position
+{
+    @structure = (
+        {
+            selectors => [ 'div' ],
+            block     => {
+                'background-position'        => 'center center',
+            },
+        },
+        {
+            selectors => [ 'h1' ],
+            block     => {
+                'background-position'        => '20px center',
+            },
+        },
+        );
+    $css = <<CSS;
+div{background-position:center;}
+h1{background-position:20px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "background shorthanded value was:\n" . $output;
+}

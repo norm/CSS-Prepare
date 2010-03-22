@@ -108,11 +108,11 @@ sub output {
     my $shorthand;
     
     foreach my $property ( @properties ) {
-        # TODO 'background-position: center center' could be written
-        #      'background-position: center' (etc)
         my $value = $block->{ $property };
         
         if ( defined $value ) {
+            $value = shorten_background_position_value( $value )
+                if 'background-position' eq $property;
             $value = shorten_colour_value( $value )
                 if 'background-color' eq $property;
                 
@@ -131,6 +131,15 @@ sub output {
     }
     
     return @output;
+}
+
+sub shorten_background_position_value {
+    my $value = shift;
+    
+    return unless defined $value;
+    
+    $value =~ s{(.+) \s+ (?: center | 50\% ) $}{$1}x;
+    return $value;
 }
 
 1;

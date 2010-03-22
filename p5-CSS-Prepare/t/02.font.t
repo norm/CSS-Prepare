@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -165,6 +165,79 @@ CSS
                     'important-line-height'  => '16px',
                     'important-font-family'  => '"Palatino"',
                 },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important full font shorthand was:\n" . Dumper \@parsed;
+}
+
+# shorthand with the first three properties in a different order
+{
+    $css = <<CSS;
+        div { font: 700 oblique normal 13px/1.2 sans-serif; }
+CSS
+    @structure = (
+            {
+                original  => ' font: 700 oblique normal'
+                           . ' 13px/1.2 sans-serif; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'font-style'   => 'oblique',
+                    'font-variant' => 'normal',
+                    'font-weight'  => '700',
+                    'font-size'    => '13px',
+                    'line-height'  => '1.2',
+                    'font-family'  => 'sans-serif',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "different order font shorthand was:\n" . Dumper \@parsed;
+}
+
+# need a minimum of size and family for it to be a valid shorthand
+{
+    $css = <<CSS;
+        div { font: bold italic; }
+CSS
+    @structure = (
+            {
+                original  => ' font: bold italic; ',
+                errors    => [
+                    {
+                        error => 'invalid font property: bold italic',
+                    }
+                ],
+                selectors => [ 'div' ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "important full font shorthand was:\n" . Dumper \@parsed;
+}
+
+# cannot switch size and family in order
+{
+    $css = <<CSS;
+        div { font: Verdana 10px; }
+CSS
+    @structure = (
+            {
+                original  => ' font: Verdana 10px; ',
+                errors    => [
+                    {
+                        error => 'invalid font property: Verdana 10px',
+                    }
+                ],
+                selectors => [ 'div' ],
+                block     => {},
             },
         );
 

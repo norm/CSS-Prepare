@@ -53,17 +53,15 @@ sub parse {
     if ( 'font' eq $property ) {
         my $shorthand_properties = qr{
                 ^
-                (?: (?'style'       $font_style_value ) \s+ )?
-                (?: (?'variant'     $font_variant_value ) \s+ )?
-                (?: (?'weight'      $font_weight_value ) \s+ )?
                 (?:
-                    (?'size'        $font_size_value )
-                    (?: /
-                        (?'height'  $line_height_value )
-                    )?
-                    \s+
-                )?
-                (?: (?'family'      $font_family_value ) )?
+                    (?: (?'style'   $font_style_value ) \s+ )?
+                    (?: (?'variant' $font_variant_value ) \s+ )?
+                    (?: (?'weight'  $font_weight_value ) \s+ )?
+                )*
+                (?'size' $font_size_value )
+                (?: / (?'height' $line_height_value ) )?
+                \s+
+                (?'family' $font_family_value )
                 $
             }x;
         

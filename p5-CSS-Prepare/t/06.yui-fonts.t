@@ -20,7 +20,7 @@ if ( ! $preparer->has_http() ) {
 
 {
     $css = <<CSS;
-body{font-size:13px;line-height:1.231;*font-family:x-small;*font-size:small;}
+body{font-size:13px;line-height:1.231;*font-size:small;}
 body,button,input,select,textarea{font-family:arial,helvetica,clean,sans-serif;}
 button,input,select,textarea{font-size:99%;}
 code,kbd,pre,samp,tt{font-family:monospace;line-height:100%;*font-size:108%;}
@@ -31,7 +31,10 @@ CSS
                      'http://yui.yahooapis.com/2.8.0r4/build/fonts/fonts.css'
                  );
     
-    my @errors = ({ error => 'invalid font property: 100%' });
+    my @errors = (
+            { error => 'invalid font property: x-small' },
+            { error => 'invalid font property: 100%' },
+        );
     my @found_errors;
     foreach my $block ( @structure ) {
         foreach my $error ( @{$block->{'errors'}} ) {

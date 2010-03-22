@@ -33,8 +33,9 @@ sub new {
     my %args  = @_;
     
     my $self = {
-            hacks    => 1,
-            features => 0,
+            hacks      => 1,
+            features   => 0,
+            suboptimal => 500,
             %args
         };
     bless $self, $class;
@@ -82,6 +83,20 @@ sub set_features {
 sub support_features {
     my $self = shift;
     return $self->{'features'};
+}
+sub get_suboptimal {
+    my $self = shift;
+    return $self->{'suboptimal'};
+}
+sub set_suboptimal {
+    my $self     = shift;
+    my $features = shift // 0;
+    
+    $self->{'suboptimal'} = $features;
+}
+sub suboptimal_threshold {
+    my $self = shift;
+    return $self->{'suboptimal'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -275,9 +290,6 @@ sub output_properties {
     return %properties;
 }
 
-sub get_stylesheet {
-    
-}
 sub read_file {
     my $self = shift;
     my $file = shift;
@@ -831,8 +843,20 @@ sub optimise {
     
     my %styles     = $self->sort_blocks_into_hash( @data );
     my @properties = array_of_properties( %styles );
-    my %state      = get_optimal_state( @properties );
-    my @optimised  = $self->get_blocks_from_state( %state );
+    # my $before     = output_as_string( @properties );
+    
+    my $property_count = scalar @properties;
+    my %state;
+    
+    say STDERR "Found $property_count properties.";
+    %state = $self->get_optimal_state( @properties );
+    
+    my @optimised = $self->get_blocks_from_state( %state );
+    # my $after     = output_as_string( @optimised );
+    # my $savings   = length( $before ) - length( $after );
+    # 
+    # say STDERR "Saved $savings bytes.";
+    # # TODO - calculate savings, even when suboptimal has been used
     
     return @optimised;
 }
@@ -868,18 +892,81 @@ sub array_of_properties {
     
     return @properties;
 }
+sub get_suboptimal_state {
+    my @properties = @_;
+    
+    my %by_selector;
+    while ( @properties ) {
+        my $selector = shift @properties;
+        my $property = shift @properties;
+        $by_selector{ $selector }{ $property } = 1;
+    }
+    
+    my %by_property;
+    foreach my $selector ( sort keys %by_selector ) {
+        my $properties = join '', sort keys %{$by_selector{ $selector }};
+        
+        $by_property{ $properties }{ $selector } = 1;
+    }
+    
+    return %by_property;
+}
 sub get_optimal_state {
+    my $self       = shift;
     my @properties = @_;
     
     my %by_property   = get_selectors_by_property( @properties );
     my $found_savings = 1;
     my $total_savings = 0;
     
-    while ( $found_savings ) {
-        ( $found_savings, %by_property )
-            = mix_biggest_properties( %by_property );
+    # if only one thing has that property, the only thing it can be
+    # successfully combined with is something with the same selector,
+    # so don't even bother calculating possible savings on them, just
+    # combine them at the end
+    my( %multiples, %singles );
+    foreach my $property ( keys %by_property ) {
+        my $selectors = scalar keys %{$by_property{ $property }};
         
-        $total_savings += $found_savings;
+        if ( $selectors > 1 ) {
+            $multiples{ $property } = $by_property{ $property };
+        }
+        else {
+            $singles{ $property } = $by_property{ $property };
+        }
+    }
+    
+    my $suboptimal = 0;
+    if ( scalar keys %multiples ) {
+        my $start_time = time();
+        my %cache;
+        
+        MIX:
+        while ( $found_savings ) {
+            # adopt a faster strategy if there are too many properties
+            # to deal with, or the code tends towards infinite
+            # time taken to calculate the results
+            if ( time() > ( $start_time + $self->suboptimal_threshold ) ) {
+                say STDERR 'Time threshold reached -- '
+                           . 'switching to suboptimal optimisation.';
+                last MIX;
+            }
+            
+            ( $found_savings, %multiples )
+                = mix_biggest_properties( \%cache, %multiples );
+            
+            $total_savings += $found_savings;
+            print STDERR "\r-> savings $total_savings";
+        }
+    }
+    
+    %by_property = (
+            %singles,
+            %multiples
+        );
+        
+    if ( $suboptimal ) {
+        my @properties = array_of_properties( %by_property );
+        %by_property   = get_suboptimal_state( @properties );
     }
     
     return %by_property;
@@ -898,6 +985,7 @@ sub get_selectors_by_property {
     return %by_property;
 }
 sub mix_biggest_properties {
+    my $cache       = shift;
     my %by_property = @_;
     
     my $num_children = sub {
@@ -909,11 +997,11 @@ sub mix_biggest_properties {
     
     foreach my $property ( @sorted_properties ) {
         my( $mix_with, $saving )
-            = get_biggest_saving_if_mixed( $property, %by_property );
-            
+            = get_biggest_saving_if_mixed( $property, $cache, %by_property );
+        
         if ( defined $mix_with ) {
             my %properties
-                = mix_properties( $property, $mix_with, %by_property );
+                = mix_properties( $property, $mix_with, $cache, %by_property );
             return( $saving, %properties );
         }
     }
@@ -922,51 +1010,66 @@ sub mix_biggest_properties {
 }
 sub get_biggest_saving_if_mixed {
     my $property   = shift;
+    my $cache      = shift;
     my %properties = @_;
+    
+    return if defined $cache->{'no_savings'}{ $property };
     
     my $unmixed_property_length
         = output_string_length( $property, keys %{$properties{ $property }} );
-    my %savings;
-    
-    foreach my $examine ( keys %properties ) {
-        next if $property eq $examine;
-        
-        my @common_selectors
-            = get_common_selectors( $property, $examine, %properties );
-        my @property_remaining
-            = get_remaining_selectors( $examine, $property, %properties );
-        my @examine_remaining
-            = get_remaining_selectors( $property, $examine, %properties );
-        
-        my $unmixed_examine_length
-            = output_string_length(
-                  $examine, keys %{$properties{ $examine }} );
-        my $mixed_common_length
-            = output_string_length( "$property,$examine", @common_selectors );
-        my $mixed_selector_length
-            = output_string_length( $property, @property_remaining );
-        my $mixed_examine_length
-            = output_string_length( $examine, @examine_remaining );
-        
-        my $unmixed = $unmixed_property_length + $unmixed_examine_length;
-        my $mixed   = $mixed_common_length
-                      + $mixed_selector_length
-                      + $mixed_examine_length;
-        
-        $savings{ $examine }
-            = ( $unmixed - $mixed );
-    }
-    
     my $largest_value = 0;
     my $largest;
-    foreach my $key ( keys %savings ) {
-        my $value = $savings{ $key };
+    
+    EXAMINE:
+    foreach my $examine ( keys %properties ) {
+        next if $property eq $examine;
+        next if 1 == scalar( keys %{$properties{ $examine  }} );
         
-        if ( $value > $largest_value ) {
-            $largest_value = $value;
-            $largest       = $key;
+        my( $a, $b ) = sort( $property, $examine );
+        my $saving = $cache->{ $a }{ $b };
+        
+        if ( !defined $saving ) {
+            my @common_selectors
+                = get_common_selectors( $property, $examine, %properties );
+            
+            if ( 0 == scalar @common_selectors ) {
+                $cache->{ $a }{ $b } = 0;
+                next EXAMINE;
+            }
+            
+            my @property_remaining
+                = get_remaining_selectors( $examine, $property, %properties );
+            my @examine_remaining
+                = get_remaining_selectors( $property, $examine, %properties );
+            
+            my $unmixed_examine_length
+                = output_string_length(
+                      $examine, keys %{$properties{ $examine }} );
+            my $mixed_common_length
+                = output_string_length(
+                      "${property},${examine}", @common_selectors );
+            my $mixed_selector_length
+                = output_string_length( $property, @property_remaining );
+            my $mixed_examine_length
+                = output_string_length( $examine, @examine_remaining );
+            
+            my $unmixed = $unmixed_property_length + $unmixed_examine_length;
+            my $mixed   = $mixed_common_length
+                          + $mixed_selector_length
+                          + $mixed_examine_length;
+            
+            $saving = $unmixed - $mixed;
+            $cache->{ $a }{ $b } = $saving;
+        }
+        
+        if ( $saving > $largest_value ) {
+            $largest_value = $saving;
+            $largest       = $examine;
         }
     }
+    
+    $cache->{'no_savings'}{ $property } = 1
+        unless $largest_value;
     
     return( $largest, $largest_value );
 }
@@ -1008,11 +1111,17 @@ sub get_remaining_selectors {
 sub mix_properties {
     my $property   = shift;
     my $mix_with   = shift;
+    my $cache      = shift;
     my %properties = @_;
     
     my $mixed_property = join '', sort( $property, $mix_with );
     my @common_selectors
         = get_common_selectors( $property, $mix_with, %properties );
+    
+    delete $cache->{ $property };
+    delete $cache->{'no_savings'}{ $property };
+    delete $cache->{ $mix_with };
+    delete $cache->{'no_savings'}{ $mix_with };
     
     foreach my $selector ( @common_selectors ) {
         $properties{ $mixed_property }{ $selector } = 1;
@@ -1028,16 +1137,34 @@ sub mix_properties {
     return %properties;
 }
 sub get_blocks_from_state {
-    my $self       = shift;
-    my %properties = @_;
+    my $self        = shift;
+    my %by_property = @_;
+    
+    my $elements_first = sub {
+            my $a_element  = ( $a =~ m{^[a-z]}i );
+            my $b_element  = ( $b =~ m{^[a-z]}i );
+            my $element_count = $a_element + $b_element;
+            
+            return ( $a_element ? -1 : 1 )
+                if 1 == $element_count;
+            return $a cmp $b;
+        };
+    
+    my %by_selector;
+    foreach my $property ( keys %by_property ) {
+        my @selectors
+            = sort $elements_first keys %{$by_property{ $property }};
+        my $selector  = join ',', @selectors;
+        
+        $by_selector{ $selector }{ $property } = 1;
+    }
     
     my @blocks;
-    foreach my $property ( sort keys %properties ) {
-        my @selectors = sort keys %{$properties{ $property }};
-        my $css       = join( ',', @selectors )
-                      . "{$property}";
-        
-        push @blocks, $self->parse_string( $css );
+    foreach my $selector ( sort $elements_first keys %by_selector ) {
+        my @properties = sort keys %{$by_selector{ $selector }};
+        my $properties = join '', @properties;
+        my $css        = "${selector}{${properties}}";
+        push @blocks, $self->parse_string( $css )
     }
     
     return @blocks;
@@ -1046,7 +1173,6 @@ sub get_blocks_from_state {
 sub is_valid_selector {
     my $test = shift;
     
-    use re 'eval';
     $test = lc $test;
     
     my $nmchar          = qr{ (?: [_a-z0-9-] ) }x;

@@ -73,8 +73,8 @@ div, li { margin: 0; }
 li { color: red; }
 CSS
     $css = <<CSS;
-li{color:red;}
 div,li{margin:0;padding:0;}
+li{color:red;}
 CSS
     
     @structure = $preparer->parse_string( $input );
@@ -111,8 +111,8 @@ div, li { margin: 0; }
 li, fieldset { border: none; }
 CSS
     $css = <<CSS;
-fieldset,li{border:none;}
 div,li{margin:0;padding:0;}
+fieldset,li{border:none;}
 CSS
     
     @structure = $preparer->parse_string( $input );
@@ -169,8 +169,8 @@ fieldset { border: 1px solid #000; }
 li { border: 1px solid #000; }
 CSS
     $css = <<CSS;
-fieldset,li{border:1px solid #000;}
 div,li{margin:0;}
+fieldset,li{border:1px solid #000;}
 li{padding:0;}
 CSS
     

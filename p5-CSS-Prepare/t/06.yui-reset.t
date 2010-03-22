@@ -13,21 +13,21 @@ if ( ! $preparer->has_http() ) {
 
 {
     $css = <<CSS;
-button,input,select,textarea{*font-size:100%;}
-html{background:#fff;}
-table{border-collapse:collapse;border-spacing:0;}
-fieldset,img{border:0;}
 abbr,acronym{border:0;font-variant:normal;}
-html,legend{color:#000;}
-q:after,q:before{content:'';}
-button,input,optgroup,option,select,textarea{font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;}
-h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}
 address,caption,cite,code,dfn,em,strong,th,var{font-style:inherit;font-weight:inherit;}
-li{list-style:none;}
 blockquote,body,button,code,dd,div,dl,dt,fieldset,form,h1,h2,h3,h4,h5,h6,input,legend,li,ol,p,pre,td,textarea,th,ul{margin:0;padding:0;}
+button,input,optgroup,option,select,textarea{font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;}
+button,input,select,textarea{*font-size:100%;}
 caption,th{text-align:left;}
 del,ins{text-decoration:none;}
+fieldset,img{border:0;}
+h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}
+html{background:#fff;}
+html,legend{color:#000;}
+li{list-style:none;}
+q:after,q:before{content:'';}
 sub,sup{vertical-align:baseline;}
+table{border-collapse:collapse;border-spacing:0;}
 CSS
 
     @structure = $preparer->parse_url(

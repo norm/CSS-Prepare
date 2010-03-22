@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 13;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -157,6 +157,38 @@ CSS
         or say "border shorthand was:\n" . Dumper \@parsed;
 }
 
+# shorthands in different order work
+{
+    $css = <<CSS;
+        div { border: blue 2px dashed; }
+CSS
+    @structure = (
+            {
+                original  => ' border: blue 2px dashed; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'border-top-width'    => '2px',
+                    'border-top-style'    => 'dashed',
+                    'border-top-color'    => 'blue',
+                    'border-right-width'  => '2px',
+                    'border-right-style'  => 'dashed',
+                    'border-right-color'  => 'blue',
+                    'border-bottom-width' => '2px',
+                    'border-bottom-style' => 'dashed',
+                    'border-bottom-color' => 'blue',
+                    'border-left-width'   => '2px',
+                    'border-left-style'   => 'dashed',
+                    'border-left-color'   => 'blue',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "border shorthand different order was:\n" . Dumper \@parsed;
+}
+
 # multiple properties in one block are correctly overridden
 {
     $css = <<CSS;
@@ -303,6 +335,36 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "border zero was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        fieldset { border: none; }
+CSS
+    @structure = (
+            {
+                original  => ' border: none; ',
+                errors    => [],
+                selectors => [ 'fieldset' ],
+                block     => {
+                    'border-top-color'    => '',
+                    'border-top-style'    => 'none',
+                    'border-top-width'    => '',
+                    'border-right-color'  => '',
+                    'border-right-style'  => 'none',
+                    'border-right-width'  => '',
+                    'border-bottom-color' => '',
+                    'border-bottom-style' => 'none',
+                    'border-bottom-width' => '',
+                    'border-left-color'   => '',
+                    'border-left-style'   => 'none',
+                    'border-left-width'   => '',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "border none was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;

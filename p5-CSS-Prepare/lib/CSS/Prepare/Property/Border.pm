@@ -46,6 +46,8 @@ sub parse {
                 )
                 \s*
             )+
+            (?'left'  )   # breaks without this, even though
+                          # it captures nothing???
             $
         }x;
     

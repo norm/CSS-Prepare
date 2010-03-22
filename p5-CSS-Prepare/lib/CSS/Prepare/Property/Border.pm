@@ -329,7 +329,7 @@ sub output_shorthand_by_property {
             && 1 == $shorthand_count{ $_ }
         } qw( color style width );
     
-    if ( 2 == $count ) {
+    if ( 2 == $count && 3 == scalar keys %shorthand_count ) {
         my $shorthand;
         my $override;
         foreach my $aspect qw( width style color ) {

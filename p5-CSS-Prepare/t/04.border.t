@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 16;
+use Test::More  tests => 17;
 
 use CSS::Prepare;
 
@@ -442,4 +442,31 @@ CSS
     $output = $preparer->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand was:\n" . $output;
+}
+
+# two complete shorthands do not trigger a full shorthand
+{
+    @structure = (
+            {
+                selectors => [ 'div' ],
+                block     => {
+                    "border-bottom-color" => "#d2d2d2",
+                    "border-bottom-style" => "solid",
+                    "border-bottom-width" => "1px",
+                    "border-left-color"   => "#d2d2d2",
+                    "border-left-width"   => "1px",
+                    "border-right-color"  => "#d2d2d2",
+                    "border-right-width"  => "1px",
+                    "border-top-color"    => "#d2d2d2",
+                    "border-top-width"    => "1px",
+                },
+            },
+        );
+    $css = <<CSS;
+div{border-bottom-style:solid;border-color:#d2d2d2;border-width:1px;}
+CSS
+
+    $output = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "two shorthands was:\n" . $output;
 }

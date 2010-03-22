@@ -36,6 +36,7 @@ sub new {
             hacks      => 1,
             features   => 0,
             suboptimal => 500,
+            silent     => 0,
             %args
         };
     bless $self, $class;
@@ -97,6 +98,20 @@ sub set_suboptimal {
 sub suboptimal_threshold {
     my $self = shift;
     return $self->{'suboptimal'};
+}
+sub get_silent {
+    my $self = shift;
+    return $self->{'silent'};
+}
+sub set_silent {
+    my $self     = shift;
+    my $features = shift // 0;
+    
+    $self->{'silent'} = $features;
+}
+sub silent {
+    my $self = shift;
+    return $self->{'silent'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -848,7 +863,8 @@ sub optimise {
     my $property_count = scalar @properties;
     my %state;
     
-    say STDERR "Found $property_count properties.";
+    say STDERR "Found $property_count properties."
+        unless $self->silent;
     %state = $self->get_optimal_state( @properties );
     
     my @optimised = $self->get_blocks_from_state( %state );
@@ -947,7 +963,8 @@ sub get_optimal_state {
             # time taken to calculate the results
             if ( time() > ( $start_time + $self->suboptimal_threshold ) ) {
                 say STDERR 'Time threshold reached -- '
-                           . 'switching to suboptimal optimisation.';
+                           . 'switching to suboptimal optimisation.'
+                    unless $self->silent;
                 last MIX;
             }
             
@@ -955,7 +972,8 @@ sub get_optimal_state {
                 = mix_biggest_properties( \%cache, %multiples );
             
             $total_savings += $found_savings;
-            print STDERR "\r-> savings $total_savings";
+            print STDERR "\r-> savings $total_savings"
+                unless $self->silent;
         }
     }
     

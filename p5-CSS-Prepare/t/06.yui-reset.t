@@ -3,7 +3,7 @@ use Test::More  tests => 1;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer = CSS::Prepare->new( silent => 1 );
 my( @structure, $output, $css );
 
 if ( ! $preparer->has_http() ) {

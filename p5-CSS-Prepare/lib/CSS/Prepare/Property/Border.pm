@@ -31,8 +31,9 @@ sub parse {
                 $canonical{ $property } = $value;
             }
             else {
+                $type =~ s{_}{-}g;
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };
@@ -73,8 +74,8 @@ sub parse {
             }
             else {
                 push @errors, {
-                        error => "invalid border-${direction} property: "
-                                 . $value,
+                        error => "invalid border-${direction} "
+                                 . "property: '$value'",
                     };
             }
         }
@@ -100,8 +101,7 @@ sub parse {
         }
         else {
             push @errors, {
-                    error => "invalid border-color property: "
-                             . $value,
+                    error => "invalid border-color property: '$value'",
                 };
         }
     }
@@ -126,8 +126,7 @@ sub parse {
         }
         else {
             push @errors, {
-                    error => "invalid border-style property: "
-                             . $value,
+                    error => "invalid border-style property: '$value'",
                 };
         }
     }
@@ -152,8 +151,7 @@ sub parse {
         }
         else {
             push @errors, {
-                    error => "invalid border-width property: "
-                             . $value,
+                    error => "invalid border-width property: '$value'",
                 };
         }
     }
@@ -173,7 +171,7 @@ sub parse {
         }
         else {
             push @errors, {
-                    error => "invalid border property: ${value}",
+                    error => "invalid border property: '${value}'",
                 };
         }
     }

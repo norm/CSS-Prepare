@@ -31,6 +31,7 @@ sub parse {
                 $canonical{ $property } = shorten_length_value( $value );
             }
             else {
+                $type =~ s{_}{-}g;
                 push @errors, {
                         error => "invalid ${type} property: '${value}'"
                     };

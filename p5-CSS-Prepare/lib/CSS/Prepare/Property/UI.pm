@@ -31,8 +31,9 @@ sub parse {
                 $canonical{ $property } = $value;
             }
             else {
+                $type =~ s{_}{-}g;
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };
@@ -75,7 +76,7 @@ sub parse {
         }
         else {
             push @errors, {
-                    error => "invalid font property: ${value}"
+                    error => "invalid font property: '${value}'"
                 };
         }
     }

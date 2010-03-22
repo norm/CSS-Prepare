@@ -44,7 +44,8 @@ CSS
                 original  => ' cursor: pointer crosshair; ',
                 errors    => [
                     {
-                        error => 'invalid cursor property: pointer crosshair',
+                        error => 'invalid cursor property: '
+                                 . q('pointer crosshair'),
                     },
                 ],
                 selectors => [ 'a' ],

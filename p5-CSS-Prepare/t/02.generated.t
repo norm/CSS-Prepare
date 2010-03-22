@@ -156,7 +156,7 @@ CSS
                 original  => q( quotes: '“' '”' "'"; ),
                 errors    => [
                     {
-                        error => qq(invalid quotes property: '“' '”' "'"),
+                        error => qq(invalid quotes property: ''“' '”' "'"'),
                     }
                 ],
                 selectors => [ 'q' ],
@@ -366,7 +366,7 @@ CSS
                 original  => ' list-style: none none; ',
                 errors    => [
                     {
-                        error => 'invalid list-style property: none none',
+                        error => q(invalid list-style property: 'none none'),
                     }
                 ],
                 selectors => [ 'li' ],

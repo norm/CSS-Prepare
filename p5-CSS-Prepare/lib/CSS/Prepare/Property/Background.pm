@@ -33,7 +33,7 @@ sub parse {
             }
             else {
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };
@@ -87,6 +87,11 @@ sub parse {
                     'background-repeat'     => $values{'repeat'},
                     'background-position'   => $values{'position'},
                 );
+        }
+        else {
+            push @errors, {
+                    error => "invalid background property: '${value}'"
+                };
         }
     }
     

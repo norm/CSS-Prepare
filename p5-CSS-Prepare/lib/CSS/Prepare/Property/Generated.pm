@@ -30,8 +30,9 @@ sub parse {
                 $canonical{ $property } = $value;
             }
             else {
+                $type =~ s{_}{-}g;
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
             return $is_valid;
@@ -61,7 +62,7 @@ sub parse {
         %canonical = expand_list_style( $value );
         
         push @errors, {
-                error => "invalid list-style property: $value"
+                error => "invalid list-style property: '$value'"
             }
             if !%canonical;
     }

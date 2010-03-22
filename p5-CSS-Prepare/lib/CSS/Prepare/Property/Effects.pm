@@ -32,7 +32,7 @@ sub parse {
             }
             else {
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
             return $is_valid;

@@ -30,8 +30,9 @@ sub parse {
                 $canonical{ $property } = $value;
             }
             else {
+                $type =~ s{_}{-}g;
                 push @errors, {
-                        error => "invalid ${type} property: ${value}"
+                        error => "invalid ${type} property: '${value}'"
                     };
             }
         };

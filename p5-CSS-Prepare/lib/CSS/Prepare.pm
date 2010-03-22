@@ -440,10 +440,6 @@ sub strip_charset {
         $charset = $1;
     }
     
-    # "User agents must ignore any @charset rule not at the beginning of the 
-    #  style sheet."
-    $string =~ s{ \@charset \s " ([^"]+) "; }{}gsx;
-    
     return ( $charset, $string );
 }
 sub strip_comments {
@@ -609,6 +605,11 @@ sub split_into_declaration_blocks {
             (?: \s+ ( $media_types_value ) )?
             \s* \; \s*
         }x;
+    my $get_charset_rule = qr{
+            ^
+            \s* \@charset \s \" [^"]+ \";
+            \s*
+        }x;
     my $get_next_block = qr{
             ^
             \s* (?<selector> .*? ) \s*
@@ -628,11 +629,25 @@ sub split_into_declaration_blocks {
                 };
         }
         
-        # try and find the next
+        # check for a rogue @charset rule
+        elsif ( $string =~ s{$get_charset_rule}{}sx ) {
+            push @blocks, {
+                    errors => [
+                        {
+                            error => '@charset rule inside stylsheet -- '
+                                     . 'ignored (CSS 2.1 #4.4)',
+                        },
+                    ],
+                };
+        }
+        
+        # try and find the next declaration
         elsif ( $string =~ s{$get_next_block}{}sx ) {
             my %match = %+;
             push @blocks, \%match;
         }
+        
+        # give up
         else {
             push @blocks, {
                     errors => [

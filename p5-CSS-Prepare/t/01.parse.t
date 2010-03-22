@@ -411,8 +411,6 @@ CSS
     $css = <<CSS;
 \@charset "UTF-8";
 h1 { color: red; }
-\@charset "US-ASCII";
-\@charset "ISO-8859-1";
 CSS
     @structure = (
             {
@@ -463,6 +461,14 @@ CSS
                 block     => {
                     'color' => 'red',
                 },
+            },
+            {
+                errors => [
+                    {
+                        error => '@charset rule inside stylsheet -- '
+                                 . 'ignored (CSS 2.1 #4.4)',
+                    }
+                ],
             },
         );
 

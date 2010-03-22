@@ -1,0 +1,6 @@
+h1 { color: #999; background: #fff; }
+li { color: #999; }
+@media print {
+    h1 { color: black; }
+    li { color: black; }
+}

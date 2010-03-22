@@ -1,0 +1,30 @@
+/* First things first, all comments should vanish. */
+
+body {
+    font-family: "Arial", "Helvetica", "clean", sans-serif;
+    /* this will vanish - see later */
+}
+
+h1, h2, h3, h4, h5, h6,
+ul, ol, li,
+p, div {
+    margin: 0;
+    padding: 0;
+    /* remains intact, with the exception of the list elements - see later */
+}
+
+#header-area,
+blockquote,
+li {
+    border-bottom-style: dotted;
+    border-top-style: dotted;
+    border-left-style: dotted;
+    border-right-style: dotted;    /* output: collapse all to border-style */
+}
+li {
+    border-color: red;
+    border-width: 1px;
+    /* this triggers a "border:" shorthand on li, which should
+     * then collapse down to a separate rule that is shorter
+     * than just adding a new "li{border-color:red}" rule */
+}

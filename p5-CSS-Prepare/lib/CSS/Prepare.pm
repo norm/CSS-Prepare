@@ -236,7 +236,16 @@ sub output_as_string {
     my $output;
     
     foreach my $block ( @data ) {
-        $output .= output_block_as_string( $block );
+        my $type = $block->{'type'} // '';
+        
+        if ( 'at-media' eq $type ) {
+            my $string = $self->output_as_string( @{$block->{'blocks'}} );
+            $string =~ s{^}{  }gm;
+            $output .= "\@media $block->{'query'} {\n${string}}\n";
+        }
+        else {
+            $output .= output_block_as_string( $block );
+        }
     }
     
     return $output;
@@ -867,7 +876,51 @@ sub optimise {
     my $self = shift;
     my @data = @_;
     
-    my %styles     = $self->sort_blocks_into_hash( @data );
+    my @blocks;
+    my @complete;
+    while ( my $block = shift @data ) {
+        if ( defined $block->{'type'} ) {
+            # process any previously collected blocks
+            my( $savings, @optimised ) = $self->optimise_blocks( @blocks );
+            undef @blocks;
+            push @complete, @optimised
+                if @optimised;
+            
+            # process this block
+            ( $savings, @optimised )
+                = $self->optimise_blocks( @{$block->{'blocks'}} );
+            
+            if ( 'at-media' eq $block->{'type'} ) {
+                push @complete, {
+                        type => 'at-media',
+                        query => $block->{'query'},
+                        blocks => [ @optimised ],
+                    };
+            }
+            else {
+                push @complete, @optimised
+                    if @optimised;
+            }
+        }
+        else {
+            push @blocks, $block;
+        }
+    }
+    
+    # process any remaining collected blocks
+    my( $savings, @optimised ) = $self->optimise_blocks( @blocks );
+    push @complete, @optimised
+        if @optimised;
+    
+    return @complete;
+}
+sub optimise_blocks {
+    my $self   = shift;
+    my @blocks = @_;
+    
+    return 0 unless @blocks;
+    
+    my %styles     = $self->sort_blocks_into_hash( @blocks );
     my @properties = array_of_properties( %styles );
     # my $before     = output_as_string( @properties );
     
@@ -884,8 +937,9 @@ sub optimise {
     # 
     # say STDERR "Saved $savings bytes.";
     # # TODO - calculate savings, even when suboptimal has been used
+    my $savings = 0;
     
-    return @optimised;
+    return( $savings, @optimised );
 }
 sub sort_blocks_into_hash {
     my $self = shift;

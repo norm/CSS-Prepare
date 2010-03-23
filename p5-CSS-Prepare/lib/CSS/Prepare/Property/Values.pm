@@ -80,6 +80,7 @@ our @EXPORT = qw(
         $border_colour_value
         $border_style_value
         $border_width_value
+        $font_family
         $font_family_value
         $font_style_value
         $font_size_value
@@ -309,7 +310,7 @@ my $display_value = qr{
 my $empty_cells_value = qr{ (?: show | hide | inherit ) }x;
 
 my $float_value = qr{ (?: left | right | none | inherit ) }x;
-my $font_family = qr{
+our $font_family = qr{
         (?:
               serif | sans-serif | cursive | fantasy | monospace
             | $identifier_value

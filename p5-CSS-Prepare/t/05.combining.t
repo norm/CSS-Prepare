@@ -93,7 +93,7 @@ CSS
 {
     $css = <<CSS;
 blockquote,#header-area{border-style:dotted;}
-body{font-family:"Arial", "Helvetica", "clean", sans-serif;}
+body{font-family:"Arial","Helvetica","clean",sans-serif;}
 div,h1,h2,h3,h4,h5,h6,li,ol,p,ul{margin:0;padding:0;}
 li{border:1px dotted red;}
 body{font-family:"Georgia";}
@@ -139,4 +139,3 @@ CSS
     ok( $output eq $css )
         or say "media block was:\n" . $output;
 }
-

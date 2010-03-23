@@ -20,9 +20,8 @@ if ( ! $preparer->has_http() ) {
 
 {
     $css = <<CSS;
-body{font-size:13px;line-height:1.231;*font-size:small;}
-body,button,input,select,textarea{font-family:arial,helvetica,clean,sans-serif;}
-button,input,select,textarea{font-size:99%;}
+body{font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;}
+button,input,select,textarea{font:99% arial,helvetica,clean,sans-serif;}
 code,kbd,pre,samp,tt{font-family:monospace;line-height:100%;*font-size:108%;}
 table{font-size:inherit;}
 CSS

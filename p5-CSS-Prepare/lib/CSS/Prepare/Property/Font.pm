@@ -69,19 +69,13 @@ sub parse {
         
         if ( $value =~ m{$shorthand_properties}x ) {
             my %values = %+;
-
-            $canonical{'font-style'} = $values{'style'}
-                if defined $values{'style'};
-            $canonical{'font-variant'} = $values{'variant'}
-                if defined $values{'variant'};
-            $canonical{'font-weight'} = $values{'weight'}
-                if defined $values{'weight'};
-            $canonical{'font-size'} = $values{'size'}
-                if defined $values{'size'};
-            $canonical{'line-height'} = $values{'height'}
-                if defined $values{'height'};
-            $canonical{'font-family'} = $values{'family'}
-                if defined $values{'family'};
+            
+            $canonical{'font-style'}   = $values{'style'}   // '';
+            $canonical{'font-variant'} = $values{'variant'} // '';
+            $canonical{'font-weight'}  = $values{'weight'}  // '';
+            $canonical{'font-size'}    = $values{'size'}    // '';
+            $canonical{'line-height'}  = $values{'height'}  // '';
+            $canonical{'font-family'}  = $values{'family'}  // '';
         }
         else {
             push @errors, {
@@ -89,6 +83,10 @@ sub parse {
                 };
         }
     }
+    
+    $canonical{'font-family'}
+        = shorten_font_family_value( $canonical{'font-family'} )
+            if defined $canonical{'font-family'};
     
     return \%canonical, \@errors;
 }
@@ -142,6 +140,17 @@ sub output {
     }
     
     return @output;
+}
+
+sub shorten_font_family_value {
+    my $value = shift;
+    
+    my @families;
+    while ( $value =~ s{^ ( $font_family ) (?: \s* \, \s* )? }{}x ) {
+        push @families, $1;
+    }
+    
+    return join ',', @families;
 }
 
 1;

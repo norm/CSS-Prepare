@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -43,7 +43,7 @@ CSS
                 selectors => [ 'body' ],
                 block     => { 
                     'font-family' 
-                        => '"Arial", "Helvetica", "clean", sans-serif', 
+                        => q("Arial","Helvetica","clean",sans-serif), 
                 },
             },
         );
@@ -245,3 +245,51 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "important full font shorthand was:\n" . Dumper \@parsed;
 }
+
+# reduce whitespace in font-family
+{
+    $css = <<CSS;
+    pre code {
+        font:                   95%
+                                'Menlo',
+                                'Inconsolata',
+                                'Consolas',
+                                'Panic Sans',
+                                'Bitstream Vera Sans Mono',
+                                'Courier',
+                                monospace;
+    }
+CSS
+    @structure = (
+            {
+                original  => q(
+        font:                   95%
+                                'Menlo',
+                                'Inconsolata',
+                                'Consolas',
+                                'Panic Sans',
+                                'Bitstream Vera Sans Mono',
+                                'Courier',
+                                monospace;
+    ),
+                errors    => [],
+                selectors => [ 'pre code' ],
+                block     => {
+                    'font-style'   => '',
+                    'font-variant' => '',
+                    'font-weight'  => '',
+                    'font-size'    => '95%',
+                    'line-height'  => '',
+                    'font-family'  => q('Menlo','Inconsolata','Consolas',)
+                                      . q('Panic Sans','Bitstream Vera )
+                                      . q(Sans Mono','Courier',monospace),
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "reduce font-family was:\n" . Dumper \@parsed;
+}
+
+

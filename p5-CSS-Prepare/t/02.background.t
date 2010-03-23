@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 6;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -137,4 +137,27 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "almost empty background shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { background: #f8f8ff; }
+CSS
+    @structure = (
+            {
+                original  => ' background: #f8f8ff; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'background-attachment' => '',
+                    'background-color'      => '#f8f8ff',
+                    'background-image'      => '',
+                    'background-position'   => '',
+                    'background-repeat'     => '',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "six character hex colour shorthand was:\n" . Dumper \@parsed;
 }

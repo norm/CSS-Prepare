@@ -70,23 +70,13 @@ sub parse {
             }x;
         
         if ( $value  =~ m{$shorthand_properties}x ) {
-            my %values = (
-                    attachment => '',
-                    colour     => '',
-                    image      => '',
-                    position   => '',
-                    repeat     => '',
-                    %+,
-                );
+            my %values = %+;
             
-            # provide defaults for anything skipped legitimately
-            %canonical = (
-                    'background-attachment' => $values{'attachment'},
-                    'background-color'      => $values{'colour'},
-                    'background-image'      => $values{'image'},
-                    'background-repeat'     => $values{'repeat'},
-                    'background-position'   => $values{'position'},
-                );
+            $canonical{'background-attachment'} = $values{'attachment'} // '';
+            $canonical{'background-color'}      = $values{'colour'}     // '';
+            $canonical{'background-image'}      = $values{'image'}      // '';
+            $canonical{'background-repeat'}     = $values{'repeat'}     // '';
+            $canonical{'background-position'}   = $values{'position'}   // '';
         }
         else {
             push @errors, {

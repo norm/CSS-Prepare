@@ -132,9 +132,9 @@ my $colour_value      = qr{
             | lime | maroon | navy | olive   | orange | purple
             | red  | silver | teal | white   | yellow
             |
-            \# [0-9a-fA-F]{3}
-            |
             \# [0-9a-fA-F]{6}
+            |
+            \# [0-9a-fA-F]{3}
             |
             rgb\(
                 (?:

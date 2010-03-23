@@ -1,11 +1,24 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 
 my $preparer = CSS::Prepare->new( silent => 1 );
 my( $input, $css, @structure, $output );
 
+
+
+# broken stylesheets don't explode
+{
+    $input = q(bing);
+    $css   = q();
+
+    @structure = $preparer->parse_string( $input );
+    @structure = $preparer->optimise( @structure );
+    $output    = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "invalid stylesheet was:\n" . $output;
+}
 
 # multiple occurences of the same selector are combined
 {

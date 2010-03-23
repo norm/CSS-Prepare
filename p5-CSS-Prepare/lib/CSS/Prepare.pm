@@ -233,8 +233,8 @@ sub parse_stylesheet {
 sub output_as_string {
     my $self = shift;
     my @data = @_;
-    my $output;
     
+    my $output = '';
     foreach my $block ( @data ) {
         my $type = $block->{'type'} // '';
         
@@ -273,11 +273,13 @@ sub output_block_as_string {
             # just sort alphabetically
             return $a cmp $b;
         };
-
+    
     my %properties = output_properties( $block->{'block'} );
-    my $output     = join '', 
-                         sort $shorthands_first_hacks_last keys %properties;
-    my $selector   = join ',', @{ $block->{'selectors'} };
+    return '' unless %properties;
+    
+    my $selector = join ',', @{ $block->{'selectors'} };
+    my $output
+        = join '', sort $shorthands_first_hacks_last keys %properties;
     
     return "${selector}\{${output}\}\n";
 }
@@ -871,6 +873,13 @@ sub parse_declaration_block {
                     };
             }
         }
+    }
+    if ( $string !~ m{^ \s* $}sx ) {
+        $string =~ s{^ \s* (.*?) \s* $}{$1}sx;
+        
+        push @errors, {
+                error => "invalid property '$string'",
+            };
     }
     
     return \%canonical, \@errors;

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 20;
+use Test::More  tests => 21;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -338,6 +338,29 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "invalid property 'colur' was:\n" . Dumper \@parsed;
+}
+
+# invalid properties are flagged
+{
+    $css = <<CSS;
+        div { bing; }
+CSS
+    @structure = (
+            {
+                original  => ' bing; ',
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property 'bing;'),
+                    },
+                ],
+                block     => {},
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "invalid property 'bing' was:\n" . Dumper \@parsed;
 }
 
 # test multiple selectors

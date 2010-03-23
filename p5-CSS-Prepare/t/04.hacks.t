@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 8;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 
@@ -107,4 +107,51 @@ CSS
     $output = $preparer_without->output_as_string( @structure );
     ok( $output eq $css )
         or say "filter without hacks was:\n" . $output;
+}
+
+
+# verbatim comments
+{
+    $css = <<CSS;
+/* IE hack */
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "/* IE hack */\n",
+            },
+        );
+
+    $output = $preparer_with->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "verbatim with hacks was:\n" . $output;
+}
+{
+    $output = $preparer_without->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "verbatim without hacks was:\n" . $output;
+}
+
+# verbatim blocks
+{
+    $css = <<CSS;
+div {
+    blah: 0;
+}
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "div {\n    blah: 0;\n}\n",
+            },
+        );
+    
+    $output = $preparer_with->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "verbatim block with hacks was:\n" . $output;
+}
+{
+    $output = $preparer_without->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "verbatim block without hacks was:\n" . $output;
 }

@@ -278,7 +278,7 @@ CSS
     @structure = (
             {
                 type => 'verbatim',
-                string => "/* IE hack */",
+                string => "/* IE hack */\n",
             },
         );
     
@@ -306,7 +306,7 @@ CSS
     @structure = (
             {
                 type => 'verbatim',
-                string => "div {\n    blah: 0;\n}",
+                string => "div {\n    blah: 0;\n}\n",
             },
         );
     

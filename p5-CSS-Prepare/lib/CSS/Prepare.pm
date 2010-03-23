@@ -243,6 +243,9 @@ sub output_as_string {
             $string =~ s{^}{  }gm;
             $output .= "\@media $block->{'query'} {\n${string}}\n";
         }
+        elsif ( 'verbatim' eq $type ) {
+            $output .= $block->{'string'};
+        }
         else {
             $output .= output_block_as_string( $block );
         }
@@ -724,7 +727,7 @@ sub split_into_declaration_blocks {
         elsif ( $string =~ s{$get_verbatim}{}sx ) {
             push @blocks, {
                     type => 'verbatim',
-                    string => $1,
+                    string => "$1\n",
                 };
         }
         
@@ -732,7 +735,7 @@ sub split_into_declaration_blocks {
         elsif ( $string =~ s{$get_comment}{}sx ) {
             push @blocks, {
                     type => 'verbatim',
-                    string => $1,
+                    string => "$1\n",
                 };
         }
         
@@ -914,6 +917,9 @@ sub optimise {
                         query  => $block->{'query'},
                         blocks => [ @optimised ],
                     };
+            }
+            elsif ( 'verbatim' eq $type ) {
+                push @complete, $block;
             }
             else {
                 push @complete, @optimised

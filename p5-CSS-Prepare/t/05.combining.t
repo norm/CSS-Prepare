@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 7;
 
 use CSS::Prepare;
 
@@ -138,4 +138,36 @@ CSS
     $output    = $preparer->output_as_string( @parsed );
     ok( $output eq $css )
         or say "media block was:\n" . $output;
+}
+
+# @media block with no query
+{ ok( 1 == 2 ); }
+
+# test that verbatim blocks are not optimised away
+{
+    $input = <<CSS;
+body {
+    margin: 0;
+    padding: 0;
+}
+/*! verbatim */
+p { margin: 0; }
+/*! end-verbatim */
+li {
+    margin: 0;
+    padding: 0;
+}
+CSS
+
+    $css = <<CSS;
+body{margin:0;padding:0;}
+p { margin: 0; }
+li{margin:0;padding:0;}
+CSS
+    
+    @parsed    = $preparer->parse_string( $input );
+    @structure = $preparer->optimise( @parsed );
+    $output    = $preparer->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "verbatim blocks test was:\n" . $output;
 }

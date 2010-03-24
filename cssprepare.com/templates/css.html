@@ -1,10 +1,11 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
 <html>
 <head>
-  <!--
-  <link rel="stylesheet" href="/raw/H04jxBqWTQpuNG6_hWWrLpKArRc/optimised.css">
-  -->
-  <link rel="stylesheet" href="/static/styles.css">
-    <title>CSS Prepare</title>
+  <title>CSS Prepare</title>
+  <link rel="stylesheet" href="/raw/ePW3_Wzz+CEqr1jVb9wz9xrj6VE/optimised.css">
+  <!-- that's right, you can view the original CSS by editing that URL -->
 </head>
 <body><div id="body">
   
@@ -24,17 +25,19 @@
   <p id='note'>Any CSS entered will be saved and made available via this site
     for future reference, and to be analysed to help improve this project.</p>
   
-  <form action="/new/" method="post" accept-charset="utf-8">
-    <textarea name="css" rows="8" cols="80">{{$css}}</textarea>
+  <form action="/new/" method="post" accept-charset="utf-8"><div>
+    <textarea name="css" rows="10" cols="80">{{$css}}</textarea>
     <label for="optimise">Optimise?</label>
     <input type="checkbox" name="optimise" value="optimise" id="optimise"
       {{ return q(checked="checked") if $optimise; }}
     >
     <input type="submit" name="submit" value="submit" id="submit">
-  </form>
+  </div></form>
   
   <div id="results">
-    <form action="/flag/" method="post" id="flag">
+    <h2>{{ $optimise ? 'Optimised' : 'Standard' }} output 
+      {{ $flagged ? '<em>(flagged as having a problem)</em>' : '' }}</h2>
+    <form action="/flag/" method="post" id="flag"><div>
       <input type="hidden" name="sha1" value="{{$sha1}}">
       <input type="hidden" name="flag" value="{{ 
              $flagged ? 'unflag' : 'flag' }}">
@@ -42,7 +45,7 @@
                $flagged ? 'Mark result as working'
                         : 'Mark result as containing a problem'
          }}</button>
-    </form>
+    </div></form>
     
     {{
         if ( 0 != $error_count ) {
@@ -57,7 +60,6 @@
             $OUT .= "</ul>\n";
         }
     }}
-    <h2>Output</h2>
     <div id='output'>
       <ul id='fingerprint'>
         <li>Permalinks:</li>

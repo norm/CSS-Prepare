@@ -53,6 +53,9 @@ h1 em {
 }
 #nav li {
     float:                  left;
+    list-style:             none;
+    margin:                 0;
+    padding:                0;
 }
 #nav li:after {
     content:                '•';
@@ -90,9 +93,12 @@ textarea {
     padding-top:            1em;
 }
 #results h2 {
-    left:                   -999em;
-    position:               absolute;
-    width:                  500em;
+    float:                  left;
+    margin:                 0;
+}
+#results h2 em {
+    color:                  #999;
+    font-size:              80%;
 }
 #errors ul {
     margin:                 0 0 0 30px;
@@ -153,10 +159,15 @@ textarea {
 
 #fingerprint {
     margin:                 0;
+    margin-top:             2em;
+    padding:                0;
     overflow:               hidden;     /* float clearing */
 }
 #fingerprint li {
     float:                  left;
+    list-style:             none;
+    margin:                 0;
+    padding:                0;
     padding-right:          0.75em;
 }
 #fingerprint li:first-child {
@@ -171,7 +182,7 @@ textarea {
 #select-text {
     color:                  #999;
 }
-#select {
+#select-text {
     cursor:                 pointer;
     display:                block;
     float:                  right;
@@ -182,8 +193,9 @@ pre {
     background:             #f8f8ff;
     border:                 1px solid #999;
     color:                  #333;
-    font-size:              80%;
+/*    font-size:              80%;*/
     margin:                 0 0 0 30px;
+    margin: 0;
     padding:                1em 10px;
     position:               relative;
 }
@@ -209,7 +221,6 @@ code .line {
 code .line:before {
     color:                  #999;
     counter-increment:      line;
-    font-size:              80%;
     left:                   -30px;
     position:               absolute;
 }

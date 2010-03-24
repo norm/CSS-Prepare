@@ -37,6 +37,7 @@ sub new {
             features   => 0,
             suboptimal => 10,
             silent     => 0,
+            css3       => 0,
             %args
         };
     bless $self, $class;
@@ -314,6 +315,7 @@ sub output_properties {
             @normal    = &$try_with( \%normal );
             @important = &$try_with( \%important );
         };
+        say STDERR $@ if $@;
         
         foreach my $property ( @normal ) {
             $properties{ $property } = 1
@@ -575,10 +577,6 @@ sub split_into_statements {
     my ( $remainder, @statements )
         = $self->do_import_rules( $directory, $string );
     
-    # TODO:
-    # "CSS 2.1 user agents must ignore any '@import' rule that occurs inside a
-    #  block or after any non-ignored statement other than an @charset or an
-    #  @import rule." (CSS 2.1 #4.1.5)
     my $splitter = qr{
             ^
             ( .*? )                 # $1: everything before the media block
@@ -842,6 +840,7 @@ sub parse_declaration_block {
                 ( $parsed_as, $errors )
                     = &$try_with( $self, $has_hack, %match );
             };
+            say STDERR $@ if $@;
             
             push @errors, @$errors
                 if @$errors;
@@ -949,11 +948,10 @@ sub optimise_blocks {
     # my $before     = output_as_string( @properties );
     
     my $property_count = scalar @properties;
-    my %state;
     
     say STDERR "Found $property_count properties."
         unless $self->silent;
-    %state = $self->get_optimal_state( @properties );
+    my ( $savings, %state ) = $self->get_optimal_state( @properties );
     
     my @optimised = $self->get_blocks_from_state( %state );
     # my $after     = output_as_string( @optimised );
@@ -961,7 +959,7 @@ sub optimise_blocks {
     # 
     # say STDERR "Saved $savings bytes.";
     # # TODO - calculate savings, even when suboptimal has been used
-    my $savings = 0;
+    # my $savings = 0;
     
     return( $savings, @optimised );
 }
@@ -1043,6 +1041,7 @@ sub get_optimal_state {
     my $suboptimal = 0;
     if ( scalar keys %multiples ) {
         my $start_time = time();
+        my $count      = 0;
         my %cache;
         
         MIX:
@@ -1051,7 +1050,8 @@ sub get_optimal_state {
             # to deal with, or the code tends towards infinite
             # time taken to calculate the results
             if ( time() > ( $start_time + $self->suboptimal_threshold ) ) {
-                say STDERR 'Time threshold reached -- '
+                $suboptimal = 1;
+                say STDERR "\rTime threshold reached -- "
                            . 'switching to suboptimal optimisation.'
                     unless $self->silent;
                 last MIX;
@@ -1061,7 +1061,8 @@ sub get_optimal_state {
                 = mix_biggest_properties( \%cache, %multiples );
             
             $total_savings += $found_savings;
-            print STDERR "\r-> savings $total_savings"
+            $count++;
+            print STDERR "\r[$count] savings $total_savings"
                 unless $self->silent;
         }
     }
@@ -1076,7 +1077,7 @@ sub get_optimal_state {
         %by_property   = get_suboptimal_state( @properties );
     }
     
-    return %by_property;
+    return( $total_savings, %by_property);
 }
 sub get_selectors_by_property {
     my @properties = @_;

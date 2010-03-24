@@ -107,9 +107,9 @@ our @EXPORT = qw(
 our @standard_directions = qw( top right bottom left );
 
 # primitive types
-my $integer_value     = qr{ [+-]? [0-9]+ }x;
-my $identifier_value  = qr{ [a-z][a-zA-z0-9_-]* }ix;
-my $number_value      = qr{
+my $integer_value = qr{ [+-]? [0-9]+ }x;
+my $identifier_value = qr{ [a-z][a-zA-z0-9_-]* }ix;
+my $number_value = qr{
         (?:
             (?: $integer_value )
             |
@@ -117,7 +117,7 @@ my $number_value      = qr{
             \. [0-9]+
         )
     }x;
-our $length_value     = qr{
+our $length_value = qr{
         (?:
             0
             |
@@ -125,8 +125,8 @@ our $length_value     = qr{
             (?: px | em | ex | in | cm | mm | pt | pc )
         )
     }x;
-my $percentage_value  = qr{ $number_value % }x;
-my $colour_value      = qr{
+my $percentage_value = qr{ $number_value % }x;
+my $colour_value = qr{
         (?:
               aqua | black  | blue | fuchsia | gray   | green
             | lime | maroon | navy | olive   | orange | purple

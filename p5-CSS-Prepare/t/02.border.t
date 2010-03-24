@@ -233,18 +233,6 @@ CSS
         or say "value overriding was:\n" . Dumper \@parsed;
 }
 
-# TODO can we use this example from CSS 2.1 8.5.4 in some meaningful way?
-# > blockquote {
-# >   border: solid red;
-# >   border-left: double;
-# >   color: black;
-# > }
-# > In the above example, the color of the left border is black, while the
-# > other borders are red. This is due to 'border-left' setting the width,
-# > style, and color. Since the color value is not given by the 'border-left'
-# > property, it will be taken from the 'color' property. The fact that the
-# > 'color' property is set after the 'border-left' property is not relevant.
-
 # shorthands with missing values work
 {
     $css = <<CSS;

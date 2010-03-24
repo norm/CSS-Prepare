@@ -2,4 +2,6 @@ old/
 p5-CSS-Prepare/Makefile
 p5-CSS-Prepare/blib/
 p5-CSS-Prepare/pm_to_blib
+p5-CSS-Prepare/t/ext
 CSS Prepare.taskpaper
+cssprepare.com/store

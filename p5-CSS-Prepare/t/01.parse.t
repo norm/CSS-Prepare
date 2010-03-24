@@ -384,10 +384,10 @@ CSS
         or say "multiple selectors was:\n" . Dumper \@parsed;
 }
 
-# CSS2.1 4.1.7:
-# For example, since the "&" is not a valid token in a CSS 2.1 selector, a 
-# CSS 2.1 user agent must ignore the whole second line, and not set the color
-# of H3 to red:
+# CSS 2.1 #4.1.7:
+# "For example, since the "&" is not a valid token in a CSS 2.1 selector, a 
+#  CSS 2.1 user agent must ignore the whole second line, and not set the color
+#  of H3 to red""
 {
     $css = <<CSS;
         h1, h2 {color: green }
@@ -571,16 +571,3 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "not a stylesheet was:\n" . Dumper \@parsed;
 }
-
-# TODO - check CSS spec for behaviour on =>  errors and ignoring properties
-#        and create more tests for those
-
-# TODO - newlines
-# > It is possible to break strings over several lines, for aesthetic
-# > or other reasons, but in such a case the newline itself has to be
-# > escaped with a backslash (\). For instance, the following two
-# > selectors are exactly the same:
-# > 
-# > a[title="a not s\
-# > o very long title"] {/*...*/}
-# > a[title="a not so very long title"] {/*...*/}

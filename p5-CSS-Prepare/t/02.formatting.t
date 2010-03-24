@@ -245,16 +245,3 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "height property was:\n" . Dumper \@parsed;
 }
-
-# TODO
-#   *   add overflow
-#   *   add clipping
-#   *   add visibility
-#   *   add cursor
-#   *   add outline
-#   *   add quotes
-#   *   add counters
-
-#   *   test for errors with invalid values
-
-

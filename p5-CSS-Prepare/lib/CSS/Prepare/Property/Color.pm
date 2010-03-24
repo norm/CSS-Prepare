@@ -16,7 +16,6 @@ sub parse {
     my %canonical;
     my @errors;
     
-    # TODO - use regexps now for validation of values
     # allow for the correct spelling of colour
     if ( $property =~ m{^ colo u? r $}x ) {
         if ( is_colour_value( $value ) ) {

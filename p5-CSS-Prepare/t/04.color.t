@@ -151,4 +151,3 @@ CSS
     ok( $output eq $css )
         or say "six-digit RGB notation was:\n" . $output;
 }
-

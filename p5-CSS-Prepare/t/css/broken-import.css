@@ -1,0 +1,7 @@
+@import "first.css";
+@media print {
+    @import "print.css";
+    div {
+        color: black;
+    }
+}

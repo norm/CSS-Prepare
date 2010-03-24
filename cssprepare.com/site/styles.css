@@ -1,0 +1,266 @@
+/* -*- Mode: CSS; tab-width: 4; indent-tabs-mode: nil; -*- */
+
+body {
+    background:             #fff;
+    color:                  #000;
+    line-height:            1.5;
+    font-family:            'Book Antiqua',
+                            'Palatino',
+                            'Palatino Linotype',
+                            'Constantia',
+                            'Georgia',
+                            'Times New Roman',
+                            'Times',
+                            serif;
+    padding:                0 30px 30px;
+}
+#body {
+    margin:                 0 auto;
+    width:                  800px;
+}
+i {
+    color:                  #005;
+    font-style:             normal;
+}
+
+#crest {
+    border-bottom:          1px dotted #999;
+    margin-bottom:          1em;
+    padding-bottom:         1em;
+}
+h1 {
+    font-size:              2em;
+    font-weight:            normal;
+    margin:                 20px 0 0;
+}
+h1 em {
+    color:                  #c33;
+    font:                   normal bold
+                            0.5em
+                            'Menlo',
+                            'Inconsolata',
+                            'Consolas',
+                            'Panic Sans',
+                            'Bitstream Vera Sans Mono',
+                            'Courier',
+                            monospace;
+    vertical-align:         super;
+}
+#nav { 
+    margin:                 0;
+    overflow:               hidden;     /* float clearing */
+    padding:                0;
+}
+#nav li {
+    float:                  left;
+}
+#nav li:after {
+    content:                '•';
+    padding:                0 5px;
+}
+#nav li:last-child:after {
+    content:                '';
+    padding:                0;
+}
+
+#note {
+    font-weight:            bold;
+    margin-top:             0;
+}
+
+textarea {
+    display:                block;
+    font:                   100%
+                            'Menlo',
+                            'Inconsolata',
+                            'Consolas',
+                            'Panic Sans',
+                            'Bitstream Vera Sans Mono',
+                            'Courier',
+                            monospace;
+}
+#submit {
+    display:                block;
+    margin-top:             1em;
+}
+
+#results {
+    border-top:             1px dotted #999;
+    margin-top:             1em;
+    padding-top:            1em;
+}
+#results h2 {
+    left:                   -999em;
+    position:               absolute;
+    width:                  500em;
+}
+#errors ul {
+    margin:                 0 0 0 30px;
+    padding:                0;
+}
+#errors li {
+    list-style:             none;
+}
+#errors em {
+    font-style:             normal;
+    font-weight:            bold;
+}
+#errors q {
+    color:                  #33f;
+    font-family:            monospace;
+    font-size:              110%;
+    font-weight:            bold;
+}
+#errors q:before {
+    content:                '';
+}
+#errors q:after {
+    content:                '';
+}
+
+#flag {
+    overflow:               hidden;     /* float clearing */
+}
+#flag button {
+    border-width:           0;
+    color:                  #fff;
+    cursor:                 pointer;
+    float:                  right;
+    line-height:            1.5;
+    padding:                0.5em 1em;
+}
+#flag button:before {
+    font-size:              1.5em;
+    line-height:            1;
+    padding-right:          1em;
+}
+#flag button.flag {
+    background:             #c33;
+}
+#flag .flag:before {
+    color:                  #fff;
+    padding-right:          10px;
+}
+#flag .flag:before {
+    content:                '✘';
+}
+#flag .unflag:before {
+    content:                '✔';
+}
+#flag button.unflag {
+    background:             #2a2;
+}
+
+#fingerprint {
+    margin:                 0;
+    overflow:               hidden;     /* float clearing */
+}
+#fingerprint li {
+    float:                  left;
+    padding-right:          0.75em;
+}
+#fingerprint li:first-child {
+    padding-left:           1em;
+}
+#fingerprint,
+#select-text {
+    color:                  #999;
+    font-size:              75%;
+}
+#fingerprint a,
+#select-text {
+    color:                  #999;
+}
+#select {
+    cursor:                 pointer;
+    display:                block;
+    float:                  right;
+    margin-right:           1em;
+    text-decoration:        underline;
+}
+pre {
+    background:             #f8f8ff;
+    border:                 1px solid #999;
+    color:                  #333;
+    font-size:              80%;
+    margin:                 0 0 0 30px;
+    padding:                1em 10px;
+    position:               relative;
+}
+pre.flagged {
+    background:             #ffd5dd;
+    border:                 1px solid #f99;
+    color:                  #633;
+}
+pre code {
+    counter-reset:          line;
+    font:                   100%
+                            'Menlo',
+                            'Inconsolata',
+                            'Consolas',
+                            'Panic Sans',
+                            'Bitstream Vera Sans Mono',
+                            'Courier',
+                            monospace;
+}
+code .line {
+    line-height:            1.5;
+}
+code .line:before {
+    color:                  #999;
+    counter-increment:      line;
+    font-size:              80%;
+    left:                   -30px;
+    position:               absolute;
+}
+
+
+#page h2,
+#page h3 {
+    font-size:              1.5em;
+    font-weight:            normal;
+    margin-bottom:          0;
+}
+#page h3 {
+    font-size:              1.2em;
+}
+#page p {
+    margin-top:             0;
+}
+#page ul,
+#page ol {
+    margin-left:            -2em;
+    padding:                0;
+}
+#page li ul,
+#page li ol {
+    margin-left:            2em;
+}
+#page li {
+    list-style:             disc outside;
+    margin-bottom:          0.5em;
+    margin-left:            2em;
+}
+#page q {
+    font-style:             italic;
+}
+#page pre {
+    margin-bottom:          1.5em;
+    margin-left:            0;
+}
+
+/*! verbatim */
+#flag button,
+pre {
+    border-radius:          10px;
+    -moz-border-radius:     10px;
+    -webkit-border-radius:  10px;
+}
+pre code {
+    white-space:            pre-wrap;
+    white-space:            -moz-pre-wrap;
+}
+code .line:before {
+    content:                counter(line);
+}
+/*! end-verbatim */

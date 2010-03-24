@@ -1,0 +1,76 @@
+<html>
+<head>
+  <!--
+  <link rel="stylesheet" href="/raw/H04jxBqWTQpuNG6_hWWrLpKArRc/optimised.css">
+  -->
+  <link rel="stylesheet" href="/static/styles.css">
+    <title>CSS Prepare</title>
+</head>
+<body><div id="body">
+  
+  <div id='crest'>
+    <h1>CSS Prepare <em>experimental alpha</em></h1>
+    <ul id='nav'>
+      <li><a href='/'>Add some CSS</a></li>
+      <li><a href='/documentation'>How this works</a></li>
+      <li><a href='/problems'>Having problems?</a></li>
+      <li><a href='http://github.com/norm/CSS-Prepare/'>Source on
+            github</a></li>
+      <li>A project by <a href='http://marknormanfrancis.com/'>Mark 
+            Norman Francis</a></li>
+    </ul>
+  </div>
+  
+  <p id='note'>Any CSS entered will be saved and made available via this site
+    for future reference, and to be analysed to help improve this project.</p>
+  
+  <form action="/new/" method="post" accept-charset="utf-8">
+    <textarea name="css" rows="8" cols="80">{{$css}}</textarea>
+    <label for="optimise">Optimise?</label>
+    <input type="checkbox" name="optimise" value="optimise" id="optimise"
+      {{ return q(checked="checked") if $optimise; }}
+    >
+    <input type="submit" name="submit" value="submit" id="submit">
+  </form>
+  
+  <div id="results">
+    <form action="/flag/" method="post" id="flag">
+      <input type="hidden" name="sha1" value="{{$sha1}}">
+      <input type="hidden" name="flag" value="{{ 
+             $flagged ? 'unflag' : 'flag' }}">
+      <button class="{{ $flagged ? 'unflag' : 'flag' }}" type="submit">{{ 
+               $flagged ? 'Mark result as working'
+                        : 'Mark result as containing a problem'
+         }}</button>
+    </form>
+    
+    {{
+        if ( 0 != $error_count ) {
+            $OUT .= "<h2>Errors</h2><ul id='errors'>\n";
+            foreach my $error ( @errors ) {
+                my $level    = $error->{'level'};
+                my $text     = $error->{'text'};
+                my $selector = $error->{'selector'};
+
+                $OUT .= "<li><em>$level</em>: <q>$selector</q> $text</li>\n";
+            }
+            $OUT .= "</ul>\n";
+        }
+    }}
+    <h2>Output</h2>
+    <div id='output'>
+      <ul id='fingerprint'>
+        <li>Permalinks:</li>
+        <li><a href='/css/{{$sha1}}'>output view</a></li>
+        <li><a href='/css/{{$sha1}}/optimised'>optimised view</a></li>
+        <li><a href='/raw/{{$sha1}}/original.css'>raw source</a></li>
+        <li><a href='/raw/{{$sha1}}/output.css'>raw output</a></li>
+        <li><a href='/raw/{{$sha1}}/optimised.css'>raw optimised</a></li>
+      </ul>
+      <pre {{ $flagged ? 'class="flagged"' : '' }} id='code'><code class='CSS'>{{$output}}</code></pre>
+  </div>
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script src="/static/copy.js"></script>
+</div></body>
+</html>

@@ -1,0 +1,32 @@
+<html>
+<head>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>CSS Prepare</title>
+</head>
+<body><div id="body">
+  
+  <div id='crest'>
+    <h1>CSS Prepare <em>experimental alpha</em></h1>
+    <ul id='nav'>
+      <li><a href='/'>Add some CSS</a></li>
+      <li><a href='/documentation'>How this works</a></li>
+      <li><a href='/problems'>Having problems?</a></li>
+      <li><a href='http://github.com/norm/CSS-Prepare/'>Source on
+            github</a></li>
+      <li>A project by <a href='http://marknormanfrancis.com/'>Mark 
+            Norman Francis</a></li>
+    </ul>
+  </div>
+  
+  <p id='note'>Any CSS entered will be saved and made available via this site
+    for future reference, and to be analysed to help improve this project.</p>
+  
+  <form action="/new/" method="post" accept-charset="utf-8">
+    <textarea name="css" rows="8" cols="80"></textarea>
+    <label for="optimise">Optimise?</label>
+    <input type="checkbox" name="optimise" value="optimise" id="optimise">
+    <input type="submit" name="submit" value="submit" id="submit">
+  </form>
+  
+</div></body>
+</html>

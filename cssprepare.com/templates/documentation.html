@@ -1,0 +1,144 @@
+<html>
+<head>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>CSS Prepare Documentation</title>
+</head>
+<body><div id="body">
+  
+  <div id='crest'>
+    <h1>CSS Prepare <em>experimental alpha</em></h1>
+    <ul id='nav'>
+      <li><a href='/'>Add some CSS</a></li>
+      <li><a href='/documentation'>How this works</a></li>
+      <li><a href='/problems'>Having problems?</a></li>
+      <li><a href='http://github.com/norm/CSS-Prepare/'>Source on
+            github</a></li>
+      <li>A project by <a href='http://marknormanfrancis.com/'>Mark 
+            Norman Francis</a></li>
+    </ul>
+  </div>
+  
+  <div id="page">
+    <h1>How this works</h1>
+    <p>At the simplest level, <i>CSS Prepare</i> reads in CSS, parses it into
+      an internal representation, and then emits it again in a much shorter
+      format. This is where most, if not all CSS minifiers and compressors
+      end. <i>CSS Prepare</i> has a couple of other tricks up its sleeve
+      in how it combines multiple stylesheets into one, and can optionally
+      optimise (read “rewrite and probably break”) your CSS to make it 
+      even shorter.</p>
+    <p></p>
+    
+    <h2>Validation</h2>
+    <p>Whilst <i>CSS Prepare</i> reads in the CSS, it will flag any errors
+      it finds (although it is entirely possible that they are not errors
+      and instead it is a bug in the code).</p>
+    
+    <h3>Including comments</h3>
+    <p>You might need a comment to appear in the output CSS (for example, the
+      license of an included stylesheet such as <a
+      href='http://developer.yahoo.com/yui/reset/'>the YUI reset</a>). This is
+      done by just putting an exclamation mark as the first character of the
+      comment. The exclamation mark will be removed before the comment is
+      output.</p>
+    
+    <pre><code class="css"><span class="line">/*! Copyright … */</span>
+</code></pre>
+    
+    <h3>Getting past problems</h3>
+    <p>Because any parts of your CSS that are flagged as errors are eliminated
+      from the document as <i>CSS Prepare</i> parses it, you will end up with
+      missing declarations in the output CSS. The parser can be instructed
+      to ignore parts of stylesheets and just include them in the output
+      verbatim, by putting special comments before and after the code to be
+      ignored, like so:</p>
+    <pre><code class="css"><span class="line">/*! verbatim */</span>
+<span class="line">#problematic { border-radius: 5px; }</span>
+<span class="line">/*! end-verbatim */</span>
+</code></pre>
+    
+    <h2>Minifying CSS</h2>
+    <p><i>CSS Prepare</i> breaks CSS into its component parts as they are 
+      read in, and so can output them without the parts that are necessary.
+      Comments and unnecessary whitespace are removed, and where possible
+      declarations are restructured to save space. For example…</p>
+    <pre><code class="css"><span class="line">div {</span>
+<span class="line">    margin-top: 0;</span>
+<span class="line">    margin-left: 5px;</span>
+<span class="line">    margin-right: 5px;</span>
+<span class="line">    margin-bottom: 1em;</span>
+<span class="line">}</span>
+<span class="line">li {</span>
+<span class="line">    margin-top: 0;</span>
+<span class="line">    margin-left: 5px;</span>
+<span class="line">    margin-right: 5px;</span>
+<span class="line">    margin-bottom: 1em;</span>
+<span class="line">}</span>
+</code></pre>
+    
+    <p>…becomes…</p>
+    <pre><code class="css"><span class="line">div{margin:0 5px 1em;}</span>
+<span class="line">li{margin:0 5px 1em;}</span>
+</code></pre>
+    
+    <h3>Optimising CSS</h3>
+    <p>Using the example given above, with optimisation turned on, <i>CSS
+      Prepare</i> will actually output…</p>
+    
+    <pre><code class="css"><span class="line">div,li{margin:0 5px 1em;}</span>
+</code></pre>
+    
+    <p>There are very few CSS minifiers that can restructure your CSS to this
+      degree, as they are generally based around applying simple replacements
+      to the string rather than parsing the CSS.</p>
+    <p><em>Please note:</em> optimising CSS changes the structure of it. 
+      Deliberately. The output of an optimised block can mix declarations that
+      were previously separate, combine selectors and, most importantly,
+      <em>change the source order</em>. If that doesn't fill you with The
+      Fear™, you don't understand <a
+      href='http://www.w3.org/TR/CSS21/cascade.html#cascade'>the cascade</a>
+      properly.</p>
+    <p>As an example, consider the following styles…</p>
+    
+    <pre><code class="css"><span class="line">.warning { color: orange; }</span>
+<span class="line">.alert { color: red; }</span>
+</code></pre>
+    
+    <p>Applied to an element with both classes set (eg. <code class="html">&lt;p 
+      class=&#x27;alert warning&#x27;&gt;oh noes!&lt;/p&gt;</code>), it will
+      colour the text red. If the rules were reversed (say, by alphabetising
+      them) the text would be orange. A slightly contrived example, but 
+      nonetheless illustrating how source order can be important in CSS.
+      Approach any “optimised” stylesheet with equal parts caution, 
+      trepidation and sledgehammer.</p>
+    
+    <h3>Separating the parts of the stylesheet</h3>
+    <p>When optimising a stylesheet, <i>CSS Prepare</i> will only optimise
+      rule sets within each distinct part of the stylesheet. This means you
+      won't find your print <code>@media</code> block rules mixed in with the
+      rest of the stylesheet. Nor will rule sets from an external stylesheet
+      read in with <code>@import</code> be mixed with any others.</p>
+    <p>A verbatim comment or block (see above) will also trigger a boundary in
+      the stylesheet, so this is an inexpensive way to stop rules being mixed
+      up within one stylesheet.</p>
+    <p>So, for example, to preserve the order of the two classes in the 
+      previous example, you would alter the source stylesheet as follows…</p>
+    
+    <pre><code class="css"><span class="line">.warning { color: orange; }</span>
+<span class="line">/*! boundary */</span>
+<span class="line">.alert { color: red; }</span>
+</code></pre>
+    
+    <p>…and <i>CSS Prepare</i> will never put <code>.alert</code> before
+      <code>.warning</code>.</p>
+    <p>A good technique to use is to place any rules that rely on source 
+      order together at the end of the stylesheet.</p>
+    
+    <h2>More advanced tips</h2>
+    <p><i>CSS Prepare</i> has more awesome to come, but that functionality 
+      will not be made available during this alpha testing.</p>
+    
+  </div>
+
+</div></body>
+</html>

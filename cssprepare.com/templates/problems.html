@@ -1,0 +1,82 @@
+<html>
+<head>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>CSS Prepare•Having Problems?</title>
+</head>
+<body><div id="body">
+  
+  <div id='crest'>
+    <h1>CSS Prepare <em>experimental alpha</em></h1>
+    <ul id='nav'>
+      <li><a href='/'>Add some CSS</a></li>
+      <li><a href='/documentation'>How this works</a></li>
+      <li><a href='/problems'>Having problems?</a></li>
+      <li><a href='http://github.com/norm/CSS-Prepare/'>Source on
+            github</a></li>
+      <li>A project by <a href='http://marknormanfrancis.com/'>Mark 
+            Norman Francis</a></li>
+    </ul>
+  </div>
+  
+  <div id="page">
+    <h1>Having problems?</h1>
+    <p><i>CSS Prepare</i> should know about all of the properties defined in
+      the <a href='http://www.w3.org/TR/CSS21/'>CSS 2.1 specification</a>.
+      There are bound to be edge cases, however. If you find something you
+      believe to be valid CSS but this complains, please <a
+      href='#reporting-problems'>report the problem</a>.</p>
+    
+    <h2>Known problems</h2>
+    <p>There are a few of the more esoteric parts of the CSS grammar that
+      will trip <i>CSS Prepare</i> up. For example, being able to use newlines
+      inside of selectors (see the last example in <a
+      href='http://www.w3.org/TR/CSS21/syndata.html#rule-sets'>section
+      4.1.7</a> of the specification). Whilst this may make <i>CSS Prepare</i>
+      a <a
+      href='http://www.w3.org/TR/CSS21/conform.html#conformance'>non-conforming
+      user agent</a> because that means it fails on point 3. For me it is not
+      as a high priority as supporting CSS3 properties that actually work in
+      modern browsers.I have never seen anyone use it in the wild. But please,
+      prove me wrong and I'll fix it.</p>
+    <h3>CSS Hacks</h3>
+    <p>There are a couple of common <a
+      href='http://en.wikipedia.org/wiki/CSS_filter'>css hacks</a> (used to
+      target earlier versions of Internet Explorer) that should work fine,
+      including the <a
+      href='http://en.wikipedia.org/wiki/CSS_filter#Star_hack'>star</a> and <a
+      href='http://en.wikipedia.org/wiki/CSS_filter#Underscore_hack'>underscore</a>
+      hacks. The <a
+      href='http://en.wikipedia.org/wiki/CSS_filter#Star_HTML_hack'>star
+      HTML</a> hack works fine, as it is valid CSS.</p> <p>Another common hack
+      is to use the Microsoft-proprietary <q>zoom:1</q> declaration to trigger
+      <em>hasLayout</em>. This will work fine if used with either of the star
+      or underscore hacks, but used alone you will get an invalid property
+      error. The same goes for any <q>filter</q> or other IE-specific
+      declarations (I consider this to be the correct behaviour, as in IE8
+      Microsoft have corrected these <a
+      href='http://blogs.msdn.com/ie/archive/2008/09/08/microsoft-css-vendor-extensions.aspx'>to
+      be <q>-ms</q> vendor extensions</a>).</p>
+    
+    <h2 id='reporting-problems'>Unknown problems</h2>
+    <p>If you have any problems with this, you can contact me in one of 
+      three ways:</p>
+    <ol>
+      <li>First, just use the <q>Mark result as containing a problem</q>
+        button on the output page to flag the output as something I need to
+        examine if you think it is fairly obvious what might be wrong.</li>
+      <li>If you think the problem needs a little more explanation, feel 
+        free to send me an email describing your problem at
+        <a href='mailto:norm@cackhanded.net?subject=CSS Prepare problem'>norm@cackhanded.net</a>. 
+        Please include the permanent URL of your problem output in the
+        email.</li>
+      <li>Or if you prefer, use github to <a 
+        href='http://github.com/norm/CSS-Prepare/issues'>report an issue</a>
+        with the code. Please include the permanent URL of your problem
+        output. (And if you feel up to it, by all means fork it, fix the code
+        and send me a pull request.)</li>
+    </ol>
+    <p>
+  </div>
+
+</div></body>
+</html>

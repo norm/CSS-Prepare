@@ -35,7 +35,7 @@ sub new {
     my $self = {
             hacks      => 1,
             features   => 0,
-            suboptimal => 500,
+            suboptimal => 10,
             silent     => 0,
             %args
         };

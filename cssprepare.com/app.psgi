@@ -275,7 +275,7 @@ my $flag_css = sub {
             }
         }
         
-        my $redirect = "/css/${sha1}";
+        my $redirect = "/css/${sha1}/";
         return redirect( $redirect );
     }
     

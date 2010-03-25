@@ -34,8 +34,8 @@ CSS
                 selectors => [ 'h1' ],
                 errors    => [
                     {
-                        error => q(invalid property '// yes, colour, because )
-                                 . qq(that's proper English\n    font-size'),
+                        error => q(invalid property: '// yes, colour, because)
+                                 . qq( that's proper English\n    font-size'),
                     }
                 ],
                 block     => {

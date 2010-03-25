@@ -36,10 +36,10 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => "invalid property 'voice-family'",
+                        error => "invalid property: 'voice-family'",
                     },
                     {
-                        error => "invalid property 'voice-family'",
+                        error => "invalid property: 'voice-family'",
                     },
                 ],
                 block     => {
@@ -84,7 +84,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property '*color'),
+                        error => q(invalid property: '*color'),
                     },
                 ],
                 block     => {
@@ -126,7 +126,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property '_color'),
+                        error => q(invalid property: '_color'),
                     },
                 ],
                 block     => {
@@ -167,7 +167,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property '_zoom'),
+                        error => q(invalid property: '_zoom'),
                     },
                 ],
                 block     => {},
@@ -188,7 +188,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property 'zoom'),
+                        error => q(invalid property: 'zoom'),
                     },
                 ],
                 block     => {},
@@ -232,7 +232,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property '_filter'),
+                        error => q(invalid property: '_filter'),
                     },
                 ],
                 block     => {},
@@ -253,7 +253,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property 'filter'),
+                        error => q(invalid property: 'filter'),
                     },
                 ],
                 block     => {},
@@ -321,7 +321,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property 'blah'),
+                        error => q(invalid property: 'blah'),
                     },
                 ],
                 block     => {},

@@ -397,7 +397,7 @@ sub parse {
     my $location = shift;
     
     my( $charset, $stripped ) = strip_charset( $string );
-    return { errors => [{ fatal => "Unsupported charset ${charset}" }] }
+    return { errors => [{ fatal => "Unsupported charset '${charset}'" }] }
         unless 'UTF-8' eq $charset;
     
     $stripped = $self->strip_comments( $stripped );
@@ -747,7 +747,7 @@ sub split_into_declaration_blocks {
         elsif ( $string ) {
             push @blocks, {
                     errors => [{
-                        error => "Unknown content.\n${string}\n",
+                        error => "Unknown content:\n${string}\n",
                     }],
                 };
             $string = undef;
@@ -776,8 +776,8 @@ sub parse_selectors {
         if ( ! is_valid_selector( $selector ) ) {
             return [], [
                     {
-                        error => 'ignored block - '
-                               . "unknown selector $selector (CSS 2.1 #4.1.7)",
+                        error => 'ignored block - unknown selector'
+                               . " '${selector}' (CSS 2.1 #4.1.7)",
                     }
                 ];
         }
@@ -871,7 +871,7 @@ sub parse_declaration_block {
         else {
             if ( ! @$errors ) {
                 push @errors, {
-                        error => "invalid property '$match{'property'}'"
+                        error => "invalid property: '$match{'property'}'"
                     };
             }
         }
@@ -880,7 +880,7 @@ sub parse_declaration_block {
         $string =~ s{^ \s* (.*?) \s* $}{$1}sx;
         
         push @errors, {
-                error => "invalid property '$string'",
+                error => "invalid property: '$string'",
             };
     }
     

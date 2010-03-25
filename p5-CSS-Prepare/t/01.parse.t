@@ -328,7 +328,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property 'colur'),
+                        error => q(invalid property: 'colur'),
                     },
                 ],
                 block     => {},
@@ -351,7 +351,7 @@ CSS
                 selectors => [ 'div' ],
                 errors    => [
                     {
-                        error => q(invalid property 'bing;'),
+                        error => q(invalid property: 'bing;'),
                     },
                 ],
                 block     => {},
@@ -408,8 +408,8 @@ CSS
                 selectors => [],
                 errors    => [
                     {
-                        error => 'ignored block -'
-                               . ' unknown selector h4 & h5 (CSS 2.1 #4.1.7)',
+                        error => 'ignored block - unknown selector'
+                               . q( 'h4 & h5' (CSS 2.1 #4.1.7)),
                     },
                 ],
                 block     => {},
@@ -460,7 +460,7 @@ CSS
     @structure = (
             {
                 errors    => [
-                    { fatal => 'Unsupported charset ISO-8859-1', }
+                    { fatal => q(Unsupported charset 'ISO-8859-1'), }
                 ],
             },
         );
@@ -560,7 +560,7 @@ CSS
             {
                 errors => [
                     {
-                        error => "Unknown content.\n" .
+                        error => "Unknown content:\n" .
                                  "I am not a stylesheet.\n\n",
                     }
                 ],

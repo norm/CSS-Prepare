@@ -87,7 +87,7 @@ CSS
                  );
     
     my @errors = (
-            { error => q(invalid property 'zoom') },
+            { error => q(invalid property: 'zoom') },
         );
     my @found_errors;
     foreach my $block ( @structure ) {

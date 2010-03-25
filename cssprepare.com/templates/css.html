@@ -4,7 +4,7 @@
 <html>
 <head>
   <title>CSS Prepare</title>
-  <link rel="stylesheet" href="/raw/ePW3_Wzz+CEqr1jVb9wz9xrj6VE/optimised.css">
+  <link rel="stylesheet" href="/raw/AKHp7jHEoCvnrjta9dEllHOKJ+Y/optimised.css">
   <!-- that's right, you can view the original CSS by editing that URL -->
 </head>
 <body><div id="body">
@@ -23,7 +23,7 @@
   </div>
   
   <p id='note'>Any CSS entered will be saved and made available via this site
-    for future reference, and to be analysed to help improve this project.</p>
+    for future reference, and may be analysed to help improve this project.</p>
   
   <form action="/new/" method="post" accept-charset="utf-8"><div>
     <textarea name="css" rows="10" cols="80">{{$css}}</textarea>
@@ -49,7 +49,7 @@
     
     {{
         if ( 0 != $error_count ) {
-            $OUT .= "<h2>Errors</h2><ul id='errors'>\n";
+            $OUT .= "<h3>Errors</h3><ul id='errors'>\n";
             foreach my $error ( @errors ) {
                 my $level    = $error->{'level'};
                 my $text     = $error->{'text'};
@@ -61,14 +61,15 @@
         }
     }}
     <div id='output'>
+      <h3>Permalinks</h3>
       <ul id='fingerprint'>
-        <li>Permalinks:</li>
         <li><a href='/css/{{$sha1}}'>output view</a></li>
         <li><a href='/css/{{$sha1}}/optimised'>optimised view</a></li>
         <li><a href='/raw/{{$sha1}}/original.css'>raw source</a></li>
         <li><a href='/raw/{{$sha1}}/output.css'>raw output</a></li>
         <li><a href='/raw/{{$sha1}}/optimised.css'>raw optimised</a></li>
       </ul>
+      <h3>Code</h3>
       <pre {{ $flagged ? 'class="flagged"' : '' }} id='code'><code class='CSS'>{{$output}}</code></pre>
   </div>
   

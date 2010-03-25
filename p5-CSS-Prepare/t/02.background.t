@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 9;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -59,6 +59,23 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => { 'background-position' => 'top', },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "background-position was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        div { background-position: left bottom; }
+CSS
+    @structure = (
+            {
+                original  => ' background-position: left bottom; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => { 'background-position' => 'left bottom', },
             },
         );
 
@@ -160,4 +177,29 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "six character hex colour shorthand was:\n" . Dumper \@parsed;
+}
+
+# regression tests
+{
+    $css = <<CSS;
+        div { background:url(nav-footer.gif) left bottom no-repeat; }
+CSS
+    @structure = (
+            {
+                original  => ' background:url(nav-footer.gif) left bottom no-repeat; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'background-attachment' => '',
+                    'background-color'      => '',
+                    'background-image'      => 'url(nav-footer.gif)',
+                    'background-position'   => 'left bottom',
+                    'background-repeat'     => 'no-repeat',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "more shorthand was:\n" . Dumper \@parsed;
 }

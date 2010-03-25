@@ -1,6 +1,7 @@
 package CSS::Prepare::Property::Generated;
 
 use Modern::Perl;
+use CSS::Prepare::Property::Expansions;
 use CSS::Prepare::Property::Values;
 
 
@@ -59,12 +60,18 @@ sub parse {
         if 'list-style-position' eq $property;
     
     if ( 'list-style' eq $property ) {
-        %canonical = expand_list_style( $value );
+        my %types = (
+                'list-style-type'     => $list_style_type_value,
+                'list-style-image'    => $list_style_image_value,
+                'list-style-position' => $list_style_position_value,
+            );
+        
+        %canonical = validate_any_order_shorthand( $value, %types );
         
         push @errors, {
-                error => "invalid list-style property: '$value'"
+                error => "invalid list-style property: '${value}'"
             }
-            if !%canonical;
+            unless %canonical;
     }
     
     return \%canonical, \@errors;
@@ -105,59 +112,6 @@ sub output {
     }
     
     return @output;
-}
-
-sub expand_list_style {
-    my $value = shift;
-    
-    my $list_style = qr{
-            ^ \s*
-            ( 
-                  $list_style_type_value
-                | $list_style_image_value
-                | $list_style_position_value
-            )
-        }x;
-    
-    my %values = (
-            'list-style-type'     => '',
-            'list-style-image'    => '',
-            'list-style-position' => '',
-        );
-    
-    VALUE:
-    while ( $value =~ s{$list_style}{}x ) {
-        my $part = $1;
-        
-        my $is_type = $part =~ m{$list_style_type_value} 
-                      && !$values{'list-style-type'};
-        if ( $is_type ) {
-            $values{'list-style-type'} = $part;
-            next VALUE;
-        }
-        
-        my $is_image = $part =~ m{$list_style_image_value} 
-                       && !$values{'list-style-image'};
-        if ( $is_image ) {
-            $values{'list-style-image'} = $part;
-            next VALUE;
-        }
-        
-        my $is_position = $part =~ m{$list_style_position_value} 
-                          && !$values{'list-style-position'};
-        if ( $is_position ) {
-            $values{'list-style-position'} = $part;
-            next VALUE;
-        }
-        
-        # error
-        return;
-    }
-    
-    return if 'none' eq $values{'list-style-type'}
-           && 'none' eq $values{'list-style-image'};
-    
-    return %values;
 }
 
 1;

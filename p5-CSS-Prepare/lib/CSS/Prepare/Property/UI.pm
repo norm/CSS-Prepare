@@ -52,33 +52,18 @@ sub parse {
            || 'outline-color' eq $property;
     
     if ( 'outline' eq $property ) {
-        my $shorthand_properties = qr{
-                ^
-                    (?:
-                        (?:
-                              (?'width'  $outline_width_value  )
-                            | (?'colour' $outline_colour_value )
-                            | (?'style'  $outline_style_value  )
-                        )
-                        \s*
-                    )+
-                    (?'left'  )   # break without this, even though
-                                  # it captures nothing???
-                $
-            }x;
+        my %types = (
+                'outline-color' => $outline_colour_value,
+                'outline-style' => $outline_style_value,
+                'outline-width' => $outline_width_value,
+            );
         
-        if ( $value =~ m{$shorthand_properties}x ) {
-            my %values = %+;
-            
-            $canonical{'outline-style'} = $values{'style'}  // '';
-            $canonical{'outline-width'} = $values{'width'}  // '';
-            $canonical{'outline-color'} = $values{'colour'} // '';
-        }
-        else {
-            push @errors, {
-                    error => "invalid font property: '${value}'"
-                };
-        }
+        %canonical = validate_any_order_shorthand( $value, %types );
+        
+        push @errors, {
+                error => "invalid outline property: '${value}'"
+            }
+            unless %canonical;
     }
     
     return \%canonical, \@errors;

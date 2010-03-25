@@ -55,34 +55,20 @@ sub parse {
         if 'background-position' eq $property;
     
     if ( 'background' eq $property ) {
-        my $shorthand_properties = qr{
-                ^
-                (?:
-                    (?:
-                          (?'colour'     $background_colour_value )
-                        | (?'image'      $background_image_value )
-                        | (?'repeat'     $background_repeat_value )
-                        | (?'attachment' $background_attachment_value )
-                        | (?'position'   $background_position_value )
-                    )
-                    \s*
-                )+
-            }x;
+        my %types = (
+                'background-color'      => $background_colour_value,
+                'background-image'      => $background_image_value,
+                'background-repeat'     => $background_repeat_value,
+                'background-attachment' => $background_attachment_value,
+                'background-position'   => $background_position_value,
+            );
         
-        if ( $value  =~ m{$shorthand_properties}x ) {
-            my %values = %+;
-            
-            $canonical{'background-attachment'} = $values{'attachment'} // '';
-            $canonical{'background-color'}      = $values{'colour'}     // '';
-            $canonical{'background-image'}      = $values{'image'}      // '';
-            $canonical{'background-repeat'}     = $values{'repeat'}     // '';
-            $canonical{'background-position'}   = $values{'position'}   // '';
-        }
-        else {
-            push @errors, {
-                    error => "invalid background property: '${value}'"
-                };
-        }
+        %canonical = validate_any_order_shorthand( $value, %types );
+        
+        push @errors, {
+                error => "invalid background property: '${value}'"
+            }
+            unless %canonical;
     }
     
     return \%canonical, \@errors;

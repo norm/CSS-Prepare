@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 16;
+use Test::More  tests => 18;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -346,27 +346,70 @@ CSS
                 errors    => [],
                 selectors => [ 'li' ],
                 block     => { 
-                    'list-style-type'     => 'none', 
-                    'list-style-image'    => '', 
-                    'list-style-position' => '', 
+                    'list-style-type'     => '',
+                    'list-style-image'    => 'none',
+                    'list-style-position' => '',
                 },
             },
         );
     
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "list-style shorthand was:\n" . Dumper \@parsed;
+        or say "list-style none shorthand was:\n" . Dumper \@parsed;
 }
 {
     $css = <<CSS;
-        li { list-style: none none; }
+        li { list-style: disc none; }
 CSS
     @structure = (
             {
-                original  => ' list-style: none none; ',
+                original  => ' list-style: disc none; ',
+                errors    => [],
+                selectors => [ 'li' ],
+                block     => {
+                    'list-style-type'     => 'disc',
+                    'list-style-image'    => 'none',
+                    'list-style-position' => '',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "list-style image none shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        li { list-style: url(dot.gif) none; }
+CSS
+    @structure = (
+            {
+                original  => ' list-style: url(dot.gif) none; ',
+                errors    => [],
+                selectors => [ 'li' ],
+                block     => {
+                    'list-style-type'     => 'none',
+                    'list-style-image'    => 'url(dot.gif)',
+                    'list-style-position' => '',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "list-style type none shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+        li { list-style: disc url(dot.gif) none; }
+CSS
+    @structure = (
+            {
+                original  => ' list-style: disc url(dot.gif) none; ',
                 errors    => [
                     {
-                        error => q(invalid list-style property: 'none none'),
+                        error => q(invalid list-style property: )
+                                 . q('disc url(dot.gif) none'),
                     }
                 ],
                 selectors => [ 'li' ],
@@ -376,5 +419,5 @@ CSS
     
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
-        or say "list-style shorthand was:\n" . Dumper \@parsed;
+        or say "list-style invalid shorthand was:\n" . Dumper \@parsed;
 }

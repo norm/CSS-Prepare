@@ -38,21 +38,6 @@ sub parse {
             }
         };
     
-    my $shorthand_properties = qr{
-            ^
-            (?:
-                (?:
-                      (?'style'      $border_style_value  )
-                    | (?'width'      $border_width_value  )
-                    | (?'colour'     $border_colour_value )
-                )
-                \s*
-            )+
-            (?'left'  )   # breaks without this, even though
-                          # it captures nothing???
-            $
-        }x;
-    
     foreach my $direction qw( top right bottom left ) {
         &$valid_property_or_error( 'border_colour' )
             if $property =~ m{border-${direction}-colou?r};
@@ -62,22 +47,19 @@ sub parse {
             if "border-${direction}-width" eq $property;
         
         if ( "border-${direction}" eq $property ) {
-            if ( $value =~ $shorthand_properties ) {
-                my %values = %+;
-                
-                $canonical{"border-${direction}-color"}
-                    = $values{'colour'}  // '';
-                $canonical{"border-${direction}-style"}
-                    = $values{'style'}  // '';
-                $canonical{"border-${direction}-width"}
-                    = $values{'width'}  // '';
-            }
-            else {
-                push @errors, {
-                        error => "invalid border-${direction} "
-                                 . "property: '$value'",
-                    };
-            }
+            my %types = (
+                    "border-${direction}-color" => $border_colour_value,
+                    "border-${direction}-style" => $border_style_value,
+                    "border-${direction}-width" => $border_width_value,
+                );
+
+            %canonical = validate_any_order_shorthand( $value, %types );
+
+            push @errors, {
+                    error => "invalid border-${direction} "
+                             . "property: '${value}'"
+                }
+                unless %canonical;
         }
     }
     
@@ -157,16 +139,19 @@ sub parse {
     }
     
     if ( 'border' eq $property ) {
-        if ( $value =~ $shorthand_properties ) {
-            my %values = %+;
-            
-            foreach my $direction qw( top right bottom left ) {
-                $canonical{"border-${direction}-color"}
-                    = $values{'colour'}  // '';
-                $canonical{"border-${direction}-style"}
-                    = $values{'style'}  // '';
-                $canonical{"border-${direction}-width"}
-                    = $values{'width'}  // '';
+        my %types = (
+                "colour" => $border_colour_value,
+                "style"  => $border_style_value,
+                "width"  => $border_width_value,
+            );
+        
+        my %values = validate_any_order_shorthand( $value, %types );
+        
+        if ( %values ) {
+            foreach my $direction ( @standard_directions ) {
+                $canonical{"border-${direction}-color"} = $values{'colour'};
+                $canonical{"border-${direction}-style"} = $values{'style'};
+                $canonical{"border-${direction}-width"} = $values{'width'};
             }
         }
         else {

@@ -7,7 +7,7 @@ use Exporter;
 our @ISA    = qw( Exporter );
 our @EXPORT = qw( expand_trbl_shorthand  collapse_trbl_shorthand
                   expand_clip            shorten_colour_value
-                  shorten_length_value
+                  shorten_length_value   validate_any_order_shorthand
               );
 
 
@@ -230,6 +230,76 @@ sub shorten_length_value {
         if $value =~ m{^0([ceimnptx]{2})};
     
     return $value;
+}
+
+sub validate_any_order_shorthand {
+    my $value = shift;
+    my %types = @_;
+    
+    # prepare the return value hash
+    my %return;
+    foreach my $type ( keys %types ) {
+        $return{ $type } = '';
+    }
+    
+    my $options_string       = join '|', values %types;
+    my $shorthand_option     = qr{ ( $options_string ) \s* }x;
+    my $count                = scalar keys %types;
+    my $shorthand_properties = qr{ ^ (?: $shorthand_option ){1,$count} $}x;
+    
+    if ( $value =~ m{$shorthand_properties} ) {
+        my %properties;
+        
+        # pull each property out of the shorthand string
+        # and determine which type(s) it is
+        while ( $value =~ s{^$shorthand_option}{}x ) {
+            my $property = $1;
+            foreach my $type ( keys %types ) {
+                my $check = $types{ $type };
+                $properties{ $property }{ $type } = 1
+                    if $property =~ m{^$check$};
+            }
+        }
+        return if length $value;
+        
+        # sort with the lowest matches first, to ensure properties that could
+        # be multiples are resolved correctly eg. in "list-style: none
+        # url(dot.gif)" the "none" part is either a list-style-type or
+        # list-style-image property, but "url(dot.gif)" can only be a
+        # list-style-image property. By removing list-style-image from the
+        # available options of "none" first, we make sure that that is
+        # correctly resolved as being a list-style-type property.
+        my $lowest_children_first = sub {
+                my $a_count = scalar keys %{$properties{$a}};
+                my $b_count = scalar keys %{$properties{$b}};
+                return $a_count <=> $b_count;
+            };
+        
+        my @properties = sort $lowest_children_first keys %properties;
+        foreach my $property ( @properties ) {
+            # without at least one remaining type, its an invalid shorthand
+            my @types = sort keys %{$properties{ $property }};
+            my $type  = shift @types;
+            return unless defined $type;
+            
+            # set the type and remove other possibilities
+            $return { $type } = $property;
+            delete $properties{ $property };
+            
+            my @others = keys %properties;
+            foreach my $property ( @others ) {
+                delete $properties{ $property }{ $type };
+                delete $properties{ $property } 
+                    unless scalar keys %{$properties{ $property }};
+            }
+        }
+        
+        # if anything remains unallocated to a property, then we have an
+        # invalid shorthand
+        return if scalar keys %properties;
+    }
+    
+    return %return;
 }
 
 1;

@@ -396,6 +396,8 @@ sub parse {
     my $string   = shift;
     my $location = shift;
     
+    return unless defined $string;
+    
     my( $charset, $stripped ) = strip_charset( $string );
     return { errors => [{ fatal => "Unsupported charset '${charset}'" }] }
         unless 'UTF-8' eq $charset;

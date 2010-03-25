@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 21;
+use Test::More  tests => 22;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -128,6 +128,17 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "skip empty blocks was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+h1 {}
+CSS
+    @structure = (
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "entirely empty content was:\n" . Dumper \@parsed;
 }
 
 # basic declaration block with comments
@@ -339,8 +350,6 @@ CSS
     is_deeply( \@structure, \@parsed )
         or say "invalid property 'colur' was:\n" . Dumper \@parsed;
 }
-
-# invalid properties are flagged
 {
     $css = <<CSS;
         div { bing; }

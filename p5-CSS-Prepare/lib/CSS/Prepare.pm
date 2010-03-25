@@ -772,6 +772,7 @@ sub parse_selectors {
     
     while ( $string =~ s{$splitter}{}sx ) {
         my $selector = $1;
+           $selector =~ s{\s+}{ }sg;
         
         # CSS2.1 4.1.6: "the whole statement should be ignored if
         # there is an error anywhere in the selector"
@@ -784,7 +785,7 @@ sub parse_selectors {
                 ];
         }
         else {
-            push @selectors, $1;
+            push @selectors, $selector;
         }
     }
     

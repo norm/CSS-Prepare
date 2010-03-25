@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 22;
+use Test::More  tests => 23;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -370,6 +370,28 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "invalid property 'bing' was:\n" . Dumper \@parsed;
+}
+
+# selectors remain unharmed
+{
+    $css = <<CSS;
+        div
+        p { color: red; }
+CSS
+    @structure = (
+            {
+                original  => ' color: red; ',
+                selectors => [ qq(div p) ],
+                errors    => [],
+                block     => {
+                    'color' => 'red',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "selectors unharmed was:\n" . Dumper \@parsed;
 }
 
 # test multiple selectors

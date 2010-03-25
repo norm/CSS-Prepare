@@ -984,7 +984,6 @@ sub array_of_properties {
     my %styles = @_;
     
     my @properties;
-    
     foreach my $selector ( keys %styles ) {
         my %properties = output_properties( $styles{ $selector } );
         
@@ -996,16 +995,22 @@ sub array_of_properties {
     return @properties;
 }
 sub get_suboptimal_state {
-    my @properties = @_;
+    my %by_property = @_;
     
+    # combine all properties by their selector -- makes a "margin:0;" property 
+    # with an "li" selector and a "padding:0;" property with an "li" selector
+    # into an "li" selector with both "margin:0;" and "padding:0;" properties
     my %by_selector;
-    while ( @properties ) {
-        my $selector = shift @properties;
-        my $property = shift @properties;
-        $by_selector{ $selector }{ $property } = 1;
+    foreach my $property ( keys %by_property ) {
+        foreach my $selector ( keys %{$by_property{ $property }} ) {
+            $by_selector{ $selector }{ $property } = 1;
+        }
     }
     
-    my %by_property;
+    # combine selectors by shared properties -- makes a "div" and an "li"
+    # which both have "margin:0;" and "padding:0;" properties into a
+    # "margin:0;padding:0;" property with a "div" and "li" selector
+    undef %by_property;
     foreach my $selector ( sort keys %by_selector ) {
         my $properties = join '', sort keys %{$by_selector{ $selector }};
         
@@ -1038,7 +1043,7 @@ sub get_optimal_state {
         }
     }
     
-    my $suboptimal = 0;
+    my $do_suboptimal_pass = 0;
     if ( scalar keys %multiples ) {
         my $start_time = time();
         my $count      = 0;
@@ -1049,8 +1054,8 @@ sub get_optimal_state {
             # adopt a faster strategy if there are too many properties
             # to deal with, or the code tends towards infinite
             # time taken to calculate the results
-            if ( time() > ( $start_time + $self->suboptimal_threshold ) ) {
-                $suboptimal = 1;
+            if ( time() >= ( $start_time + $self->suboptimal_threshold ) ) {
+                $do_suboptimal_pass = 1;
                 say STDERR "\rTime threshold reached -- "
                            . 'switching to suboptimal optimisation.'
                     unless $self->silent;
@@ -1071,11 +1076,9 @@ sub get_optimal_state {
             %singles,
             %multiples
         );
-        
-    if ( $suboptimal ) {
-        my @properties = array_of_properties( %by_property );
-        %by_property   = get_suboptimal_state( @properties );
-    }
+    
+    %by_property = get_suboptimal_state( %by_property )
+        if $do_suboptimal_pass;
     
     return( $total_savings, %by_property);
 }

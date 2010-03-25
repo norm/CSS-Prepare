@@ -35,13 +35,21 @@
       will trip <i>CSS Prepare</i> up. For example, being able to use newlines
       inside of selectors (see the last example in <a
       href='http://www.w3.org/TR/CSS21/syndata.html#rule-sets'>section
-      4.1.7</a> of the specification). Whilst this may make <i>CSS Prepare</i>
+      4.1.7</a> of the specification). This makes <i>CSS Prepare</i>
       a <a
       href='http://www.w3.org/TR/CSS21/conform.html#conformance'>non-conforming
       user agent</a> because that means it fails on point 3. For me it is not
       as a high priority as supporting CSS3 properties that actually work in
-      modern browsers.I have never seen anyone use it in the wild. But please,
+      modern browsers. I have never seen anyone use it in the wild. But please,
       prove me wrong and I'll fix it.</p>
+      
+    <h3>Missing features</h3>
+    <p><code>@import</code> doesn't actually import the named stylesheet yet.
+      This is planned for the beta version.</p>
+    <p>Most everything CSS3-like will be flagged as an error. This can be
+      avoided by using a “verbatim” block, described further in the
+      <a href='/documentation'>documentation</a>.</p>
+      
     <h3>CSS Hacks</h3>
     <p>There are a couple of common <a
       href='http://en.wikipedia.org/wiki/CSS_filter'>css hacks</a> (used to
@@ -51,13 +59,13 @@
       href='http://en.wikipedia.org/wiki/CSS_filter#Underscore_hack'>underscore</a>
       hacks. The <a
       href='http://en.wikipedia.org/wiki/CSS_filter#Star_HTML_hack'>star
-      HTML</a> hack works fine, as it is valid CSS.</p> <p>Another common hack
-      is to use the Microsoft-proprietary <q>zoom:1</q> declaration to trigger
-      <em>hasLayout</em>. This will work fine if used with either of the star
-      or underscore hacks, but used alone you will get an invalid property
-      error. The same goes for any <q>filter</q> or other IE-specific
-      declarations (I consider this to be the correct behaviour, as in IE8
-      Microsoft have corrected these <a
+      HTML</a> hack works fine, as it is valid CSS.</p>
+    <p>Another common hack is to use the Microsoft-proprietary <q>zoom:1</q>
+      declaration to trigger <em>hasLayout</em>. This will work fine if used
+      with either of the star or underscore hacks, but used alone you will get
+      an invalid property error. The same goes for any <q>filter</q> or other
+      IE-specific declarations (I consider this to be the correct behaviour,
+      as in IE8 Microsoft have corrected these <a
       href='http://blogs.msdn.com/ie/archive/2008/09/08/microsoft-css-vendor-extensions.aspx'>to
       be <q>-ms</q> vendor extensions</a>).</p>
     

@@ -12,7 +12,7 @@ body {
                             'Times New Roman',
                             'Times',
                             serif;
-    padding:                0 30px 30px;
+    padding:                0 50px 30px;
 }
 #body {
     margin:                 0 auto;
@@ -48,14 +48,17 @@ h1 em {
 }
 #nav { 
     margin:                 0;
-    overflow:               hidden;     /* float clearing */
     padding:                0;
+    
+    overflow:               hidden;     /* float clearing */
+    *zoom: 1;
 }
 #nav li {
     float:                  left;
     list-style:             none;
     margin:                 0;
     padding:                0;
+    *padding-right:         10px;
 }
 #nav li:after {
     content:                '•';
@@ -137,6 +140,7 @@ label span {
 
 #flag {
     overflow:               hidden;     /* float clearing */
+    *zoom: 1;
 }
 #flag button {
     border-width:           0;
@@ -172,7 +176,9 @@ label span {
     margin:                 0;
     margin-top:             2em;
     padding:                0;
+    
     overflow:               hidden;     /* float clearing */
+    *zoom: 1;
 }
 #fingerprint li {
     float:                  left;
@@ -204,11 +210,8 @@ pre {
     background:             #f8f8ff;
     border:                 1px solid #999;
     color:                  #333;
-/*    font-size:              80%;*/
-    margin:                 0 0 0 30px;
-    margin: 0;
+    margin:                 0;
     padding:                1em 10px;
-    position:               relative;
 }
 pre.flagged {
     background:             #ffd5dd;
@@ -228,14 +231,16 @@ pre code {
 }
 code .line {
     line-height:            1.5;
+    position:               relative;
 }
 code .line:before {
     color:                  #999;
     counter-increment:      line;
-    left:                   -30px;
+    left:                   -60px;
+    width:                  45px;
     position:               absolute;
+    text-align:             right;
 }
-
 
 #page h2,
 #page h3 {

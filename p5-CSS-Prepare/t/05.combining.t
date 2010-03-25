@@ -140,9 +140,6 @@ CSS
         or say "media block was:\n" . $output;
 }
 
-# @media block with no query
-{ ok( 1 == 2 ); }
-
 # test that verbatim blocks are not optimised away
 {
     $input = <<CSS;

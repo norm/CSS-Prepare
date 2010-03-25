@@ -82,6 +82,9 @@ textarea {
                             'Courier',
                             monospace;
 }
+label span {
+    font-size:              80%;
+}
 #submit {
     display:                block;
     margin-top:             1em;

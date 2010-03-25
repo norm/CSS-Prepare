@@ -27,8 +27,10 @@
   
   <form action="/new/" method="post" accept-charset="utf-8"><div>
     <textarea name="css" rows="10" cols="80"></textarea>
-    <label for="optimise">Optimise?</label>
     <input type="checkbox" name="optimise" value="optimise" id="optimise">
+    <label for="optimise">Optimise?
+      (<span><a href='/documentation#optimising-css-warning'>why this might
+        be a bad idea</a></span>)</label>
     <input type="submit" name="submit" value="submit" id="submit">
   </div></form>
   

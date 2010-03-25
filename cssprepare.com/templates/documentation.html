@@ -85,7 +85,7 @@
 <span class="line">li{margin:0 5px 1em;}</span>
 </code></pre>
     
-    <h3>Optimising CSS</h3>
+    <h3 id='optimising-css'>Optimising CSS</h3>
     <p>Using the example given above, with optimisation turned on, <i>CSS
       Prepare</i> will actually output…</p>
     
@@ -95,11 +95,11 @@
     <p>There are very few CSS minifiers that can restructure your CSS to this
       degree, as they are generally based around applying simple replacements
       to the string rather than parsing the CSS.</p>
-    <p><em>Please note:</em> optimising CSS changes the structure of it. 
-      Deliberately. The output of an optimised block can mix declarations that
-      were previously separate, combine selectors and, most importantly,
-      <em>change the source order</em>. If that doesn't fill you with The
-      Fear™, you don't understand <a
+    <p id='optimising-css-warning'><em>Please note:</em> optimising CSS
+      changes the structure of it. Deliberately. The output of an optimised
+      block can mix declarations that were previously separate, combine
+      selectors and, most importantly, <em>change the source order</em>. If
+      that doesn't fill you with The Fear™, you don't understand <a
       href='http://www.w3.org/TR/CSS21/cascade.html#cascade'>the cascade</a>
       properly.</p>
     <p>As an example, consider the following styles…</p>

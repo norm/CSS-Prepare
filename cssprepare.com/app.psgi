@@ -115,11 +115,13 @@ sub get_filename {
     return unless defined $sha1;
     return unless $sha1 =~ m{ [A-Za-z0-9+_]{27} }x;
     
-    my $subdir = substr( $sha1, 0, 6 );
-    my $target = "store/${subdir}/${sha1}/${filename}";
+    my $base   = $ENV{'CSS_PREPARE_STORE'} // 'store/';
+    my $subdir = substr( $sha1, 0, 2 );
+    my $target = "${base}/${subdir}/${sha1}/${filename}";
     
-    mkdir "store/${subdir}";
-    mkdir "store/${subdir}/${sha1}";
+    mkdir "${base}";
+    mkdir "${base}/${subdir}";
+    mkdir "${base}/${subdir}/${sha1}";
     
     return $target;
 }
@@ -127,7 +129,7 @@ sub store_css {
     my $css = shift;
     
     my $sha1   = sha1_base64( $css );
-       $sha1  =~ s{/}{_};
+       $sha1  =~ s{/}{_}g;
     my $target = get_filename( $sha1, 'original.css' );
     $css > io $target;
     

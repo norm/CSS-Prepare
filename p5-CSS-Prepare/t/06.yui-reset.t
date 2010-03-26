@@ -1,7 +1,14 @@
 use Modern::Perl;
-use Test::More  tests => 1;
+use Test::More  tests => 2;
 
 use CSS::Prepare;
+use Data::Dumper;
+local $Data::Dumper::Terse     = 1;
+local $Data::Dumper::Indent    = 1;
+local $Data::Dumper::Useqq     = 1;
+local $Data::Dumper::Deparse   = 1;
+local $Data::Dumper::Quotekeys = 0;
+local $Data::Dumper::Sortkeys  = 1;
 
 my $preparer = CSS::Prepare->new( silent => 1 );
 my( @structure, $output, $css );
@@ -34,12 +41,15 @@ CSS
                      'http://yui.yahooapis.com/2.8.0r4/build/reset/reset.css'
                  );
     
+    my @errors = ();
+    my @found_errors;
     foreach my $block ( @structure ) {
         foreach my $error ( @{$block->{'errors'}} ) {
-            my( $type, $text ) = each %{$error};
-            say uc( $type ) . ": $text";
+            push @found_errors, @{$block->{'errors'}};
         }
     }
+    is_deeply( \@errors, \@found_errors )
+        or say "YUI reset 2.8.0r4 errors was:\n" . Dumper \@errors;
     
     @structure = $preparer->optimise( @structure );
     $output    = $preparer->output_as_string( @structure );

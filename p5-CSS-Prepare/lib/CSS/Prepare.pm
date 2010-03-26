@@ -276,9 +276,16 @@ sub output_as_string {
         my $type = $block->{'type'} // '';
         
         if ( 'at-media' eq $type || 'import' eq $type ) {
+            my $query  = $block->{'query'};
             my $string = $self->output_as_string( @{$block->{'blocks'}} );
-            $string =~ s{^}{  }gm;
-            $output .= "\@media $block->{'query'} {\n${string}}\n";
+            
+            if ( defined $query && $query ) {
+                $string =~ s{^}{ }gm;
+                $output .= "\@media ${query}{\n${string}}\n";
+            }
+            else {
+                $output .= $string;
+            }
         }
         elsif ( 'verbatim' eq $type ) {
             $output .= $block->{'string'};

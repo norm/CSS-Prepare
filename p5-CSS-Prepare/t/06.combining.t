@@ -168,8 +168,8 @@ CSS
     $css = <<CSS;
 h1{background:#fff;}
 h1,li{color:#999;}
-\@media print {
-  h1,li{color:#000;}
+\@media print{
+ h1,li{color:#000;}
 }
 CSS
 
@@ -183,8 +183,8 @@ CSS
 # @import with a media query is output as an @media block
 {
     $css = <<CSS;
-\@media print {
-  div{color:#000;}
+\@media print{
+ div{color:#000;}
 }
 CSS
 

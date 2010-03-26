@@ -21,6 +21,8 @@ use FileHandle;
 use File::Basename;
 use Storable            qw( dclone );
 
+use constant MAX_REDIRECT => 3;
+
 my @MODULES = qw(
         Background  Border  Color    Effects  Font  Formatting  Hacks
         Generated   Margin  Padding  Tables   Text  UI          Vendor
@@ -47,12 +49,15 @@ sub new {
             lwp  => 'LWP::UserAgent',
         );
     
-    foreach my $provider ( keys %http_providers ) {
+    # sort to prefer HTTP::Lite over LWP::UserAgent
+    HTTP:
+    foreach my $provider ( sort keys %http_providers ) {
         my $module = $http_providers{ $provider };
         
         eval "require $module";
         unless ($@) {
             $self->{'http_provider'} = $provider;
+            last HTTP;
         }
     }
     
@@ -146,11 +151,12 @@ sub get_http_provider {
 }
 
 sub parse_file {
-    my $self = shift;
-    my $file = shift;
+    my $self     = shift;
+    my $file     = shift;
+    my $location = shift;
     
     my $string = $self->read_file( $file );
-    return $self->parse( $string, $file )
+    return $self->parse( $string, $file, $location )
         if defined $string;
     
     return;
@@ -180,11 +186,12 @@ sub parse_file_structure {
     return @blocks;
 }
 sub parse_url {
-    my $self = shift;
-    my $url  = shift;
+    my $self     = shift;
+    my $url      = shift;
+    my $location = shift;
     
     my $string = $self->read_url( $url );
-    return $self->parse( $string )
+    return $self->parse( $string, $url, $location )
         if defined $string;
     
     return;
@@ -223,13 +230,42 @@ sub parse_string {
 sub parse_stylesheet {
     my $self       = shift;
     my $stylesheet = shift;
+    my $location   = shift;
     
-    if ( $stylesheet =~ m{^https?://} ) {
-        return $self->parse_url( $stylesheet );
+    my $is_url          = qr{^ http s? : // }x;
+    my $match_hostname  = qr{^ ( http s? : // [^/]+ ) /? .* $}x;
+    my $match_directory = qr{^ (.*?) (?: / [^/]* )? $}x;
+    my $target;
+    
+    # don't interfere with an absolute URL
+    if ( $stylesheet =~ $is_url ) {
+        $target = $stylesheet;
     }
     else {
-        return $self->parse_file( $stylesheet );
+        if ( $stylesheet =~ m{^/} ) {
+            if ( $location =~ m{$match_hostname} ) {
+                $target = "${1}${stylesheet}";
+            }
+            else {
+                my $base = $self->get_base_directory();
+                $target = "$base/$stylesheet";
+            }
+        }
+        else {
+            if ( defined $location ) {
+                $location =~ m{$match_directory};
+                $target = "${1}/${stylesheet}";
+            }
+            else {
+                my $base = $self->get_base_directory();
+                $target = "$base/$stylesheet";
+            }
+        }
     }
+    
+    return $self->parse_url( $target, $location )
+        if $target =~ $is_url;
+    return $self->parse_file( $target, $location );
 }
 sub output_as_string {
     my $self = shift;
@@ -358,36 +394,36 @@ sub read_url {
     return;
 }
 sub get_url_lite {
-    my $self = shift;
-    my $url  = shift;
+    my $self  = shift;
+    my $url   = shift;
+    my $depth = shift // 1;
+    
+    # don't follow infinite redirections
+    return unless $depth <= MAX_REDIRECT;
     
     my $http = HTTP::Lite->new();
     my $code = $http->request( $url );
     
     given ( $code ) {
         when ( 200 ) { return $http->body(); }
-        when ( 404 ) { return; }
-        default {
-            # TODO proper error handling
-            die "http code $code";
+        when ( 301 || 302 || 303 || 307 ) {
+            my $location = $http->get_header( 'Location' );
+            return $self->get_url_lite( $location, $depth+1 );
         }
+        default      { return; }
     }
 }
 sub get_url_lwp {
     my $self = shift;
     my $url  = shift;
     
-    my $http = LWP::UserAgent->new();
+    my $http = LWP::UserAgent->new( max_redirect => MAX_REDIRECT );
     my $resp = $http->get( $url );
     my $code = $resp->code();
     
     given ( $code ) {
         when ( 200 ) { return $resp->decoded_content(); }
-        when ( 404 ) { return; }
-        default {
-            # TODO proper error handling
-            die $resp->status_line;
-        }
+        default      { return; }
     }
 }
 
@@ -574,10 +610,8 @@ sub split_into_statements {
     
     # "In CSS 2.1, any @import rules must precede all other rules (except the
     #  @charset rule, if present)." (CSS 2.1 #6.3)
-    my $directory = ( defined $location ) ? dirname( $location )
-                                          : './';
     my ( $remainder, @statements )
-        = $self->do_import_rules( $directory, $string );
+        = $self->do_import_rules( $string, $location );
     
     my $splitter = qr{
             ^
@@ -622,8 +656,8 @@ sub split_into_statements {
 }
 sub do_import_rules {
     my $self      = shift;
-    my $directory = shift;
     my $string    = shift;
+    my $directory = shift;
     
     # "In CSS 2.1, any @import rules must precede all other rules (except the
     #  @charset rule, if present)." (CSS 2.1 #6.3)
@@ -650,8 +684,7 @@ sub do_import_rules {
         $import =~ s{^ url\( \s* (.*?) \) $}{$1}x;   # strip url()
         $import =~ s{^ ( ['"] ) (.*?) \1 $}{$2}x;    # strip quotes
         
-        my $target = "$directory/$import";
-        my @styles = $self->parse_stylesheet( $target );
+        my @styles = $self->parse_stylesheet( $import, $directory );
         
         if ( @styles ) {
             push @blocks, {

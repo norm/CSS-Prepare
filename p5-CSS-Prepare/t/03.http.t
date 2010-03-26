@@ -11,7 +11,7 @@ local $Data::Dumper::Quotekeys = 0;
 local $Data::Dumper::Sortkeys  = 1;
 
 my $preparer = CSS::Prepare->new();
-my $base_url = 'http://bumph.cackhanded.net/css';  # TODO - move to real URL
+my $base_url = 'http://tests.cssprepare.com/';
 my( @structure, @parsed );
 
 if ( ! $preparer->has_http() ) {

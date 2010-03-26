@@ -105,8 +105,6 @@ sub process_css {
     my $type   = $optimise ? 'optimised' : 'output';
     my $store = get_filename( $sha1, "${type}.css" );
     $output > io $store;
-    
-    return $output;
 }
 sub get_filename {
     my $sha1     = shift;
@@ -146,22 +144,31 @@ sub get_css {
     return $io->all;
 }
 sub get_output_css {
-    my $sha1     = shift;
-    my $optimise = shift;
+    my $sha1 = shift;
+    my $type = shift // 'original';
     
-    my $type   = $optimise ? 'optimised' : 'output';
-    my $output = get_css( $sha1, $type );
+    my $css = get_css( $sha1, $type );
     
-    $output = process_css( $sha1, $optimise )
-        unless defined $output;
-    
-    return $output;
+    return encode_entities( $css );
 }
 sub get_errors {
     my $sha1 = shift;
     
     my $errors_file = get_filename( $sha1, 'errors' );
     return retrieve $errors_file;
+}
+sub get_output_errors {
+    my $sha1 = shift;
+    
+    my $errors = get_errors( $sha1 );
+    my @output;
+    
+    foreach my $error ( @{$errors} ) {
+        $error->{'selector'} = encode_entities( $error->{'selector'} );
+        $error->{'text'}     = encode_entities( $error->{'text'} );
+    }
+    
+    return $errors;
 }
 sub is_flagged {
     my $sha1 = shift;
@@ -210,12 +217,14 @@ my $styles = sub {
     
     my( undef, $sha1, $optimise ) = split m{/}, $request->path_info;
     
-    my $css = get_css( $sha1 );
+    my $css = get_output_css( $sha1 );
     return render_404() 
         unless defined $css;
     
-    my $output  = get_output_css( $sha1, $optimise );
-    my $errors  = get_errors( $sha1 );
+    process_css( $sha1, $optimise );
+    my $type    = $optimise ? 'optimised' : 'output';
+    my $output  = get_output_css( $sha1, $type );
+    my $errors  = get_output_errors( $sha1 );
     my $flagged = is_flagged( $sha1 );
     
     $output =~ s{^(.*)$}{<span class="line">$1</span>}gm;
@@ -240,14 +249,19 @@ my $raw_css = sub {
     my( undef, $sha1, $filename ) = split m{/}, $request->path_info;
     
     my $target = get_filename( $sha1, $filename );
-    my $css;
+    my $css    = get_css( $sha1 );
     
-    $css = get_css( $sha1 )
-        if 'original.css' eq $filename;
-    $css = get_output_css( $sha1, 1 )
-        if 'optimised.css' eq $filename;
-    $css = get_output_css( $sha1, 0 )
-        if 'output.css' eq $filename;
+    if ( defined $css ) {
+        # only try processing CSS that already exists as original.css
+        if ( 'optimised.css' eq $filename ) {
+            process_css( $sha1, 1 );
+            $css = get_css( $sha1, 'optimised' );
+        }
+        elsif ( 'output.css' eq $filename ) {
+            process_css( $sha1, 0 );
+            $css = get_css( $sha1, 'output' );
+        }
+    }
     
     return render_css( $css )
         if defined $css;

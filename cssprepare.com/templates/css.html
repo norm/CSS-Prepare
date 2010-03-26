@@ -55,9 +55,11 @@
             foreach my $error ( @errors ) {
                 my $level    = $error->{'level'};
                 my $text     = $error->{'text'};
-                my $selector = $error->{'selector'};
+                my $selector = $error->{'selector'}
+                                   ? "<q>$error->{'selector'}</q>"
+                                   : '';
 
-                $OUT .= "<li><em>$level</em>: <q>$selector</q> $text</li>\n";
+                $OUT .= "<li><em>${level}</em>: ${selector} ${text}</li>\n";
             }
             $OUT .= "</ul>\n";
         }

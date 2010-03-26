@@ -150,6 +150,16 @@ sub get_http_provider {
     return $self->{'http_provider'};
 }
 
+my $elements_first = sub {
+        my $a_element  = ( $a =~ m{^[a-z]}i );
+        my $b_element  = ( $b =~ m{^[a-z]}i );
+        my $element_count = $a_element + $b_element;
+
+        return ( $a_element ? -1 : 1 )
+            if 1 == $element_count;
+        return $a cmp $b;
+    };
+
 sub parse_file {
     my $self     = shift;
     my $file     = shift;
@@ -324,7 +334,11 @@ sub output_block_as_string {
     my %properties = output_properties( $block->{'block'} );
     return '' unless %properties;
     
-    my $selector = join ',', @{ $block->{'selectors'} };
+    # unique selectors only
+    my %seen;
+    my @selectors = grep { !$seen{$_}++ } @{$block->{'selectors'}};
+    
+    my $selector = join ',', sort $elements_first @selectors;
     my $output
         = join '', sort $shorthands_first_hacks_last keys %properties;
     

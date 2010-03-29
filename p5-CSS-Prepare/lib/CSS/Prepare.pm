@@ -38,8 +38,8 @@ sub new {
             hacks      => 1,
             features   => 0,
             suboptimal => 10,
-            silent     => 0,
             css3       => 0,
+            status     => \&status_to_stderr,
             %args
         };
     bless $self, $class;
@@ -104,20 +104,6 @@ sub set_suboptimal {
 sub suboptimal_threshold {
     my $self = shift;
     return $self->{'suboptimal'};
-}
-sub get_silent {
-    my $self = shift;
-    return $self->{'silent'};
-}
-sub set_silent {
-    my $self     = shift;
-    my $features = shift // 0;
-    
-    $self->{'silent'} = $features;
-}
-sub silent {
-    my $self = shift;
-    return $self->{'silent'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -1006,8 +992,8 @@ sub optimise_blocks {
     
     my $property_count = scalar @properties;
     
-    say STDERR "Found $property_count properties."
-        unless $self->silent;
+    $self->status( "  Found ${property_count} properties." );
+    
     my ( $savings, %state ) = $self->get_optimal_state( @properties );
     
     my @optimised = $self->get_blocks_from_state( %state );
@@ -1113,9 +1099,8 @@ sub get_optimal_state {
             # time taken to calculate the results
             if ( time() >= ( $start_time + $self->suboptimal_threshold ) ) {
                 $do_suboptimal_pass = 1;
-                say STDERR "\rTime threshold reached -- "
-                           . 'switching to suboptimal optimisation.'
-                    unless $self->silent;
+                $self->status( "  Time threshold reached -- switching "
+                               . 'to suboptimal optimisation.' );
                 last MIX;
             }
             
@@ -1124,8 +1109,7 @@ sub get_optimal_state {
             
             $total_savings += $found_savings;
             $count++;
-            print STDERR "\r[$count] savings $total_savings"
-                unless $self->silent;
+            $self->status( "  [$count] savings $total_savings", 'line' );
         }
     }
     
@@ -1382,6 +1366,28 @@ sub is_valid_selector {
     
     return 0 if length $test;
     return 1;
+}
+
+sub status {
+    my $self = shift;
+    my $text = shift;
+    my $line = shift;
+    
+    no strict 'refs';
+    
+    my $status = $self->{'status'};
+    &$status( $text, $line );
+}
+sub status_to_stderr {
+    my $text = shift;
+    my $line = shift;
+    
+    if ( defined $line ) {
+        print STDERR "\r${text}";
+    }
+    else {
+        say STDERR $text;
+    }
 }
 
 1;

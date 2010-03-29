@@ -3,7 +3,7 @@ use Test::More  tests => 9;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new( silent => 1 );
+my $preparer = CSS::Prepare->new();
 my( $input, $css, @parsed, @structure, $output );
 my $base_url = 'http://tests.cssprepare.com/';
 

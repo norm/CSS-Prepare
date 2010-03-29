@@ -3,7 +3,7 @@ use Test::More  tests => 12;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new( silent => 1 );
+my $preparer = CSS::Prepare->new();
 my( $input, $css, @structure, $output );
 
 

@@ -38,6 +38,7 @@ sub new {
             hacks      => 1,
             features   => 0,
             suboptimal => 10,
+            timeout    => 30,
             css3       => 0,
             status     => \&status_to_stderr,
             %args
@@ -124,6 +125,15 @@ sub get_base_url {
     my $self = shift;
     
     return $self->{'base_url'};
+}
+sub get_http_timeout {
+    my $self = shift;
+    return $self->{'timeout'};
+}
+sub set_http_timeout {
+    my $self = shift;
+    
+    $self->{'timeout'} = shift;
 }
 sub has_http {
     my $self = shift;
@@ -409,6 +419,8 @@ sub get_url_lite {
     return unless $depth <= MAX_REDIRECT;
     
     my $http = HTTP::Lite->new();
+       $http->{'timeout'} = $self->get_http_timeout;
+    
     my $code = $http->request( $url );
     
     given ( $code ) {
@@ -425,6 +437,8 @@ sub get_url_lwp {
     my $url  = shift;
     
     my $http = LWP::UserAgent->new( max_redirect => MAX_REDIRECT );
+       $http->timeout( $self->get_http_timeout );
+    
     my $resp = $http->get( $url );
     my $code = $resp->code();
     

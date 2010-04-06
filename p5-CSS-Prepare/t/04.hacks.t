@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 12;
+use Test::More  tests => 14;
 
 use CSS::Prepare;
 
@@ -154,4 +154,40 @@ CSS
     $output = $preparer_without->output_as_string( @structure );
     ok( $output eq $css )
         or say "verbatim block without hacks was:\n" . $output;
+}
+
+# chunking boundaries
+{
+    $css = <<CSS;
+li{color:#000;}
+h1{color:#000;}
+CSS
+    @structure = (
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'li' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+            { type => 'boundary', },
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+        );
+    
+    $output = $preparer_with->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "chunked content was:\n" . $output;
+}
+{
+    $output = $preparer_without->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "chunked content without hacks was:\n" . $output;
 }

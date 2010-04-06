@@ -189,7 +189,7 @@ body {
 }
 /*! verbatim */
 p { margin: 0; }
-/*! end-verbatim */
+/* -- */
 li {
     margin: 0;
     padding: 0;

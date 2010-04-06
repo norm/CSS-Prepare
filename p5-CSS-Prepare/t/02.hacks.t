@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 18;
+use Test::More  tests => 20;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -331,4 +331,60 @@ CSS
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "verbatim block was:\n" . Dumper \@parsed;
+}
+
+# chunking boundaries
+{
+    $css = <<CSS;
+li { color: #000; }
+/* -- */
+h1 { color: #000; }
+CSS
+    @structure = (
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'li' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+            { type => 'boundary', },
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+        );
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "chunked content was:\n" . Dumper \@parsed;
+}
+{
+    @structure = (
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'li' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "chunked content was:\n" . Dumper \@parsed;
 }

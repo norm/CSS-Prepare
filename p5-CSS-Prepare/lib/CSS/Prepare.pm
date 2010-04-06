@@ -296,6 +296,9 @@ sub output_as_string {
         elsif ( 'verbatim' eq $type ) {
             $output .= $block->{'string'};
         }
+        elsif ( 'boundary' eq $type ) {
+            # just skip the block
+        }
         else {
             $output .= output_block_as_string( $block );
         }
@@ -504,7 +507,8 @@ sub parse_rule_sets {
     foreach my $block ( @declaration_blocks ) {
         my $type           = $block->{'type'} // '';
         my $preserve_as_is = defined $block->{'errors'}
-                             || 'verbatim' eq $type;
+                             || 'verbatim' eq $type
+                             || 'boundary' eq $type;
         
         if ( $preserve_as_is ) {
             push @rule_sets, $block;
@@ -576,6 +580,11 @@ sub strip_comments {
         # preserve verbatim comments
         $string =~ s{ 
                 \/ \* \! ( .*? ) \* \/
+            }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
+        
+        # preserve boundary markers
+        $string =~ s{
+                \/ \* ( \s+ \-\-+ \s+ ) \* \/
             }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
     }
     
@@ -749,6 +758,10 @@ sub split_into_declaration_blocks {
             \s* ( .*? ) \s*
             \/ \* \s+ end-verbatim \s+ \*\/
         }sx;
+    my $get_chunk_boundary = qr{
+            ^
+            \/ \* \s+ \-\-+ \s+ \* \/ \s*
+        }sx;
         
     while ( $string ) {
         $string =~ s{^\s*}{}sx;
@@ -774,6 +787,13 @@ sub split_into_declaration_blocks {
                                      . 'ignored (CSS 2.1 #4.4)',
                         },
                     ],
+                };
+        }
+        
+        # check for chunk boundaries
+        elsif ( $string =~ s{$get_chunk_boundary}{}sx ) {
+            push @blocks, {
+                    type => 'boundary',
                 };
         }
         
@@ -977,12 +997,16 @@ sub optimise {
             elsif ( 'verbatim' eq $type ) {
                 push @complete, $block;
             }
+            elsif ( 'boundary' eq $type ) {
+                # nothing extra to do
+            }
             else {
                 push @complete, @optimised
                     if @optimised;
             }
         }
         else {
+            # collect block for later processing
             push @blocks, $block;
         }
     }

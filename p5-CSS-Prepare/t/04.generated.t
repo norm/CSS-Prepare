@@ -1,18 +1,15 @@
 use Modern::Perl;
-use Test::More  tests => 12;
+use Test::More  tests => 24;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer_concise = CSS::Prepare->new();
+my $preparer_pretty  = CSS::Prepare->new( pretty => 1 );
 my( $css, @structure, $output );
 
 
 # simple identifiers in counters work
 {
-    $css = <<CSS;
-div{counter-increment:section;}
-ol{counter-reset:list;}
-CSS
     @structure = (
             {
                 original  => ' counter-increment: section; ',
@@ -31,16 +28,29 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+div{counter-increment:section;}
+ol{counter-reset:list;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "counter with identifier was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    counter-increment:      section;
+}
+ol {
+    counter-reset:          list;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "counter with identifier was:\n" . $output;
 }
 {
-    $css = <<CSS;
-div{counter-increment:section !important;}
-ol{counter-reset:list;}
-CSS
     @structure = (
             {
                 original  => ' counter-increment: section; ',
@@ -59,18 +69,31 @@ CSS
                 },
             },
         );
-    
-    $output = $preparer->output_as_string( @structure );
+    $css = <<CSS;
+div{counter-increment:section !important;}
+ol{counter-reset:list;}
+CSS
+
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "counter with identifier was:\n" . $output;
+    $css = <<CSS;
+div {
+    counter-increment:      section
+                            !important;
+}
+ol {
+    counter-reset:          list;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "counter with identifier was:\n" . $output;
 }
 
 # identifiers with value in counters work
 {
-    $css = <<CSS;
-div{counter-increment:section 2;}
-ol{counter-reset:list;}
-CSS
     @structure = (
             {
                 original  => ' counter-increment: section 2; ',
@@ -89,17 +112,31 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+div{counter-increment:section 2;}
+ol{counter-reset:list;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "counter with identifier and value was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    counter-increment:      section 2;
+}
+ol {
+    counter-reset:          list;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "counter with identifier and value was:\n" . $output;
 }
 
 # quotes property works
 {
-    $css = <<CSS;
-q{quotes:'“' '”';}
-CSS
     @structure = (
             {
                 original  => q( quotes: '“' '”'; ),
@@ -110,17 +147,27 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+q{quotes:'“' '”';}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "quotes was:\n" . $output;
+    
+    $css = <<CSS;
+q {
+    quotes:                 '“' '”';
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "quotes was:\n" . $output;
 }
 
 # multiple quotes property works
 {
-    $css = <<CSS;
-q{quotes:'“' '”' "'" "'";}
-CSS
     @structure = (
             {
                 original  => q( quotes: '“' '”' "'" "'"; ),
@@ -131,17 +178,27 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+q{quotes:'“' '”' "'" "'";}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "multiple quotes was:\n" . $output;
+    $css = <<CSS;
+q {
+    quotes:                 '“' '”'
+                            "'" "'";
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "multiple quotes was:\n" . $output;
 }
 
 # content works
 {
-    $css = <<CSS;
-blockquote:before{content:"“";}
-CSS
     @structure = (
             {
                 original  => q( content: "“"; ),
@@ -152,17 +209,26 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+blockquote:before{content:"“";}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "content was:\n" . $output;
+    $css = <<CSS;
+blockquote:before {
+    content:                "“";
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "content was:\n" . $output;
 }
 
 # individual list styles properties work
 {
-    $css = <<CSS;
-li{list-style-type:armenian;}
-CSS
     @structure = (
             {
                 original  => ' list-style-type: armenian; ',
@@ -173,15 +239,24 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+li{list-style-type:armenian;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style-type was:\n" . $output;
+    $css = <<CSS;
+li {
+    list-style-type:        armenian;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style-type was:\n" . $output;
 }
 {
-    $css = <<CSS;
-li{list-style-image:url(dot.gif);}
-CSS
     @structure = (
             {
                 original  => ' list-style-image: url(dot.gif); ',
@@ -192,15 +267,24 @@ CSS
                 },
             },
         );
+    $css = <<CSS; 
+li{list-style-image:url(dot.gif);}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style-image was:\n" . $output;
+    $css = <<CSS;
+li {
+    list-style-image:       url(dot.gif);
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style-image was:\n" . $output;
 }
 {
-    $css = <<CSS;
-li{list-style-position:outside;}
-CSS
     @structure = (
             {
                 original  => ' list-style-position: outside; ',
@@ -211,17 +295,26 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+li{list-style-position:outside;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style-position was:\n" . $output;
+    $css = <<CSS;
+li {
+    list-style-position:    outside;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style-position was:\n" . $output;
 }
 
 # list-style shorthand works
 {
-    $css = <<CSS;
-li{list-style:disc url(dot.gif) inside;}
-CSS
     @structure = (
             {
                 original  => ' list-style: disc url(dot.gif) inside; ',
@@ -234,15 +327,27 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+li{list-style:disc url(dot.gif) inside;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+li {
+    list-style:             disc
+                            url(dot.gif)
+                            inside;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style shorthand was:\n" . $output;
 }
 {
-    $css = <<CSS;
-li{list-style:lower-alpha inside;}
-CSS
     @structure = (
             {
                 original  => ' list-style: inside lower-alpha; ',
@@ -255,15 +360,25 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+li{list-style:lower-alpha inside;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style shorthand was:\n" . $output;
+    $css = <<CSS;
+li {
+    list-style:             lower-alpha
+                            inside;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style shorthand was:\n" . $output;
 }
 {
-    $css = <<CSS;
-li{list-style:outside;}
-CSS
     @structure = (
             {
                 original  => ' list-style: outside; ',
@@ -276,8 +391,20 @@ CSS
                 },
             },
         );
+    $css = <<CSS;
+li{list-style:outside;}
+CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "list-style shorthand was:\n" . $output;
+    $css = <<CSS;
+li {
+    list-style:             outside;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "list-style shorthand was:\n" . $output;
 }

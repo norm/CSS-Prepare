@@ -31,18 +31,18 @@ body{text-align:center;}
 #yui-main .yui-b{float:none;position:static;}
 #yui-main,.yui-g .yui-u .yui-g{width:100%;}
 .yui-b{position:relative;_position:static;}
-.yui-g .yui-g .yui-u{width:48.1%;*margin-left:0;*width:48.1%;}
+.yui-g .yui-g .yui-u{width:48.1%;*width:48.1%;*margin-left:0;}
 .yui-g .yui-g,.yui-g .yui-gb,.yui-g .yui-gc,.yui-g .yui-gd,.yui-g .yui-ge,.yui-g .yui-gf,.yui-g .yui-u{float:right;width:49.1%;}
 .yui-g .yui-gb .yui-u{_margin-left:1.0%;}
 .yui-g .yui-gb .yui-u,.yui-gb .yui-g,.yui-gb .yui-gb,.yui-gb .yui-gc,.yui-gb .yui-gd,.yui-gb .yui-ge,.yui-gb .yui-gf,.yui-gb .yui-u,.yui-gc .yui-g{float:left;width:32%;margin-left:1.99%;}
-.yui-g .yui-gb div.first,.yui-gb .yui-gb div.first{*margin-right:0;*width:32%;_width:31.7%;}
+.yui-g .yui-gb div.first,.yui-gb .yui-gb div.first{*width:32%;_width:31.7%;*margin-right:0;}
 .yui-g .yui-gb div.first,.yui-gb div.first,.yui-gc div.first{margin-left:0;}
 .yui-g .yui-gc .yui-u,.yui-gb .yui-gc .yui-u{margin-right:0;_float:right;_margin-left:0;}
 .yui-g .yui-gc .yui-u,.yui-gc .yui-u{float:right;width:32%;}
 .yui-g .yui-gc div.first,.yui-gc div.first,.yui-gd .yui-u{float:left;width:66%;}
 .yui-g .yui-gd div.first{_width:29.9%;}
 .yui-g .yui-ge div.first,.yui-g div.first,.yui-gb .yui-ge div.first,.yui-gb div.first,.yui-gc div.first div.first,.yui-ge div.first,.yui-gf div.first,.yui-t1 .yui-b,.yui-t2 .yui-b,.yui-t3 .yui-b{float:left;}
-.yui-gb .yui-g .yui-u,.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u,.yui-ge .yui-g .yui-u,.yui-gf .yui-g .yui-u{width:49%;*margin-left:0;*width:48.1%;}
+.yui-gb .yui-g .yui-u,.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u,.yui-ge .yui-g .yui-u,.yui-gf .yui-g .yui-u{width:49%;*width:48.1%;*margin-left:0;}
 .yui-gb .yui-g div.first{*margin-right:4%;_margin-right:1.3%;}
 .yui-gb .yui-g div.first,.yui-gb .yui-gb div.first{*margin-left:0;}
 .yui-gb .yui-gb .yui-u{_margin-left:.7%;}
@@ -50,13 +50,13 @@ body{text-align:center;}
 .yui-gb .yui-gc .yui-u,.yui-ge div.first .yui-gd div.first{width:32%;}
 .yui-gb .yui-gc div.first{width:66%;*float:left;*margin-left:0;*margin-right:0;}
 .yui-gb .yui-gd .yui-u{*width:66%;_width:61.2%;}
-.yui-gb .yui-gd div.first{width:32%;*margin-right:0;*width:31%;_width:29.5%;}
+.yui-gb .yui-gd div.first{width:32%;*width:31%;_width:29.5%;*margin-right:0;}
 .yui-gb .yui-ge .yui-u{margin:0;*width:24%;_width:20%;}
 .yui-gb .yui-ge div.first,.yui-gb .yui-gf .yui-u{*width:73.5%;_width:65.5%;}
 .yui-gb .yui-ge div.yui-u,.yui-gb .yui-gf div.yui-u,.yui-gd .yui-g,.yui-t4 .yui-b,.yui-t5 .yui-b,.yui-t6 .yui-b{float:right;}
 .yui-gb .yui-gf .yui-u{margin:0;}
 .yui-gb .yui-gf div.first{float:left;*width:24%;_width:20%;}
-.yui-gb .yui-u{*margin-left:1.9%;*width:31.9%;}
+.yui-gb .yui-u{*width:31.9%;*margin-left:1.9%;}
 .yui-gc .yui-u,.yui-gd .yui-u{margin-left:1.99%;}
 .yui-gd .yui-g{width:66%;}
 .yui-gd div.first{float:left;width:32%;margin-left:0;}

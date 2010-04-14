@@ -164,12 +164,13 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my( $by_direction, @output_by_direction )
-        = output_shorthand_by_direction( $block );
+        = output_shorthand_by_direction( $self, $block );
     my( $by_property, @output_by_property )
-        = output_shorthand_by_property( $block );
+        = output_shorthand_by_property( $self, $block );
     
     return ( length( $by_property ) < length( $by_direction ) )
             ? @output_by_property
@@ -177,6 +178,7 @@ sub output {
 }
 
 sub output_shorthand_by_direction {
+    my $self  = shift;
     my $block = shift;
     
     my @output;
@@ -210,8 +212,7 @@ sub output_shorthand_by_direction {
         # if all directions the same, we have a border shorthand
         if ( 1 == scalar keys %by_value ) {
             my( $property, undef ) = each %by_value;
-            
-            push @output, "border:${property};";
+            push @output, sprintf $self->output_format, "border:", $property;
         }
         # if at least two directions are the same, we have a border shorthand
         # that is then overriden by other directions
@@ -224,20 +225,26 @@ sub output_shorthand_by_direction {
             my @properties = sort $num_children keys %by_value;
             
             my $property = shift @properties;
-            push @output, "border:${property};";
+            push @output, sprintf $self->output_format, "border:", $property;
             my $shorthand_direction = $by_value{$property}->[0];
             
             foreach $property ( @properties ) {
                 foreach my $direction ( @{$by_value{ $property }} ) {
                     my $difference = output_direction_difference(
+                                         $self,
                                          $shorthand_direction,
                                          $direction,
                                          $block
                                      );
                     
-                    push @output, ( defined $difference
-                                    ? $difference
-                                    : "border-${direction}:${property};" );
+                    if ( defined $difference ) {
+                        push @output, $difference;
+                    }
+                    else {
+                        push @output,
+                            sprintf $self->output_format,
+                                "border-${direction}:", $property;
+                    }
                 }
             }
         }
@@ -246,7 +253,9 @@ sub output_shorthand_by_direction {
         else {
             foreach my $property ( sort keys %by_value ) {
                 my $value = $by_value{ $property };
-                push @output, "border-${value}:${property};";
+                push @output,
+                    sprintf $self->output_format,
+                        "border-${value}:", $property;
             }
         }
     }
@@ -255,15 +264,18 @@ sub output_shorthand_by_direction {
             my $value = $directions{ $direction };
             
             if ( defined $value ) {
-                push @output, "border-${direction}:${value};";
+                push @output,
+                    sprintf $self->output_format,
+                        "border-${direction}:", $value;
             }
             else {
                 foreach my $aspect qw( color style width ) {
                     my $property = "border-${direction}-${aspect}";
                     my $value    = $block->{ $property };
                     
-                    push @output, "${property}:${value};"
-                        if defined $value;
+                    push @output,
+                        sprintf $self->output_format, "${property}:", $value
+                            if defined $value;
                 }
             }
         }
@@ -274,6 +286,7 @@ sub output_shorthand_by_direction {
 }
 
 sub output_shorthand_by_property {
+    my $self  = shift;
     my $block = shift;
     
     my @output;
@@ -289,14 +302,14 @@ sub output_shorthand_by_property {
             my $property = "border-${direction}-${aspect}";
             my $value    = $block->{ $property };
             
-            push @properties, "${property}:$value;"
-                if defined $value;
+            push @properties,
+                sprintf $self->output_format, "${property}:", $value
+                    if defined $value;
         }
         
         if ( 4 == scalar @properties ) {
-            my( $shorthand, $count ) = collapse_trbl_shorthand(
-                    "border-%s-${aspect}", "border-${aspect}", $block
-                );
+            my( $shorthand, $count )
+                = collapse_trbl_shorthand( "border-%s-${aspect}", $block );
             
             $shorthand_count{ $aspect } = $count;
             $shorthands{ $aspect } = $shorthand;
@@ -314,25 +327,27 @@ sub output_shorthand_by_property {
         } qw( color style width );
     
     if ( 2 == $count && 3 == scalar keys %shorthand_count ) {
-        my $shorthand;
+        my @values;
         my $override;
         foreach my $aspect qw( width style color ) {
             if ( 1 == $shorthand_count{ $aspect } ) {
-                my $value = $shorthands{ $aspect };
-                $value =~ s{^.*:(.*);$}{$1};
-                $shorthand .= " $value";
+                push @values, $shorthands{ $aspect };
             }
             else {
-                $override = $shorthands{ $aspect };
+                $override = sprintf $self->output_format,
+                    "border-${aspect}:", $shorthands{ $aspect };
             }
         }
         
-        $shorthand =~ s{^\s+}{};
-        push @output, "border:$shorthand;",
-                      $override;
+        my $value = join ' ', @values;
+        push @output, sprintf $self->output_format, "border:", $value;
+        push @output, $override;
     }
     else {
-        push @output, values %shorthands;
+        foreach my $aspect ( keys %shorthands ) {
+            push @output, sprintf $self->output_format,
+                "border-${aspect}:", $shorthands{ $aspect };
+        }
     }
     
     my $output = join '', @output;
@@ -340,6 +355,7 @@ sub output_shorthand_by_property {
 }
 
 sub output_direction_difference {
+    my $self      = shift;
     my $shorthand = shift;
     my $direction = shift;
     my $block     = shift;
@@ -354,7 +370,9 @@ sub output_direction_difference {
         
         if ( $compare ne $with ) {
             return if defined $rule;
-            $rule = "border-${direction}-${aspect}:${with};";
+            $rule = sprintf
+                $self->output_format,
+                    "border-${direction}-${aspect}:", $with;
         }
     }
     

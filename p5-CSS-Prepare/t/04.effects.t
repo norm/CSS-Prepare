@@ -1,9 +1,10 @@
 use Modern::Perl;
-use Test::More  tests => 5;
+use Test::More  tests => 10;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer_concise = CSS::Prepare->new();
+my $preparer_pretty  = CSS::Prepare->new( pretty => 1 );
 my( $css, @structure, $output );
 
 
@@ -19,7 +20,17 @@ my( $css, @structure, $output );
 div{overflow:scroll;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "overflow property was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    overflow:               scroll;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "overflow property was:\n" . $output;
 }
@@ -34,7 +45,17 @@ CSS
 div{overflow:scroll !important;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important overflow was:\n" . $output;
+    $css = <<CSS;
+div {
+    overflow:               scroll
+                            !important;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "important overflow was:\n" . $output;
 }
@@ -54,7 +75,16 @@ CSS
 div{clip:rect(5px,10px,auto,8px);}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "clip property was:\n" . $output;
+    $css = <<CSS;
+div {
+    clip:                   rect( 5px, 10px, auto, 8px );
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "clip property was:\n" . $output;
 }
@@ -74,7 +104,17 @@ CSS
 div{clip:rect(5px,10px,auto,8px) !important;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "clip property was:\n" . $output;
+    $css = <<CSS;
+div {
+    clip:                   rect( 5px, 10px, auto, 8px )
+                            !important;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "clip property was:\n" . $output;
 }
@@ -89,7 +129,16 @@ CSS
 div{visibility:collapse;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "visibility property was:\n" . $output;
+    $css = <<CSS;
+div {
+    visibility:             collapse;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "visibility property was:\n" . $output;
 }

@@ -31,16 +31,13 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @output;
-    if ( defined $block->{'color'} ) {
-        my $value = $block->{'color'};
-        
-        $value = shorten_colour_value( $value );
-        
-        push @output, "color:${value};";
-    }
+    my $value = shorten_colour_value( $block->{'color'} );
+    push @output, sprintf $self->output_format, 'color:', $value
+        if defined $value;
     
     return @output;
 }

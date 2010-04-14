@@ -77,35 +77,51 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     my @output;
     
-    my @properties = qw( content  counter-increment  counter-reset  quotes );
+    my @properties = qw( content  counter-increment  counter-reset );
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
         
-        push @output, "$property:$value;"
+        push @output, sprintf $self->output_format, "${property}:", $value
             if defined $value;
+    }
+    
+    if ( defined $block->{'quotes'} ) {
+        my $value = $block->{'quotes'};
+        my $quote_pairs = qr{ ( $string_value \s+ $string_value ) \s* }x;
+        my @values;
+        
+        while ( $value =~ s{^ $quote_pairs }{}x ) {
+            push @values, $1;
+        }
+        
+        $value = join $self->output_separator, @values;
+        
+        push @output, sprintf $self->output_format, "quotes:", $value;
     }
     
     my @list_properties = qw(
             list-style-type  list-style-image  list-style-position
         );
-    my $list_shorthand;
+    my @values;
     my @list;
     foreach my $property ( @list_properties ) {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            push @list, "${property}:${value};";
-            $list_shorthand .= " $value"
+            push @list, sprintf $self->output_format, "${property}:", $value;
+            push @values, $value
                 if $value;
         }
     }
     
     if ( 3 == scalar @list ) {
-        $list_shorthand =~ s{^\s+}{};
-        push @output, "list-style:${list_shorthand};"
+        my $value = join $self->output_separator, @values;
+        
+        push @output, sprintf $self->output_format, 'list-style:', $value;
     }
     else {
         push @output, @list;

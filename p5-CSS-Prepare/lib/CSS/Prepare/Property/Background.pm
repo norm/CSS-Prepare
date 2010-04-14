@@ -75,13 +75,14 @@ sub parse {
 }
 
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @properties = qw( background-color background-image background-repeat
                          background-attachment background-position );
     my @values;
     my @output;
-    my $shorthand;
+    my @value_only;
     
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
@@ -91,16 +92,18 @@ sub output {
                 if 'background-position' eq $property;
             $value = shorten_colour_value( $value )
                 if 'background-color' eq $property;
-                
-            push @values, "$property:$value;";
-            $shorthand .= " $value"
+            
+            push @values,
+                sprintf $self->output_format, "${property}:", $value;
+            
+            push @value_only, $value
                 if $value;
         }
     }
     
     if ( 5 == scalar @values ) {
-        $shorthand =~ s{^\s+}{};
-        push @output, "background:$shorthand;";
+        my $value = join $self->output_separator, @value_only;
+        push @output, sprintf $self->output_format, 'background:', $value;
     }
     else {
         push @output, @values;

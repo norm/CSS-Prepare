@@ -100,6 +100,11 @@ our @EXPORT = qw(
         $padding_width_value
         $string_value
         $url_value
+        
+        $concise_format
+        $pretty_format
+        $concise_separator
+        $pretty_separator
     );
 
 
@@ -426,6 +431,12 @@ my $width_value
 my $word_spacing_value = qr{ (?: normal | $length_value | inherit ) }x;
 my $z_index_value = qr{ (?: $integer_value | auto | inherit ) }x;
 
+
+
+our $concise_format    = "%s%s;";
+our $pretty_format     = "    %-23s %s;\n";
+our $concise_separator = ' ';
+our $pretty_separator  = "\n" . ( ' ' x 28 );
 
 
 sub is_length_value {

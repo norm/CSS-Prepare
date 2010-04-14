@@ -50,15 +50,15 @@ body{text-align:center;}
 .yui-g .yui-gc div.first,.yui-g .yui-ge div.first,.yui-g div.first,.yui-gb div.first,.yui-gc div.first,.yui-gc div.first div.first,.yui-gd div.first,.yui-ge div.first,.yui-gf div.first{float:left;}
 .yui-g .yui-g,.yui-g .yui-gb,.yui-g .yui-gc,.yui-g .yui-gd,.yui-g .yui-ge,.yui-g .yui-gf,.yui-g .yui-u{width:49.1%;}
 .yui-g .yui-gb .yui-u,.yui-gb .yui-g,.yui-gb .yui-gb,.yui-gb .yui-gc,.yui-gb .yui-gd,.yui-gb .yui-ge,.yui-gb .yui-gf,.yui-gb .yui-u,.yui-gc .yui-g,.yui-gc .yui-u,.yui-gd .yui-u{width:32%;margin-left:1.99%;}
-.yui-gb .yui-u{*margin-left:1.9%;*width:31.9%;}
+.yui-gb .yui-u{*width:31.9%;*margin-left:1.9%;}
 .yui-gc div.first,.yui-gd .yui-u{width:66%;}
 .yui-gd div.first{width:32%;}
 .yui-ge div.first,.yui-gf .yui-u{width:74.2%;}
 .yui-ge .yui-u,.yui-gf div.first{width:24%;}
 .yui-g .yui-gb div.first,.yui-gb div.first,.yui-gc div.first,.yui-gd div.first{margin-left:0;}
-.yui-g .yui-g .yui-u,.yui-gb .yui-g .yui-u,.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u,.yui-ge .yui-g .yui-u,.yui-gf .yui-g .yui-u{width:49%;*margin-left:0;*width:48.1%;}
+.yui-g .yui-g .yui-u,.yui-gb .yui-g .yui-u,.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u,.yui-ge .yui-g .yui-u,.yui-gf .yui-g .yui-u{width:49%;*width:48.1%;*margin-left:0;}
 .yui-g .yui-g .yui-u{width:48.1%;}
-.yui-g .yui-gb div.first,.yui-gb .yui-gb div.first{*margin-right:0;*width:32%;_width:31.7%;}
+.yui-g .yui-gb div.first,.yui-gb .yui-gb div.first{*width:32%;_width:31.7%;*margin-right:0;}
 .yui-g .yui-gc div.first,.yui-gd .yui-g{width:66%;}
 .yui-gb .yui-g div.first{*margin-right:4%;_margin-right:1.3%;}
 .yui-gb .yui-gc div.first,.yui-gb .yui-gd div.first{*margin-right:0;}
@@ -71,7 +71,7 @@ body{text-align:center;}
 .yui-gb .yui-ge .yui-u,.yui-gb .yui-gf .yui-u{margin:0;}
 .yui-gb .yui-gb .yui-u{_margin-left:.7%;}
 .yui-gb .yui-g div.first,.yui-gb .yui-gb div.first{*margin-left:0;}
-.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u{*margin-left:0;*width:48.1%;}
+.yui-gc .yui-g .yui-u,.yui-gd .yui-g .yui-u{*width:48.1%;*margin-left:0;}
 .yui-gb .yui-gd div.first{width:32%;}
 .yui-g .yui-gd div.first{_width:29.9%;}
 .yui-ge .yui-g{width:24%;}

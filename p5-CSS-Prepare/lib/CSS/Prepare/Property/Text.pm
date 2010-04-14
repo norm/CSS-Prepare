@@ -65,6 +65,7 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @properties = qw(
@@ -76,7 +77,7 @@ sub output {
     foreach my $property ( @properties ) {
         my $value = $block->{ $property };
 
-        push @output, "$property:$value;"
+        push @output, sprintf $self->output_format, "${property}:", $value
             if defined $value;
     }
     

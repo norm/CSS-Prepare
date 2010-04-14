@@ -1,9 +1,10 @@
 use Modern::Perl;
-use Test::More  tests => 17;
+use Test::More  tests => 34;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer_concise = CSS::Prepare->new();
+my $preparer_pretty  = CSS::Prepare->new( pretty => 1 );
 my( $css, @structure, $output );
 
 
@@ -24,7 +25,17 @@ my( $css, @structure, $output );
 div{border-width:thin;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "background color value was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-width:           thin;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "background color value was:\n" . $output;
 }
@@ -44,7 +55,17 @@ CSS
 div{border-color:red white blue;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "three value border-color shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-color:           red white blue;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "three value border-color shorthand was:\n" . $output;
 }
@@ -64,7 +85,17 @@ CSS
 div{border-style:none dotted dashed solid;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "four value border-color shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-style:           none dotted dashed solid;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "four value border-color shorthand was:\n" . $output;
 }
@@ -85,7 +116,17 @@ CSS
 div{border-top:1px solid black;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border-top shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-top:             1px solid black;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border-top shorthand was:\n" . $output;
 }
@@ -113,7 +154,17 @@ CSS
 div{border:1px solid blue;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 1px solid blue;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand was:\n" . $output;
 }
@@ -141,7 +192,18 @@ CSS
 div{border:1px solid blue !important;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "important border shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 1px solid blue
+                            !important;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "important border shorthand was:\n" . $output;
 }
@@ -168,7 +230,19 @@ CSS
 div{border-bottom:1px solid blue;border-left:1px solid blue;border-right:1px solid blue;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-bottom:          1px solid blue;
+    border-left:            1px solid blue;
+    border-right:           1px solid blue;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand was:\n" . $output;
 }
@@ -198,7 +272,18 @@ CSS
 div{border:1px solid blue;border-bottom:none;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "value overriding was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 1px solid blue;
+    border-bottom:          none;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "value overriding was:\n" . $output;
 }
@@ -228,7 +313,17 @@ CSS
 div{border:blue;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand color was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 blue;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand color was:\n" . $output;
 }
@@ -256,7 +351,17 @@ CSS
 div{border:thick;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand width was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 thick;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand width was:\n" . $output;
 }
@@ -284,7 +389,17 @@ CSS
 img{border:0;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border zero width was:\n" . $output;
+    
+    $css = <<CSS;
+img {
+    border:                 0;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border zero width was:\n" . $output;
 }
@@ -312,7 +427,17 @@ CSS
 div{border:dashed red;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "shorthand properties was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 dashed red;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "shorthand properties was:\n" . $output;
 }
@@ -342,7 +467,18 @@ CSS
 div{border:2px dashed red;border-right-width:1px;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "complex override one property was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 2px dashed red;
+    border-right-width:     1px;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "complex override one property was:\n" . $output;
 }
@@ -370,7 +506,18 @@ CSS
 div{border:dashed red;border-width:2px 1px;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "complex override two properties was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border:                 dashed red;
+    border-width:           2px 1px;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "complex override two properties was:\n" . $output;
 }
@@ -400,7 +547,21 @@ CSS
 div{border-bottom:blue;border-left:blue;border-right:blue;border-top:blue !important;}
 CSS
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand color was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-bottom:          blue;
+    border-left:            blue;
+    border-right:           blue;
+    border-top:             blue
+                            !important;
+}
+CSS
+    
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand color was:\n" . $output;
 }
@@ -427,7 +588,19 @@ CSS
 div{border-bottom:1px solid blue;border-left:1px solid blue;border-right:1px solid blue;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "border shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-bottom:          1px solid blue;
+    border-left:            1px solid blue;
+    border-right:           1px solid blue;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "border shorthand was:\n" . $output;
 }
@@ -451,10 +624,22 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-bottom-style:solid;border-color:#d2d2d2;border-width:1px;}
+div{border-color:#d2d2d2;border-width:1px;border-bottom-style:solid;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "two shorthands was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    border-color:           #d2d2d2;
+    border-width:           1px;
+    border-bottom-style:    solid;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "two shorthands was:\n" . $output;
 }

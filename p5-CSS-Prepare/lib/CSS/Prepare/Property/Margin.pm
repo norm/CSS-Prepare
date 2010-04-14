@@ -69,6 +69,7 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @margin;
@@ -77,14 +78,15 @@ sub output {
         my $key = "margin-${direction}";
         my $value = $block->{ $key };
         
-        push @margin, "margin-${direction}:${value};"
-            if defined $value;
+        push @margin,
+            sprintf $self->output_format, "${key}:", $value
+                if defined $value;
     }
     
     if ( 4 == scalar @margin ) {
-        my( $output, undef )
-            = collapse_trbl_shorthand( 'margin-%s', 'margin', $block );
-        push @output, $output;
+        my( $value, undef )
+            = collapse_trbl_shorthand( 'margin-%s', $block );
+        push @output, sprintf $self->output_format, "margin:", $value;
     }
     else {
         push @output, @margin;

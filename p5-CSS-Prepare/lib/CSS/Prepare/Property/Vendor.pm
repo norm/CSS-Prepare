@@ -21,12 +21,14 @@ sub parse {
     return \%canonical, [];
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @output;
     foreach my $property ( keys %{$block} ) {
         if ( $property =~ m{^-} ) {
-            push @output, "$property:$block->{$property};";
+            push @output, sprintf $self->output_format, 
+                                      "${property}:", $block->{ $property };
         }
     }
     

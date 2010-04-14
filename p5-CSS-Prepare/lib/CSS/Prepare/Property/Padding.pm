@@ -69,6 +69,7 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @padding;
@@ -77,14 +78,15 @@ sub output {
         my $key = "padding-${direction}";
         my $value = $block->{ $key };
         
-        push @padding, "padding-${direction}:${value};"
-            if defined $value;
+        push @padding,
+            sprintf $self->output_format, "${key}:", $value
+                if defined $value;
     }
     
     if ( 4 == scalar @padding ) {
-        my( $output, undef )
-            = collapse_trbl_shorthand( 'padding-%s', 'padding', $block );
-        push @output, $output;
+        my( $value, undef )
+            = collapse_trbl_shorthand( 'padding-%s', $block );
+        push @output, sprintf $self->output_format, "padding:", $value;
     }
     else {
         push @output, @padding;

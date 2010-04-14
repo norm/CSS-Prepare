@@ -1,9 +1,10 @@
 use Modern::Perl;
-use Test::More  tests => 7;
+use Test::More  tests => 14;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer_concise = CSS::Prepare->new();
+my $preparer_pretty  = CSS::Prepare->new( pretty => 1 );
 my( $css, @structure, $output );
 
 
@@ -24,7 +25,16 @@ my( $css, @structure, $output );
 div{padding:5px;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "one value padding shorthand was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding:                5px;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "one value padding shorthand was:\n" . $output;
 }
@@ -44,7 +54,17 @@ CSS
 div{padding:5px !important;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "one value padding shorthand was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding:                5px
+                            !important;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "one value padding shorthand was:\n" . $output;
 }
@@ -64,7 +84,16 @@ CSS
 div{padding:5px 2px;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "two value padding shorthand was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding:                5px 2px;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "two value padding shorthand was:\n" . $output;
 }
@@ -84,7 +113,16 @@ CSS
 div{padding:5px 2px 0;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "three value padding shorthand was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding:                5px 2px 0;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "three value padding shorthand was:\n" . $output;
 }
@@ -104,7 +142,16 @@ CSS
 div{padding:5px 2px 0 4px;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "four value padding shorthand was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding:                5px 2px 0 4px;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "four value padding shorthand was:\n" . $output;
 }
@@ -125,7 +172,18 @@ CSS
 div{padding-left:5px;padding-right:5px;padding-top:5px;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "value overriding was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding-left:           5px;
+    padding-right:          5px;
+    padding-top:            5px;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "value overriding was:\n" . $output;
 }
@@ -145,7 +203,20 @@ CSS
 div{padding-bottom:5px !important;padding-left:5px;padding-right:5px;padding-top:5px;}
 CSS
 
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "value overriding was:\n" . $output;
+    $css = <<CSS;
+div {
+    padding-bottom:         5px
+                            !important;
+    padding-left:           5px;
+    padding-right:          5px;
+    padding-top:            5px;
+}
+CSS
+
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "value overriding was:\n" . $output;
 }

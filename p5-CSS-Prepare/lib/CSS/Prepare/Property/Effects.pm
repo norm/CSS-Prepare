@@ -51,13 +51,14 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     my @output;
     
     foreach my $property ( qw( overflow  visibility ) ) {
         my $value = $block->{ $property };
         
-        push @output, "$property:$value;"
+        push @output, sprintf $self->output_format, "${property}:", $value
             if defined $value;
     }
     
@@ -70,8 +71,17 @@ sub output {
             if defined $value;
     }
     if ( 4 == scalar @values ) {
-        my $clipping = join ',', @values;
-        push @output, "clip:rect($clipping);";
+        my $value;
+        
+        if ( $self->pretty_output ) {
+            my $clip = join ', ', @values;
+            $value   = "rect( ${clip} )";
+        }
+        else {
+            my $clip = join ',', @values;
+            $value   = "rect(${clip})";
+        }
+        push @output, sprintf $self->output_format, "clip:", $value;
     }
     
     return @output;

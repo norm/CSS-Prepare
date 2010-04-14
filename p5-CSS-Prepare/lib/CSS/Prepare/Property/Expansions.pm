@@ -66,7 +66,6 @@ sub expand_trbl_shorthand {
 }
 sub collapse_trbl_shorthand {
     my $pattern  = shift;
-    my $property = shift;
     my $block    = shift;
     
     my %values;
@@ -76,39 +75,30 @@ sub collapse_trbl_shorthand {
         $values{ $value }++;
     }
     
-    my $output;
+    my @values;
+    my $key          = sprintf $pattern, 'top';
+    my $top          = $block->{ $key };
+       $key          = sprintf $pattern, 'right';
+    my $right        = $block->{ $key };
+       $key          = sprintf $pattern, 'bottom';
+    my $bottom       = $block->{ $key };
+       $key          = sprintf $pattern, 'left';
+    my $left         = $block->{ $key };
+    my $two_values   = $top  ne $right;
+    my $three_values = $top  ne $bottom;
+    my $four_values  = $left ne $right;
     
-    # one value shorthand
-    if ( 1 == scalar keys %values ) {
-        my( $key, undef ) = each %values;
-        $output = "${property}:${key}";
-    }
-    else {
-        my $key          = sprintf $pattern, 'top';
-        my $top          = $block->{ $key };
-           $key          = sprintf $pattern, 'right';
-        my $right        = $block->{ $key };
-           $key          = sprintf $pattern, 'bottom';
-        my $bottom       = $block->{ $key };
-           $key          = sprintf $pattern, 'left';
-        my $left         = $block->{ $key };
-        my $three_values = $top  ne $bottom;
-        my $four_values  = $left ne $right;
-        
-        # two value shorthand
-        $output = "${property}:${top} ${right}";
-        
-        if ( $three_values or $four_values ) {
-            $output .= " $bottom";
-            
-            if ( $four_values ) {
-                $output .= " $left"
-            }
-        }
-    }
-    # four value shorthand
+    push @values, $top;
+    push @values, $right
+        if $two_values or $three_values or $four_values;
+    push @values, $bottom
+        if $three_values or $four_values;
+    push @values, $left
+        if $four_values;
     
-    return( "$output;", scalar keys %values );
+    my $value  = join ' ', @values;
+    
+    return( $value, scalar keys %values );
 }
 
 sub expand_clip {

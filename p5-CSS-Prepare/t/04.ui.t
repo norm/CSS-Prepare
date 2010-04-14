@@ -1,9 +1,10 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 20;
 
 use CSS::Prepare;
 
-my $preparer = CSS::Prepare->new();
+my $preparer_concise = CSS::Prepare->new();
+my $preparer_pretty  = CSS::Prepare->new( pretty => 1 );
 my( $css, @structure, $output );
 
 
@@ -22,7 +23,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "cursor was:\n" . $output;
+    
+    $css = <<CSS;
+a {
+    cursor:                 url(blah.gif) crosshair;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "cursor was:\n" . $output;
 }
@@ -41,7 +51,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-width was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-width:          thin;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-width was:\n" . $output;
 }
@@ -58,7 +77,17 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-width was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-width:          thin
+                            !important;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-width was:\n" . $output;
 }
@@ -75,7 +104,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-style was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-style:          dotted;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-style was:\n" . $output;
 }
@@ -92,7 +130,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-width was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-color:          red;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-width was:\n" . $output;
 }
@@ -111,7 +158,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline-color shortened was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-color:          #ccc;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline-color shortened was:\n" . $output;
 }
@@ -132,7 +188,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline:                1px solid blue;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline shorthand was:\n" . $output;
 }
@@ -151,7 +216,16 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand missing value was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline:                2px dashed;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline shorthand missing value was:\n" . $output;
 }
@@ -171,7 +245,17 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-color:          blue;
+    outline-width:          1px;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline shorthand was:\n" . $output;
 }
@@ -190,7 +274,19 @@ CSS
             },
         );
     
-    $output = $preparer->output_as_string( @structure );
+    $output = $preparer_concise->output_as_string( @structure );
+    ok( $output eq $css )
+        or say "outline shorthand was:\n" . $output;
+    
+    $css = <<CSS;
+div {
+    outline-color:          blue;
+    outline-style:          solid
+                            !important;
+    outline-width:          1px;
+}
+CSS
+    $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "outline shorthand was:\n" . $output;
 }

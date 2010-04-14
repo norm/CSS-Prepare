@@ -91,6 +91,7 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     # line-height can be rolled up into a font shorthand
@@ -102,13 +103,35 @@ sub output {
     my $has_line_height = 0;
     my $has_font_size   = 0;
     my @font_styles;
+    my @value_only;
     my @output;
     
     foreach my $property ( @font_properties ) {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            push @font_styles, "${property}:${value};";
+            if ( 'font-family' eq $property ) {
+                my $families = qr{^ (?: \s* \, \s* )? ( $font_family ) }x;
+                my @family;
+                
+                while ( $value =~ s{^ $families }{}x ) {
+                    push @family, $1;
+                }
+                
+                my $separator = ','
+                                . ( $self->pretty_output
+                                        ? $self->output_separator
+                                        : ''
+                                  );
+                $value = join $separator, @family;
+                
+                push @font_styles, sprintf $self->output_format,
+                                       "${property}:", $value;
+            }
+            else {
+                push @font_styles,
+                    sprintf $self->output_format, "${property}:", $value;
+            }
             
             if ( $value ) {
                 $has_font_size = 1
@@ -121,7 +144,7 @@ sub output {
                     }
                 }
                 else {
-                    $font_shorthand .= " $value";
+                    $font_shorthand .= $self->output_separator . $value;
                 }
             }
         }
@@ -131,9 +154,10 @@ sub output {
                              || ( 5 == @font_styles && !$has_line_height );
     if ( $can_shorthand ) {
         $font_shorthand =~ s{^\s+}{};
-        push @output, "font:${font_shorthand};";
-        push @output, "line-height:$block->{'line-height'};"
-            if !$has_font_size;
+        push @output, sprintf $self->output_format, 'font:', $font_shorthand;
+        push @output, sprintf $self->output_format, 
+            'line-height:', $block->{'line-height'}
+                if !$has_font_size;
     }
     elsif ( scalar @font_styles ) {
         push @output, @font_styles;

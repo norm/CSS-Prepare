@@ -69,12 +69,13 @@ sub parse {
     return \%canonical, \@errors;
 }
 sub output {
+    my $self  = shift;
     my $block = shift;
     
     my @outline_properties = qw(
             outline-width  outline-style  outline-color
         );
-    my $shorthand;
+    my @shorthand;
     my @outline;
     my @output;
     
@@ -84,21 +85,22 @@ sub output {
             if 'outline-color' eq $property;
         
         if ( defined $value ) {
-            push @outline, "$property:$value;";
-            $shorthand .= " $value"
+            push @shorthand, $value
                 if $value;
+            push @outline, 
+                sprintf $self->output_format, "${property}:", $value;
         }
     }
     
     if ( 3 == scalar @outline ) {
-        $shorthand =~ s{^\s+}{};
-        push @output, "outline:$shorthand;";
+        my $value = join ' ', @shorthand;
+        push @output, sprintf $self->output_format, 'outline:', $value;
     }
     else {
         push @output, @outline;
     }
     
-    push @output, "cursor:$block->{'cursor'};"
+    push @output, sprintf $self->output_format, 'cursor:', $block->{'cursor'}
         if defined $block->{'cursor'};
     
     return @output;

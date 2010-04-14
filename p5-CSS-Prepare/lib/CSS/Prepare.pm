@@ -40,6 +40,7 @@ sub new {
             suboptimal => 10,
             timeout    => 30,
             css3       => 0,
+            pretty     => 0,
             status     => \&status_to_stderr,
             %args
         };
@@ -105,6 +106,20 @@ sub set_suboptimal {
 sub suboptimal_threshold {
     my $self = shift;
     return $self->{'suboptimal'};
+}
+sub get_pretty {
+    my $self = shift;
+    return $self->{'pretty'};
+}
+sub set_pretty {
+    my $self  = shift;
+    my $value = shift;
+    
+    $self->{'pretty'} = $value;
+}
+sub pretty_output {
+    my $self = shift;
+    return $self->{'pretty'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -300,50 +315,58 @@ sub output_as_string {
             # just skip the block
         }
         else {
-            $output .= output_block_as_string( $block );
+            $output .= $self->output_block_as_string( $block );
         }
     }
     
     return $output;
 }
 sub output_block_as_string {
+    my $self  = shift;
     my $block = shift;
     
     my $shorthands_first_hacks_last = sub {
-            my $a_hack     = ( $a =~ m{^[_\*]} );
-            my $b_hack     = ( $b =~ m{^[_\*]} );
-            my $hack_count = $a_hack + $b_hack;
-            
             # sort hacks after normal properties
+            my $a_hack     = ( $a =~ m{^ \s* [_\*] }x );
+            my $b_hack     = ( $b =~ m{^ \s* [_\*] }x );
+            my $hack_count = $a_hack + $b_hack;
             return $a_hack ? 1 : -1
                 if 1 == $hack_count;
             
-            my $a_shorthand = ( $a =~ m{^ [a-z]+ - }ix );
-            my $b_shorthand = ( $b =~ m{^ [a-z]+ - }ix );
-            my $shorthand_count = $a_shorthand + $b_shorthand;
-            
-            # sort shorthands before specifics
-            return ( $a_shorthand ? 1 : -1 )
-                if 1 == $shorthand_count;
+            # sort more-specific properties after less-specific properties
+            $a =~ m{^ \s* ( [^:]+ ) : }x;
+            my $a_property = $1;
+            $b =~ m{^ \s* ( [^:]+ ) : }x;
+            my $b_property = $1;
+            my $a_specifics = ( $a_property =~ tr{-}{-} );
+            my $b_specifics = ( $b_property =~ tr{-}{-} );
+            return $a_specifics <=> $b_specifics
+                if $a_specifics != $b_specifics;
             
             # just sort alphabetically
             return $a cmp $b;
         };
     
-    my %properties = output_properties( $block->{'block'} );
+    my %properties = $self->output_properties( $block->{'block'} );
     return '' unless %properties;
     
     # unique selectors only
     my %seen;
     my @selectors = grep { !$seen{$_}++ } @{$block->{'selectors'}};
     
-    my $selector = join ',', sort $elements_first @selectors;
-    my $output
-        = join '', sort $shorthands_first_hacks_last keys %properties;
+    my $output;
+    my $separator = $self->pretty_output ? ",\n" : ',';
     
-    return "${selector}\{${output}\}\n";
+    my $selector   = join $separator, sort $elements_first @selectors;
+    my $properties = join '', sort $shorthands_first_hacks_last
+                                   keys %properties;
+    
+    return $self->pretty_output
+                ? "${selector} \{\n${properties}\}\n"
+                : "${selector}\{${properties}\}\n";
 }
 sub output_properties {
+    my $self  = shift;
     my $block = shift;
     
     # separate out the important rules from the normal, so that they are
@@ -368,8 +391,8 @@ sub output_properties {
             
             my $try_with = "CSS::Prepare::Property::${module}::output";
             
-            @normal    = &$try_with( \%normal );
-            @important = &$try_with( \%important );
+            @normal    = &$try_with( $self, \%normal );
+            @important = &$try_with( $self, \%important );
         };
         say STDERR $@ if $@;
         
@@ -379,13 +402,28 @@ sub output_properties {
         }
         foreach my $property ( @important ) {
             if ( defined $property ) {
-                $property =~ s{;$}{ !important;};
+                my $prefix = $self->output_separator;
+                $property =~ s{;$}{${prefix}!important;};
                 $properties{ $property } = 1;
             }
         }
     }
     
     return %properties;
+}
+sub output_format {
+    my $self = shift;
+    
+    return $self->pretty_output
+               ? $pretty_format
+               : $concise_format;
+}
+sub output_separator {
+    my $self = shift;
+    
+    return $self->pretty_output
+               ? $pretty_separator
+               : $concise_separator;
 }
 
 sub read_file {
@@ -1025,7 +1063,7 @@ sub optimise_blocks {
     return 0 unless @blocks;
     
     my %styles     = $self->sort_blocks_into_hash( @blocks );
-    my @properties = array_of_properties( %styles );
+    my @properties = $self->array_of_properties( %styles );
     # my $before     = output_as_string( @properties );
     
     my $property_count = scalar @properties;
@@ -1062,11 +1100,12 @@ sub sort_blocks_into_hash {
     return %styles;
 }
 sub array_of_properties {
+    my $self   = shift;
     my %styles = @_;
     
     my @properties;
     foreach my $selector ( keys %styles ) {
-        my %properties = output_properties( $styles{ $selector } );
+        my %properties = $self->output_properties( $styles{ $selector } );
         
         foreach my $property ( keys %properties ) {
             push @properties, $selector, $property;

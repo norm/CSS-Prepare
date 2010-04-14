@@ -69,7 +69,7 @@ sub output {
     my $block = shift;
     
     my @properties = qw(
-            content      letter-spacing  text-align   text-decoration
+                         letter-spacing  text-align   text-decoration
             text-indent  text-transform  white-space  word-spacing
         );
     my @output;

@@ -113,12 +113,21 @@ our @standard_directions = qw( top right bottom left );
 
 # primitive types
 my $integer_value = qr{ [+-]? [0-9]+ }x;
+my $positive_integer_value = qr{ [+]? [0-9]+ }x;
 my $identifier_value = qr{ [a-z][a-zA-z0-9_-]* }ix;
 my $number_value = qr{
         (?:
             (?: $integer_value )
             |
             (?: $integer_value )?
+            \. [0-9]+
+        )
+    }x;
+my $positive_number_value = qr{
+        (?:
+            (?: $positive_integer_value )
+            |
+            (?: $positive_integer_value )?
             \. [0-9]+
         )
     }x;
@@ -130,7 +139,16 @@ our $length_value = qr{
             (?: px | em | ex | in | cm | mm | pt | pc )
         )
     }x;
+our $positive_length_value = qr{
+        (?:
+            0
+            |
+            $positive_number_value
+            (?: px | em | ex | in | cm | mm | pt | pc )
+        )
+    }x;
 my $percentage_value = qr{ $number_value % }x;
+my $positive_percentage_value = qr{ $positive_number_value % }x;
 my $colour_value = qr{
         (?:
               aqua | black  | blue | fuchsia | gray   | green
@@ -388,8 +406,9 @@ our $outline_colour_value = qr{ (?: invert | inherit | $colour_value ) }x;
 our $outline_style_value = qr{ (?: $border_style_value ) }x;
 our $outline_width_value = qr{ (?: $border_width_value ) }x;
 my $overflow_value = qr{ (?: visible | hidden | scroll | auto | inherit ) }x;
-our $padding_width_value
-    = qr{ (?: $length_value | $percentage_value | inherit ) }x;
+our $padding_width_value = qr{
+        (?: $positive_length_value | $positive_percentage_value | inherit )
+    }x;
 my $position_value
     = qr{ (?: absolute | fixed | relative | static | inherit ) }x;
 my $quotes_value = qr{

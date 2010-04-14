@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 458;
+use Test::More  tests => 460;
 
 use CSS::Prepare::Property::Values;
 
@@ -170,6 +170,8 @@ use CSS::Prepare::Property::Values;
     # other lengths and percentages are tested above
     ok( is_margin_width_value( '5px' ),
         "margin-width: '5px'" );
+    ok( is_margin_width_value( '-2em' ),
+        "margin-width: '-2em'" );
     ok( is_margin_width_value( '10%' ),
         "margin-width: '10%'" );
     ok( is_margin_width_value( 'auto' ),
@@ -182,6 +184,8 @@ use CSS::Prepare::Property::Values;
     
     ok( is_padding_width_value( '5px' ),
         "padding-width: '5px'" );
+    ok( ! is_padding_width_value( '-2em' ),
+        "not padding-width: '-2em'" );
     ok( is_padding_width_value( '10%' ),
         "padding-width: '10%'" );
     ok( is_padding_width_value( 'inherit' ),

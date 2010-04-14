@@ -10,7 +10,7 @@ local $Data::Dumper::Deparse   = 1;
 local $Data::Dumper::Quotekeys = 0;
 local $Data::Dumper::Sortkeys  = 1;
 
-my $preparer = CSS::Prepare->new();
+my $preparer = CSS::Prepare->new( status => sub{} );
 my( @structure, $output, $css );
 
 if ( ! $preparer->has_http() ) {

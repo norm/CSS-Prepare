@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 20;
+use Test::More  tests => 24;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -277,6 +277,11 @@ li { color: #000; }
 /* -- */
 h1 { color: #000; }
 CSS
+    my $css2 = <<CSS;
+li { color: #000; }
+/* ---- */
+h1 { color: #000; }
+CSS
     @structure = (
             {
                 original  => ' color: #000; ',
@@ -300,8 +305,10 @@ CSS
     @parsed = $preparer_with->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "chunked content was:\n" . Dumper \@parsed;
-}
-{
+    @parsed = $preparer_with->parse_string( $css2 );
+    is_deeply( \@structure, \@parsed )
+        or say "chunked content was:\n" . Dumper \@parsed;
+    
     @structure = (
             {
                 original  => ' color: #000; ',
@@ -322,6 +329,9 @@ CSS
         );
 
     @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "chunked content was:\n" . Dumper \@parsed;
+    @parsed = $preparer_without->parse_string( $css2 );
     is_deeply( \@structure, \@parsed )
         or say "chunked content was:\n" . Dumper \@parsed;
 }
@@ -360,6 +370,14 @@ div {
 /* -- */
 div { color: black; }
 CSS
+    my $css2 = <<CSS;
+/*! verbatim */
+div {
+    blah: 0;
+}
+/* ---- */
+div { color: black; }
+CSS
     @structure = (
             {
                 type => 'verbatim',
@@ -378,8 +396,10 @@ CSS
     @parsed = $preparer_with->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "verbatim block was:\n" . Dumper \@parsed;
-}
-{
+    @parsed = $preparer_with->parse_string( $css2 );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
+
     @structure = (
             {
                 original  => "\n    blah: 0;\n",
@@ -402,6 +422,9 @@ CSS
         );
 
     @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
+    @parsed = $preparer_without->parse_string( $css2 );
     is_deeply( \@structure, \@parsed )
         or say "verbatim block was:\n" . Dumper \@parsed;
 }

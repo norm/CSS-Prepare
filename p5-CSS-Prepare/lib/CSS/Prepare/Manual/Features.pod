@@ -1,0 +1,76 @@
+=head1 Extending the CSS syntax
+
+It is possible to turn on extensions to the CSS syntax in cssprepare with the
+C<-f> (or C<--enable-features>).
+
+B<Note:> These extra features will never be turned on by default in
+cssprepare. You must make a conscious choice to use them. But do take a moment
+to consider if you really need the extensions before using them. Once you
+start, you may no longer be writing valid CSS. This means that other parsers
+and tools (and web browsers for that matter) will not understand your code
+unless it has been run through cssprepare first.
+
+=head2 Line-level comments
+
+CSS lacks line-level comments, only having block-level C</* */> style
+comments. This makes it difficult to comment out sections of a style sheet
+that have comments/documentation in. Ideally line-level comments should be
+used to explain code, and block-level comments used to temporarily eliminate
+entire blocks of code.
+
+Enabling the extended syntax features of cssprepare adds the ability to use
+C<//> style line-level comments. Anything from the double-slash to the end
+of that line of a file will be ignored, exactly as if it were surrounded by
+normal C</*> and C<*/> comment markers. For example:
+
+    #nav li:after {
+        content: '*';           // visual separation between items
+        _padding-right: 10px;   // use spacing instead in old IEs
+    }
+
+=head2 Chunking content
+
+When optimising it can be useful to specifically chunk your content (see
+L<Separate parts of the output> for more on this). This can be done by
+marking the end of any rule sets you need to be chunked separately with a
+comment containing just two or more hyphens.
+
+    li { margin: 0; }
+    /* -- */
+    h1 { margin: 0; }
+
+=head2 Verbatim comments
+
+Sometimes you actually need to include a comment in the output, for things such as stating licensing terms. Any block-level comment with an exclamation
+mark as the very first character in the comment is preserved in the output,
+just with the exclamation mark removed.
+
+=over
+
+=item input:
+
+    /*! 'Museo' Font by Jos Buivenga (exljbris) 
+     * -> www.exljbris.com */
+    @font-face {
+        font-family:            'Museo';
+        ...
+    }
+    
+=item output:
+    
+    /* 'Museo' Font by Jos Buivenga (exljbris) 
+     * -> www.exljbris.com */
+    @font-face{font-family:'Museo';...}
+
+=back
+
+=head2 Verbatim blocks
+
+Any CSS that cssprepare does not understand is automatically discarded. If you
+need to include some rule sets that the parser does not understand, you can do
+this by starting them with a special marker comment and ending with a chunk
+marker, and cssprepare will just pass the content through unchanged.
+
+    /*! verbatim */
+    #problematic { border-radius: 5px; }
+    /* -- */

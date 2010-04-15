@@ -1,0 +1,93 @@
+=head1 Optimising CSS
+
+When passed the C<-o> (C<--optimise>) option, cssprepare will restructure
+your CSS to save as much bandwidth as possible before outputting it.
+
+B<Warning:> allowing an automated tool to alter the structure of your CSS
+can B<alter the meaning> of your code. Please read and understand this section before using it.
+
+Given this example style sheet:
+
+    div {
+        margin-top: 0;
+        margin-left: 5px;
+        margin-right: 5px;
+        margin-bottom: 1em;
+    }
+    li {
+        margin-top: 0;
+        margin-left: 5px;
+        margin-right: 5px;
+        margin-bottom: 1em;
+    }
+
+the standard output of cssprepare is:
+
+    div{margin:0 5px 1em;}
+    li{margin:0 5px 1em;}
+
+but, as you can see, the two selectors have exactly the same properties 
+applied in these two rules. With optimisation turned on, cssprepare will 
+output:
+
+    div,li{margin:0 5px 1em;}
+
+In this case, the optimisation was beneficial. However, the cascade rules
+state that when selectors have equal specificity, the last rule wins. When
+optimising CSS, cssprepare can alter the structure of your style sheet so 
+that rules are in different orders. Take the following example:
+
+    .warning { color: orange; }
+    .alert { color: red; }
+
+If this CSS were to be applied to an element with both classes (eg. C<< 
+<p class='alert warning'>oh noes!</p> >>), a user agent would style the
+text with the colour red. 
+
+When optimising CSS, cssprepare orders the output of selectors first by
+element, then by ID and then by class, all three types of which are sorted
+alphabetically. So those rules would be swapped around, causing the element 
+to be styled orange instead. See the next section for methods of avoiding this
+in your style sheets.
+
+That said, many style sheets will work just fine when optimised, especially
+when none of your selectors are ambiguous and rely on this aspect of the
+cascade. 
+
+=head2 Separate parts of the output
+
+When optimising output, cssprepare first chunks the input into several blocks,
+and only optimises within each block. This is so that rule sets within a
+print C<@media> block are not mixed in with the rest of the style sheet, for
+example. 
+
+Any stylesheet that is included with C<@import> and all C<@media> blocks are
+chunked separately from the stylesheet they appear in. The appearance of a
+verbatim comment or block will cause the rule sets before and after to be
+treated as separate chunks, as will the chunking marker.
+
+The following example would be treated by cssprepare as being three separate
+chunks, each optimised separately.
+
+    @media print {
+        body { background: #fff; }      /* chunk #1 */
+    }
+    body { background: #ccc; }          /* chunk #2 */
+    /* -- */
+    body { color: #000; }               /* chunk #3 */
+
+This will produce output of:
+
+    @media print{
+     body{background:#fff;}
+    }
+    body{background:#ccc;}
+    body{color:#000;}
+
+Without the chunking marker, it would be treated as only two chunks, and 
+output as:
+
+    @media print{
+     body{background:#fff;}
+    }
+    body{background:#ccc;color:#000;}

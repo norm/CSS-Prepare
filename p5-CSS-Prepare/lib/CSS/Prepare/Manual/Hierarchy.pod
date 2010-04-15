@@ -1,0 +1,73 @@
+=head1 Using hierarchical CSS
+
+When reading in style sheets, cssprepare can treat them as belonging to a
+hierarchy. This applies a limited form of inheritance (an important attribute
+of object-oriented code) to your CSS, and is very useful when combined with
+optimised output.
+
+Every style sheet argument on the command line will be treated as the 
+combination of every style sheet with that filename in the hierarchy
+matching the current requested location.
+
+Imagine the following directory tree:
+
+=over
+
+=item C<css/site/first/typography.css> containing:
+
+    body { font-family: "Palatino", serif; }
+
+=item C<css/site/second/typography.css> containing:
+
+    body { font-size: 1.2em; line-height: 1.6; }
+
+=item C<css/site/typography.css> containing:
+
+    body { line-height: 1.3; }
+    
+=item C<css/typography.css> containing:
+
+    body { font-family: "Helvetica", "Arial", sans-serif; }
+
+=back
+
+Running cssprepare with the option C<-b css/> (C<--hierarchy-base=css/>) will
+cause the requested style sheet C<site/first/typography.css> to actually be
+composed of C<css/tyography.css>, C<css/site/typography.css> and
+C<css/site/first/typography.css>, as if the stylesheet were:
+
+    body { font-family: "Helvetica", "Arial", sans-serif; }
+    body { line-height: 1.3; }
+    body { font-family: "Palatino", serif; }
+
+When output, this generates the remarkably similar:
+
+    body{font-family:"Helvetica","Arial",sans-serif;}
+    body{line-height:1.3;}
+    body{font-family:"Palatino",serif;}
+
+However, when output in optimised form, this generates only:
+
+    body{font-family:"Palatino",serif;line-height:1.3;}
+
+Likewise, requesting C<site/second/typography.css> in optimised form would 
+combine C<css/typography.css>, C<css/site/typography.css> and 
+C<css/site/second/typography.css> to produce the following (which is broken
+across lines simply for clarity):
+
+    body{font-family:"Helvetica","Arial",sans-serif;
+         font-size:1.2em;line-height:1.6;}
+
+This allows you to easily provide default styles for each of the aspects of
+your site, but to override them without incurring the unnecessary penalty of
+including useless, ignored rule sets in your output style sheets.
+
+The C<-l> (C<--location>) option allows you to specify the location of each
+requested style sheet. This is useful when you are processing several style
+sheets in a row, such as:
+
+    -l site/first base.css typography.css colour.css \
+       header.css content.css footer.css
+
+All would be treated as if the requested style sheets were
+C<site/first/base.css>, C<site/first/typography.css>, etc.

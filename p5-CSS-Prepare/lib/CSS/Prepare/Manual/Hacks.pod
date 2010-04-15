@@ -1,0 +1,50 @@
+=head1 Supported CSS hacks
+
+Most style sheets will contain one or more "hacks"; uncommon arrangements of
+CSS which exploit features or errors in the parsing code of some browsers.
+These are used to target individual properties or rule sets at specific
+browsers. The most common types, which are unfortunately invalid CSS, are the
+'star' and 'underscore' hacks. Support for these and some Internet
+Explorer-specific CSS properties are included in cssprepare by default as they
+are so prevalent, but it can be turned off with C<-h> (C<--disable-hacks>).
+
+=over
+
+=item star hack
+
+Any property preceded by an asterisk (eg. C<*width: 100px;>) is ignored as
+an invalid property by every browser, except Internet Explorer versions 7 and
+earlier.
+
+=item underscore hack
+
+Any property preceded by an underscore (eg. C<_width: 100px;>) is ignored as
+an invalid property by every browser, except Internet Explorer versions 6 and
+earlier.
+
+=item IE-only properties
+
+There are a couple of invalid properties that cssprepare will accept when hack
+support is enabled, but B<only> if they are combined with either the star or
+underscore hack.
+
+They must be combined with a hack because, starting with Internet Explorer
+version 8, these properties have been corrected to require the C<-ms> vendor
+extension in order to work. Microsoft are stating that the earlier behaviour
+was incorrect, so they should be demarcated with an IE-targetting hack.
+
+=over
+
+=item zoom
+
+C<zoom: 1;> is commonly used to trigger the C<hasLayout> property in Internet
+Explorer (which fixes many common rendering issues).
+
+=item filter
+
+The C<filter> property is commonly used to implement effects such as gradient
+fills and PNG support.
+
+=back
+
+=back

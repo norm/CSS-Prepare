@@ -1,0 +1,21 @@
+=head1 Introduction to CSS::Prepare
+
+C<CSS::Prepare> is a pre-processor for cascading style sheets. It parses
+one or more style sheets, including any valid C<@import> statements within,
+and then outputs this in a more streamlined format, suitable for deployment 
+on a web site.
+
+C<CSS::Prepare> will validate the CSS as it parses it, and can optionally
+provide you with useful shortcuts to make using various CSS3 features easier,
+as well as help maintain large style sheets, or style sheets across multiple
+sites.
+
+=begin html
+
+=head2 cssprepare.com
+
+This web site is an interactive interface to the code of
+<code>CSS::Prepare</code>. This allows you to explore how it would process
+your style sheets without the need to install any code on your computers.
+
+=end html

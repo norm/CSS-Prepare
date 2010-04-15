@@ -1,0 +1,26 @@
+=head1 Deploying CSS
+
+If you are using cssprepare as part of a build/deploy action, you should pay
+special attention to two of the options C<-d> (C<--output-dir>) and C<-a>
+(C<--use-all-shasum>).
+
+A common performance gain for web sites is to concatenate and minify CSS (and
+JavaScript too), which is what this tool does. A second gain is to then serve
+that style sheet from a content delivery network (CDN) or sub-domain set up
+to instruct the user agents to cache the content. In these cases, the filename
+should be unique. Two common techniques are to add a version or a timestamp to
+the filename.
+
+This script uses a third option, fingerprinting. If you specify an output
+directory with C<-d> (C<--output-dir>) when running cssprepare, the result
+will be written to a file in that directory with a filename based upon the
+SHA1 cryptographic fingerprint of the content. This means that running the
+script multiple times against the same input will only ever produce one output
+file, so you are not uselessly producing multiple stylesheets.
+
+By default, the fingerprint is truncated after the first five characters, so
+will look something like C<Jx1h3.css>. The chances of two different inputs
+sharing the same filename are vanishingly small (even five characters allows
+for over one billion variations). However, if you want, you can use all
+twenty-seven characters of the fingerprint in the filename by adding the
+option C<-a> (C<--use-all-shasum>).

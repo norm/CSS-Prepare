@@ -7,6 +7,9 @@ use IO::All             -utf8;
 use Plack::App::File;
 use Plack::Builder;
 use Plack::Request;
+use Pod::POM;
+use Pod::POM::View::InlineHTML;
+use Pod::POM::View::HTML;
 use Storable;
 use Text::Template;
 
@@ -108,12 +111,14 @@ sub process_css {
 }
 sub get_filename {
     my $sha1     = shift;
-    my $filename = shift // 'unknown_file';
+    my $filename = shift
+                   // 'unknown_file';
     
     return unless defined $sha1;
     return unless $sha1 =~ m{ [A-Za-z0-9+_]{27} }x;
     
-    my $base   = $ENV{'CSS_PREPARE_STORE'} // 'store/';
+    my $base   = $ENV{'CSS_PREPARE_STORE'}
+                 // 'store/';
     my $subdir = substr( $sha1, 0, 2 );
     my $target = "${base}/${subdir}/${sha1}/${filename}";
     
@@ -176,10 +181,53 @@ sub is_flagged {
     my $target = get_filename( $sha1, 'flagged' );
     return ( -f $target );
 }
+sub pod_to_html {
+    my $page = shift;
+    
+    # state %pod_cache;
+    # my $html = $pod_cache{ $page };
+    
+    # if ( !defined $html ) {
+        my %PAGES = (
+                default        => 'lib/CSS/Prepare/Manual/Introduction.pod',
+                deploying      => 'lib/CSS/Prepare/Manual/Deploying.pod',
+                features       => 'lib/CSS/Prepare/Manual/Features.pod',
+                hacks          => 'lib/CSS/Prepare/Manual/Hacks.pod',
+                hierarchy      => 'lib/CSS/Prepare/Manual/Hierarchy.pod',
+                optimising     => 'lib/CSS/Prepare/Manual/Optimising.pod',
+                'command-line' => 'bin/cssprepare',
+            );
+        my $file   = $PAGES{ $page }
+                     // $PAGES{'default'};
+        
+        my $parser = Pod::POM->new();
+        my $pom    = $parser->parse_file( $file );
+        my $viewer = Pod::POM::View::InlineHTML->new( header_level => 2 );
+        
+        my $html = $viewer->print( $pom );
+        # $pod_cache{ $page } = $html;
+    # }
+    
+    return $html;
+}
 
-
-my $documentation_page = sub { return render( 'documentation.html', {} ); };
 my $problems_page = sub { return render( 'problems.html', {} ); };
+my $documentation_page = sub {
+    my $environment = shift;
+    my $request     = Plack::Request->new( $environment );
+    
+    my( undef, $page ) = split m{/}, $request->path_info;
+    $page = 'introduction'
+        unless $page;
+    
+    return render(
+            'documentation.html',
+            {
+                page    => $page,
+                content => pod_to_html( $page ),
+            }
+        );
+};
 my $home_page = sub { 
     my $environment = shift;
     my $request     = Plack::Request->new( $environment );

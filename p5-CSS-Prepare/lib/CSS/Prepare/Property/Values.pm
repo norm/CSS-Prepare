@@ -257,7 +257,7 @@ our $border_style_value = qr{
         )
     }x;
 our $border_width_value
-    = qr{ (?: thin | medium | thick | $length_value | inherit ) }x;
+    = qr{ (?: thin | medium | thick | $positive_length_value | inherit ) }x;
 
 my $caption_side_value = qr{ (?: top | bottom | inherit ) }x;
 my $clear_value = qr{ (?: left | right | both | none | inherit ) }x;

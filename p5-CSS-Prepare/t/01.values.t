@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 460;
+use Test::More  tests => 461;
 
 use CSS::Prepare::Property::Values;
 
@@ -154,6 +154,8 @@ use CSS::Prepare::Property::Values;
     }
     ok( ! is_border_width_value( 'stroke' ),
         "not border-width: 'stroke'" );
+    ok( ! is_border_width_value( '-2px' ),
+        "not border-width: '-2px'" );
     
     # other border-color values are tested by colours above
     my @colours = ( 'inherit', 'transparent', 'red', '#000' );

@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 23;
+use Test::More  tests => 27;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -601,4 +601,101 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "not a stylesheet was:\n" . Dumper \@parsed;
+}
+
+
+# chunking boundaries
+{
+    $css = <<CSS;
+li { color: #000; }
+/* -- */
+h1 { color: #000; }
+CSS
+    my $css2 = <<CSS;
+li { color: #000; }
+/* ---- */
+h1 { color: #000; }
+CSS
+    @structure = (
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'li' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+            { type => 'boundary', },
+            {
+                original  => ' color: #000; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'color' => '#000',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "chunked content was:\n" . Dumper \@parsed;
+}
+
+# verbatim comments
+{
+    $css = <<CSS;
+/*! IE hack */
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "/* IE hack */\n",
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim comment was:\n" . Dumper \@parsed;
+}
+
+# verbatim blocks
+{
+    $css = <<CSS;
+/*! verbatim */
+div {
+    blah: 0;
+}
+/* -- */
+div { color: black; }
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "div {\n    blah: 0;\n}\n",
+            },
+            {
+                original  => ' color: black; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color' => 'black',
+                },
+            },
+        );
+    
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
+    
+    $css = <<CSS;
+/*! verbatim */
+div {
+    blah: 0;
+}
+/* ---- */
+div { color: black; }
+CSS
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
 }

@@ -614,26 +614,22 @@ sub strip_comments {
         $string =~ s{ \s // [^\n]+ }{}gmx;
     }
     
-    if ( $self->support_hacks ) {
-        # preserve verbatim comments
-        $string =~ s{ 
-                \/ \* \! ( .*? ) \* \/
-            }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
-        
-        # preserve boundary markers
-        $string =~ s{
-                \/ \* ( \s+ \-\-+ \s+ ) \* \/
-            }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
-    }
+    # disguise verbatim comments
+    $string =~ s{
+            \/ \* \! ( .*? ) \* \/
+        }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
+    
+    # disguise boundary markers
+    $string =~ s{
+            \/ \* ( \s+ \-\-+ \s+ ) \* \/
+        }{%-COMMENT-%$1%-ENDCOMMENT-%}gsx;
     
     # remove CSS comments
     $string =~ s{ \/ \* .*? \* \/ }{}gsx;
     
-    if ( $self->support_hacks ) {
-        # preserve verbatim comments
-        $string =~ s{%-COMMENT-%}{/*}gsx;
-        $string =~ s{%-ENDCOMMENT-%}{*/}gsx;
-    }
+    # reveal verbatim comments and boundary markers
+    $string =~ s{%-COMMENT-%}{/*}gsx;
+    $string =~ s{%-ENDCOMMENT-%}{*/}gsx;
     
     return $string;
 }

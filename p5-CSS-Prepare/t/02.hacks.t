@@ -270,69 +270,6 @@ CSS
         or say "filter hack was:\n" . Dumper \@parsed;
 }
 
-# verbatim comments
-{
-    $css = <<CSS;
-/*! IE hack */
-CSS
-    @structure = (
-            {
-                type => 'verbatim',
-                string => "/* IE hack */\n",
-            },
-        );
-    
-    @parsed = $preparer_with->parse_string( $css );
-    is_deeply( \@structure, \@parsed )
-        or say "verbatim comment was:\n" . Dumper \@parsed;
-}
-{
-    @structure = ();
-
-    @parsed = $preparer_without->parse_string( $css );
-    is_deeply( \@structure, \@parsed )
-        or say "verbatim comment was:\n" . Dumper \@parsed;
-}
-
-# verbatim blocks
-{
-    $css = <<CSS;
-/*! verbatim */
-div {
-    blah: 0;
-}
-/*! end-verbatim */
-CSS
-    @structure = (
-            {
-                type => 'verbatim',
-                string => "div {\n    blah: 0;\n}\n",
-            },
-        );
-    
-    @parsed = $preparer_with->parse_string( $css );
-    is_deeply( \@structure, \@parsed )
-        or say "verbatim block was:\n" . Dumper \@parsed;
-}
-{
-    @structure = (
-            {
-                original  => "\n    blah: 0;\n",
-                selectors => [ 'div' ],
-                errors    => [
-                    {
-                        error => q(invalid property: 'blah'),
-                    },
-                ],
-                block     => {},
-            },
-        );
-
-    @parsed = $preparer_without->parse_string( $css );
-    is_deeply( \@structure, \@parsed )
-        or say "verbatim block was:\n" . Dumper \@parsed;
-}
-
 # chunking boundaries
 {
     $css = <<CSS;
@@ -387,4 +324,84 @@ CSS
     @parsed = $preparer_without->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "chunked content was:\n" . Dumper \@parsed;
+}
+
+# verbatim comments
+{
+    $css = <<CSS;
+/*! IE hack */
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "/* IE hack */\n",
+            },
+        );
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim comment was:\n" . Dumper \@parsed;
+}
+{
+    @structure = ();
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim comment was:\n" . Dumper \@parsed;
+}
+
+# verbatim blocks
+{
+    $css = <<CSS;
+/*! verbatim */
+div {
+    blah: 0;
+}
+/* -- */
+div { color: black; }
+CSS
+    @structure = (
+            {
+                type => 'verbatim',
+                string => "div {\n    blah: 0;\n}\n",
+            },
+            {
+                original  => ' color: black; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color' => 'black',
+                },
+            },
+        );
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
+}
+{
+    @structure = (
+            {
+                original  => "\n    blah: 0;\n",
+                selectors => [ 'div' ],
+                errors    => [
+                    {
+                        error => q(invalid property: 'blah'),
+                    },
+                ],
+                block     => {},
+            },
+            {
+                original  => ' color: black; ',
+                selectors => [ 'div' ],
+                errors    => [],
+                block     => {
+                    'color' => 'black',
+                },
+            },
+        );
+
+    @parsed = $preparer_without->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "verbatim block was:\n" . Dumper \@parsed;
 }

@@ -794,7 +794,7 @@ sub split_into_declaration_blocks {
             ^
             \/ \* \s+ verbatim \s+ \*\/
             \s* ( .*? ) \s*
-            \/ \* \s+ end-verbatim \s+ \*\/
+            \/ \* \s+ -- \s+ \*\/
         }sx;
     my $get_chunk_boundary = qr{
             ^

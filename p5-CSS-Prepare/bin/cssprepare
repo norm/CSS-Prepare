@@ -1,0 +1,292 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use CSS::Prepare;
+use FileHandle;
+use Getopt::Long    qw( :config bundling );
+use IO::Handle;
+use Pod::Usage;
+use Time::HiRes     qw( gettimeofday tv_interval );
+
+
+my %options      = get_options_or_exit();
+my %prepare_args = get_prepare_arguments( %options );
+my $preparer     = CSS::Prepare->new( %prepare_args );
+my( $output, $total_saving, $total_errors );
+
+foreach my $stylesheet ( @ARGV ) {
+    my ( $processed, $saving, $error_count ) 
+        = process_stylesheet( $stylesheet );
+    
+    $total_saving += $saving;
+    $total_errors += $error_count;
+    $output       .= $processed;
+}
+
+exit $total_errors
+    if defined $options{'warnings-only'};
+die "Exiting - has ${total_errors} error(s)\n"
+    if $options{'exit-on-error'} && $total_errors;
+
+status( "Total: ${total_saving} saved bytes"
+        . ( $total_errors ? "; ${total_errors} errors." : '' ) );
+if ( $options{'output-dir'} ) {
+    my $filename = output_stylesheet_to_directory( $output );
+    status( "Saved to $filename" );
+}
+else {
+    print $output;
+}
+
+exit;
+
+
+
+sub process_stylesheet {
+    my $stylesheet = shift;
+    
+    my $start = [ gettimeofday() ];
+    status( "Processing stylesheet '$stylesheet'" );
+    
+    my @structure = $preparer->parse_stylesheet( $stylesheet );
+    
+    my $saving      = 0;    # TODO
+    my $error_count = 0;
+    my $output      = '';
+    foreach my $block ( @structure ) {
+        foreach my $error ( @{$block->{'errors'}} ) {
+            my $selector = join ', ', @{$block->{'selectors'}};
+            my( $level, $text ) = each %$error;
+            
+            status( "  [${level}] '${selector}' - ${text}" );
+            $error_count++;
+        }
+    }
+    
+    if ( !defined $options{'warnings-only'} ) {
+        @structure = $preparer->optimise( @structure )
+            if defined $options{'optimise'};
+        
+        $output = $preparer->output_as_string( @structure );
+        
+        status( "\r  Time taken " . tv_interval( $start ) . " seconds" )
+    }
+    
+    return ( $output, $saving, $error_count );
+}
+sub output_stylesheet_to_directory {
+    my $output = shift;
+    
+    my $sha1      = sha1_base64( $output );
+       $sha1  =~ s{/}{_}g;
+    
+    if ( !defined $options{'use-all-shasum'} ) {
+        # ten characters is not as unique as the full SHA1 digest, but is 
+        # just about unique enough for our purposes
+        $sha1 = substr( $sha1, 0, 5 );
+    }
+    
+    my $filename = "$options{'output-dir'}/${sha1}.css";
+    my $handle   = FileHandle->new( $filename, 'w' )
+        or die "Cannot write $output: $!";
+    
+    print {$handle} $output;
+    
+    return $filename;
+}
+
+sub get_options_or_exit {
+    use constant OPTIONS => qw( 
+                  use-all-shasum|a
+                  hierarchy-base|b=s
+                      output-dir|d=s
+                 enable-features|f
+                   disable-hacks|h
+                        location|l=s
+                        optimise|o
+                          pretty|p
+                           quiet|q
+            suboptimal-threshold|s=i
+                         timeout|t=i
+                   warnings-only|w
+                   exit-on-error|x
+        );
+    
+    my %getopts;
+    
+    my $known = GetOptions( \%getopts, OPTIONS );
+    pod2usage()
+        unless $known or $getopts{'help'};
+    
+    if ( $getopts{'output-dir'} ) {
+        eval {
+                require Digest::SHA1;
+                Digest::SHA1->import( 'sha1_base64' );
+            };
+        die( "Cannot generate output file--cssprepare requires the perl\n"
+             . "module 'Digest::SHA1' to be installed." )
+                if $@;
+    }
+    
+    return %getopts;
+}
+sub get_prepare_arguments {
+    my %getopts = @_;
+    
+    my %args;
+    $args{'features'} = 1
+        if defined $getopts{'enable-features'};
+    $args{'pretty'} = 1
+        if defined $getopts{'pretty'};
+    $args{'hacks'} = 0
+        if defined $getopts{'disable-hacks'};
+    $args{'base_directory'} = $getopts{'hierarchy-base'}
+        if defined $getopts{'hierarchy-base'};
+    $args{'timeout'} = $getopts{'timeout'}
+        if defined $getopts{'timeout'};
+    $args{'suboptimal'} = $getopts{'suboptimal-threshold'}
+        if defined $getopts{'suboptimal-threshold'};
+    $args{'status'} = \&status;
+    
+    return %args;
+}
+
+sub status {
+    my $text = shift;
+    my $line = shift;
+    
+    if ( !defined $options{'quiet'} ) {
+        STDERR->autoflush(1);
+        
+        if ( defined $line ) {
+            print STDERR "\r${text}";
+        }
+        else {
+            say STDERR $text;
+        }
+    }
+}
+
+__END__
+
+=head1 NAME
+
+B<cssprepare> - pre-process CSS style sheet(s)
+
+=head1 SYNOPSIS
+
+B<cssprepare> [B<-afhoqwx>] [B<-b> F<dir>] [B<-d> F<dir>] [B<-l> F<path>]
+[B<-s> I<secs>] [B<-t> I<secs>]
+           F<style sheet> [F<...>]
+
+B<cssprepare> [B<--long-options ...>] F<style sheet> [F<...>]
+
+=head1 DESCRIPTION
+
+B<cssprepare> concatenates and minifies multiple cascading style sheets into
+one, optionally adding new features to the CSS syntax and optimising the
+result to save as much space as possible.
+
+=head1 OPTIONS
+
+=over
+
+=item -a, --use-all-shasum
+
+When automatically creating the output style sheet (C<-d>, C<--output-dir>),
+use the entire SHA1 checksum as the filename rather than truncating it to five
+characters.
+
+=item -b F<dir>, --hierarchy-base=F<dir>
+
+Use F<dir> as the hierarchy base. See B<Using hierarchies> for more details.
+
+=item -d F<dir>, --output-dir=F<dir>
+
+Automatically create a file in F<dir> with the CSS output. This filename will
+be based upon the first five characters of the SHA1 checksum of the content.
+This means repeated runs of B<cssprepare> on the same files will only generate
+one output file, which is useful when using B<cssprepare> as part of a
+deployment script. See B<Deploying CSS> for more details.
+
+=item -f, --enable-features
+
+Turn on the extra features that cssprepare uses when parsing CSS. See
+B<Extending the CSS syntax> for details.
+
+=item -h, --disable-hacks
+
+Turn off support for the "star" and "underscore" CSS hacks, and the "zoom"
+and "filter" properties (the most common of the work-arounds needed to deal
+with earlier version of Internet Explorer). See B<CSS hacks> for more details.
+
+=item -l F<dir>, --location=F<dir>
+
+Set the hierarchy location to F<dir>. See B<Using hierarchies> for more 
+details.
+
+=item -o, --optimise
+
+Attempt to optimise the structure of the CSS before outputting it. 
+B<Warning:> this can break your CSS. See B<Optimising CSS> for a longer
+explanation as to why.
+
+=item -q, --quiet
+
+Silence the status updates sent to STDERR during processing.
+
+=item -s I<seconds>, --suboptimal-threshold=I<seconds>
+
+Set the length of time that can pass before cssprepare switches 
+optimisation to a faster (but less efficient) method. B<Note:> this applies to
+each style sheet, not to the length of time cssprepare will run.
+
+=item -t I<seconds>, --timeout=I<seconds>
+
+Set the length of time that can pass before any HTTP requests will fail
+when the remote server does not respond.
+
+=item -w, --warnings-only
+
+Only output warnings and errors found in the processed style sheet(s), and set
+the return value of cssprepare to the number of errors. This is useful for
+CSS validation.
+
+=item -x, --exit-on-error
+
+Exit before producing any output if there were any errors. This is useful for
+prematurely exiting from automatic build scripts, rather than generating
+incorrect output.
+
+=back
+
+=head1 REQUIREMENTS
+
+The only fixed requirement CSS::Prepare has is that the version of the perl
+interpreter must be at least 5.10.
+
+If you wish to use C<@import url(...);> in your style sheets you will need
+one of L<HTTP::Lite> or L<LWP::UserAgent> installed.
+
+If you wish to run the test suite, you will need L<Data::Dumper::Concise>
+installed.
+
+=head1 SEE ALSO
+
+L<CSS::Prepare::Introduction> and L<CSS::Prepare::Manual>.
+
+CSS::Prepare online -- L<http://cssprepare.com/>
+
+Yahoo! Yslow rules on content delivery networks -- 
+L<http://developer.yahoo.com/performance/rules.html#cdn>.
+
+=head1 AUTHOR
+
+Mark Norman Francis, L<norm@cackhanded.net>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2010 Mark Norman Francis.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

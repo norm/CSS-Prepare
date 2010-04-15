@@ -62,15 +62,15 @@ sub view_head1 {
 }
 sub view_head2 {
     my $self  = shift;
-    return $self->view_header( shift, 0 );
+    return $self->view_header( shift, 1 );
 }
 sub view_head3 {
     my $self  = shift;
-    return $self->view_header( shift, 0 );
+    return $self->view_header( shift, 2 );
 }
 sub view_head4 {
     my $self  = shift;
-    return $self->view_header( shift, 0 );
+    return $self->view_header( shift, 3 );
 }
 
 # don't want anchors on list items

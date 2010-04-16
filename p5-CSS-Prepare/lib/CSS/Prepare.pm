@@ -900,26 +900,20 @@ sub parse_selectors {
     return \@selectors, [];
 }
 sub parse_declaration_block {
-    my $self   = shift;
-    my $string = shift;
+    my $self  = shift;
+    my $block = shift;
+    
+    # make '{' and '}' back into actual brackets again
+    $block = unescape_braces( $block );
+    
+    my( $remainder, @declarations ) = get_declarations_from_block( $block );
+    
     my %canonical;
     my @errors;
     
-    $string = unescape_braces( $string );
-    
-    my $splitter = qr{
-            ^
-            \s*
-            (?<property> [^:]+? )
-            \s* \: \s*
-            (?<value> [^;]+ )
-            \;?
-        }sx;
-    
-    while ( $string =~ s{$splitter}{}sx ) {
-        my %match = %+;
-        my $parsed_as;
-        my $errors;
+    DECLARATION:
+    foreach my $declaration ( @declarations ) {
+        my %match = %{$declaration};
         
         my $star_hack       = 0;
         my $underscore_hack = 0;
@@ -940,62 +934,92 @@ sub parse_declaration_block {
         # strip possible extraneous whitespace
         $match{'value'} =~ s{ \s+ $}{}x;
         
-        PROPERTY:
-        foreach my $module ( @MODULES ) {
-            my $found = 0;
-            
-            eval {
-                no strict 'refs';
-
-                my $try_with = "CSS::Prepare::Property::${module}::parse";
-                ( $parsed_as, $errors )
-                    = &$try_with( $self, $has_hack, %match );
-            };
-            say STDERR $@ if $@;
-            
+        my( $parsed_as, $errors )
+            = $self->parse_declaration( $has_hack, %match );
+        
+        if ( defined $parsed_as or $errors ) {
             push @errors, @$errors
                 if @$errors;
             
-            last PROPERTY
-                if %$parsed_as or @$errors;
-        }
-        
-        my %parsed;
-        foreach my $property ( keys %$parsed_as ) {
-            my $value = $parsed_as->{ $property };
-            $property = "_$property"
-                if $underscore_hack;
-            $property = "*$property"
-                if $star_hack;
-            $property = "important-$property"
-                if $important;
+            my %parsed;
+            foreach my $property ( keys %$parsed_as ) {
+                my $value = $parsed_as->{ $property };
+                $property = "_$property"
+                    if $underscore_hack;
+                $property = "*$property"
+                    if $star_hack;
+                $property = "important-$property"
+                    if $important;
+                
+                $parsed{ $property } = $value;
+            }
             
-            $parsed{ $property } = $value;
-        }
-        
-        if ( %parsed ) {
-            %canonical = (
-                    %canonical,
-                    %parsed,
-                );
-        }
-        else {
-            if ( ! @$errors ) {
-                push @errors, {
-                        error => "invalid property: '$match{'property'}'"
-                    };
+            if ( %parsed ) {
+                %canonical = (
+                        %canonical,
+                        %parsed,
+                    );
             }
         }
+        else {
+            push @errors, {
+                    error => "invalid property: '$match{'property'}'"
+                };
+        }
     }
-    if ( $string !~ m{^ \s* $}sx ) {
-        $string =~ s{^ \s* (.*?) \s* $}{$1}sx;
+    if ( $remainder !~ m{^ \s* $}sx ) {
+        $remainder =~ s{^ \s* (.*?) \s* $}{$1}sx;
         
         push @errors, {
-                error => "invalid property: '$string'",
+                error => "invalid property: '$remainder'",
             };
     }
     
     return \%canonical, \@errors;
+}
+sub get_declarations_from_block {
+    my $block = shift;
+    
+    my $splitter = qr{
+            ^
+            \s*
+            (?<property> [^:]+? )
+            \s* \: \s*
+            (?<value> [^;]+ )
+            \;?
+        }sx;
+    
+    my @declarations;
+    while ( $block =~ s{$splitter}{}sx ) {
+        my %match = %+;
+        push @declarations, \%match;
+    }
+    
+    return $block, @declarations;
+}
+sub parse_declaration {
+    my $self        = shift;
+    my $has_hack    = shift;
+    my %declaration = @_;
+    
+    my $parsed_as;
+    my $errors;
+    
+    foreach my $module ( @MODULES ) {
+        eval {
+            no strict 'refs';
+            
+            my $try_with = "CSS::Prepare::Property::${module}::parse";
+            ( $parsed_as, $errors )
+                = &$try_with( $self, $has_hack, %declaration );
+        };
+        say STDERR $@ if $@;
+        
+        return( $parsed_as, $errors )
+            if %$parsed_as or @$errors;
+    }
+    
+    return;
 }
 
 sub optimise {

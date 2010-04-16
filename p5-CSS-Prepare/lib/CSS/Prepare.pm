@@ -63,6 +63,14 @@ sub new {
         }
     }
     
+    # check for ability to use plugins
+    eval "use Module::Pluggable require => 1;";
+    unless ($@) {
+        foreach my $plugin ( $self->plugins() ) {
+            $self->{'has_plugins'} = 1;
+        }
+    }
+    
     return $self;
 }
 sub get_hacks {
@@ -159,6 +167,10 @@ sub get_http_provider {
     my $self = shift;
     
     return $self->{'http_provider'};
+}
+sub has_plugins {
+    my $self = shift;
+    return $self->{'has_plugins'};
 }
 
 my $elements_first = sub {
@@ -383,16 +395,20 @@ sub output_properties {
     }
     
     my %properties;
-    foreach my $module ( @MODULES ) {
+    my @outputters;
+    
+    map { push @outputters, "${_}::output" }
+        $self->plugins();
+    map { push @outputters, "CSS::Prepare::Property::${_}::output" }
+        @MODULES;
+    
+    foreach my $outputter ( @outputters ) {
         my( @normal, @important );
         
         eval {
             no strict 'refs';
-            
-            my $try_with = "CSS::Prepare::Property::${module}::output";
-            
-            @normal    = &$try_with( $self, \%normal );
-            @important = &$try_with( $self, \%important );
+            @normal    = &$outputter( $self, \%normal );
+            @important = &$outputter( $self, \%important );
         };
         say STDERR $@ if $@;
         
@@ -907,6 +923,7 @@ sub parse_declaration_block {
     $block = unescape_braces( $block );
     
     my( $remainder, @declarations ) = get_declarations_from_block( $block );
+    @declarations = $self->expand_declarations( @declarations );
     
     my %canonical;
     my @errors;
@@ -1002,16 +1019,21 @@ sub parse_declaration {
     my $has_hack    = shift;
     my %declaration = @_;
     
-    my $parsed_as;
-    my $errors;
+    my @parsers;
+    map { push @parsers, "CSS::Prepare::Property::${_}::parse" }
+        @MODULES;
+    map { push @parsers, "${_}::parse" }
+        $self->plugins();
     
-    foreach my $module ( @MODULES ) {
+    foreach my $module ( @parsers ) {
+        my $parsed_as;
+        my $errors;
+        
         eval {
             no strict 'refs';
             
-            my $try_with = "CSS::Prepare::Property::${module}::parse";
             ( $parsed_as, $errors )
-                = &$try_with( $self, $has_hack, %declaration );
+                = &$module( $self, $has_hack, %declaration );
         };
         say STDERR $@ if $@;
         
@@ -1020,6 +1042,40 @@ sub parse_declaration {
     }
     
     return;
+}
+sub expand_declarations {
+    my $self         = shift;
+    my @declarations = @_;
+    
+    my @filtered;
+    if ( $self->has_plugins ) {
+        DECLARATION:
+        foreach my $declaration ( @declarations ) {
+            my $property = $declaration->{'property'};
+            my $value    = $declaration->{'value'};
+            
+            PLUGIN:
+            foreach my $plugin ( $self->plugins() ) {
+                no strict 'refs';
+                
+                my $try_with = "${plugin}::expand";
+                my $filtered = &$try_with( $self, $property, $value );
+                
+                if ( defined $filtered ) {
+                    push @filtered, @{$filtered};
+                    next DECLARATION;
+                }
+            }
+            
+            # if we get here, no plugin has dealt with the property
+            push @filtered, $declaration;
+        }
+    }
+    else {
+        @filtered = @declarations;
+    }
+    
+    return @filtered;
 }
 
 sub optimise {

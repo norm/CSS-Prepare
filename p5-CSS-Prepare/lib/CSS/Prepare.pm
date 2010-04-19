@@ -78,10 +78,12 @@ sub new {
     }
     
     # check for ability to use plugins
-    eval "use Module::Pluggable require => 1;";
-    unless ($@) {
-        foreach my $plugin ( $self->plugins() ) {
-            $self->{'has_plugins'} = 1;
+    if ( $self->support_features() ) {
+        eval "use Module::Pluggable require => 1;";
+        unless ($@) {
+            foreach my $plugin ( $self->plugins() ) {
+                $self->{'has_plugins'} = 1;
+            }
         }
     }
     
@@ -411,8 +413,10 @@ sub output_properties {
     my %properties;
     my @outputters;
     
-    map { push @outputters, "${_}::output" }
-        $self->plugins();
+    if ( $self->has_plugins() ) {
+        map { push @outputters, "${_}::output" }
+            $self->plugins();
+    }
     map { push @outputters, "CSS::Prepare::Property::${_}::output" }
         @MODULES;
     
@@ -1036,8 +1040,10 @@ sub parse_declaration {
     my @parsers;
     map { push @parsers, "CSS::Prepare::Property::${_}::parse" }
         @MODULES;
-    map { push @parsers, "${_}::parse" }
-        $self->plugins();
+    if ( $self->has_plugins() ) {
+        map { push @parsers, "${_}::parse" }
+            $self->plugins();
+    }
     
     foreach my $module ( @parsers ) {
         my $parsed_as;

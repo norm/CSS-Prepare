@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 461;
+use Test::More  tests => 473;
 
 use CSS::Prepare::Property::Values;
 
@@ -28,7 +28,7 @@ use CSS::Prepare::Property::Values;
     }
 
     my @valid_length_values
-        = qw( 0 +0px 5px 10.0001em 15ex 20in 25cm 30mm 35pt 40pc );
+        = qw( 0 +0px 5px .5em 10.0001em 15ex 20in 25cm 30mm 35pt 40pc );
     foreach my $value ( @valid_length_values ) {
         ok( is_length_value( $value ),
             "length: '$value'" );
@@ -165,6 +165,25 @@ use CSS::Prepare::Property::Values;
     }
     ok( ! is_border_colour_value( '#cc' ),
         "not border-color: '#cc'" );
+    
+    my @corner_radii = (
+            '5px', '5px 2px', '.5em 1px',
+        );
+    foreach my $value ( @corner_radii ) {
+        ok( is_border_radius_corner_value( $value ),
+            "border-radius corner: '$value'" );
+    }
+    
+    my @radii = ( '5em 2em 1em', '5em / 1px 2px 3px 4px' );
+    foreach my $value ( @corner_radii, @radii ) {
+        ok( is_border_radius_value( $value ),
+            "border-radius: '$value'" );
+    }
+    
+    foreach my $value ( @radii ) {
+        ok( ! is_border_radius_corner_value( $value ),
+            "not border-radius corner: '$value'" );
+    }
 }
 
 # test margins and padding

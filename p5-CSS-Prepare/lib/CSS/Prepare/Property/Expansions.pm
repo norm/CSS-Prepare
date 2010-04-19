@@ -5,10 +5,18 @@ use CSS::Prepare::Property::Values;
 use Exporter;
 
 our @ISA    = qw( Exporter );
-our @EXPORT = qw( expand_trbl_shorthand  collapse_trbl_shorthand
-                  expand_clip            shorten_colour_value
-                  shorten_length_value   validate_any_order_shorthand
-              );
+our @EXPORT = qw(
+        expand_trbl_shorthand
+        collapse_trbl_shorthand
+        expand_clip
+        shorten_colour_value
+        shorten_length_value
+        validate_any_order_shorthand
+        get_corner_values
+        expand_corner_values
+        collapse_corner_values
+    );
+
 
 
 
@@ -290,6 +298,84 @@ sub validate_any_order_shorthand {
     }
     
     return %return;
+}
+
+sub get_corner_values {
+    my $block = shift;
+    my $type  = shift // 'css3';
+    
+    my @horizontal;
+    my @vertical;
+    
+    my $get_border_radius_corner_value = qr{
+            ( $individual_border_radius_value )
+            (?: \s+ ( $individual_border_radius_value ) )?
+        }x;
+    
+    foreach my $corner ( @standard_corners ) {
+        my $moz_corner  = $corner;
+           $moz_corner =~ s{-}{};
+        
+        my $key =   'css3' eq $type ? "border-${corner}-radius"
+                  : 'moz'  eq $type ? "-moz-border-radius-${moz_corner}"
+                                    : "-webkit-border-${corner}-radius";
+        my $value = $block->{ $key };
+        
+        $value =~ m{ $get_border_radius_corner_value }x;
+        push @horizontal, $1;
+        push @vertical, $2;
+    }
+    
+    return( \@horizontal, \@vertical );
+}
+sub expand_corner_values {
+    my @values = @_;
+    
+    my @return;
+    if ( 1 == scalar @values ) {
+        push @return, $values[0];
+        push @return, $values[0];
+        push @return, $values[0];
+        push @return, $values[0];
+    }
+    elsif ( 2 == scalar @values ) {
+        push @return, $values[0];
+        push @return, $values[1];
+        push @return, $values[0];
+        push @return, $values[1];
+    }
+    elsif ( 3 == scalar @values ) {
+        push @return, $values[0];
+        push @return, $values[1];
+        push @return, $values[2];
+        push @return, $values[1];
+    }
+    else   {
+        push @return, @values;
+    }
+    
+    return @return;
+}
+sub collapse_corner_values {
+    my $top_left     = shift // '';
+    my $top_right    = shift // '';
+    my $bottom_right = shift // '';
+    my $bottom_left  = shift // '';
+    
+    my $two_values   = $top_left  ne $top_right;
+    my $three_values = $top_left  ne $bottom_right;
+    my $four_values  = $top_right ne $bottom_left;
+    my @values;
+    
+    push @values, $top_left;
+    push @values, $top_right
+        if $two_values or $three_values or $four_values;
+    push @values, $bottom_right
+        if $three_values or $four_values;
+    push @values, $bottom_left
+        if $four_values;
+    
+    return join ' ', @values;
 }
 
 1;

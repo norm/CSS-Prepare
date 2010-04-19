@@ -17,6 +17,8 @@ our @EXPORT = qw(
         is_background_repeat_value
         is_border_collapse_value
         is_border_colour_value
+        is_border_radius_corner_value
+        is_border_radius_value
         is_border_spacing_value
         is_border_style_value
         is_border_width_value
@@ -71,6 +73,7 @@ our @EXPORT = qw(
         is_z_index_value
         
         @standard_directions
+        @standard_corners
         
         $background_attachment_value
         $background_colour_value
@@ -78,6 +81,9 @@ our @EXPORT = qw(
         $background_repeat_value
         $background_position_value
         $border_colour_value
+        $individual_border_radius_value
+        $border_radius_corner_value
+        $border_radius_value
         $border_style_value
         $border_width_value
         $font_family
@@ -98,6 +104,8 @@ our @EXPORT = qw(
         $outline_style_value
         $outline_width_value
         $padding_width_value
+        $positive_length_value
+        $positive_percentage_value
         $string_value
         $url_value
         
@@ -110,6 +118,7 @@ our @EXPORT = qw(
 
 # shorthands
 our @standard_directions = qw( top right bottom left );
+our @standard_corners    = qw( top-left top-right bottom-right bottom-left );
 
 # primitive types
 my $integer_value = qr{ [+-]? [0-9]+ }x;
@@ -133,22 +142,22 @@ my $positive_number_value = qr{
     }x;
 our $length_value = qr{
         (?:
-            0
-            |
             $number_value
             (?: px | em | ex | in | cm | mm | pt | pc )
+            |
+            0
         )
     }x;
 our $positive_length_value = qr{
         (?:
-            0
-            |
             $positive_number_value
             (?: px | em | ex | in | cm | mm | pt | pc )
+            |
+            0
         )
     }x;
 my $percentage_value = qr{ $number_value % }x;
-my $positive_percentage_value = qr{ $positive_number_value % }x;
+our $positive_percentage_value = qr{ $positive_number_value % }x;
 my $colour_value = qr{
         (?:
               aqua | black  | blue | fuchsia | gray   | green
@@ -241,6 +250,21 @@ our $background_position_value = qr{
 
 my $border_collapse_value = qr{ (?: collapse | separate | inherit ) }x;
 our $border_colour_value = qr{ (?: transparent | inherit | $colour_value ) }x;
+our $individual_border_radius_value
+    = qr{ (?: $positive_length_value | $positive_percentage_value ) }x;
+our $border_radius_corner_value = qr{
+        $individual_border_radius_value
+        (?: \s+ $individual_border_radius_value )?
+    }x;
+our $border_radius_value = qr{
+        $individual_border_radius_value
+        (?: \s+ $individual_border_radius_value ){0,3}
+        (?:
+            \s* / \s*
+            $individual_border_radius_value
+            (?: \s+ $individual_border_radius_value ){0,3}
+        )?
+    }x;
 my $border_spacing_value = qr{
         (?:
               $length_value
@@ -502,6 +526,14 @@ sub is_border_collapse_value {
 sub is_border_colour_value {
     my $value = shift;
     return $value =~ m{^ $border_colour_value $}x;
+}
+sub is_border_radius_corner_value {
+    my $value = shift;
+    return $value =~ m{^ $border_radius_corner_value $}x;
+}
+sub is_border_radius_value {
+    my $value = shift;
+    return $value =~ m{^ $border_radius_value $}x;
 }
 sub is_border_spacing_value {
     my $value = shift;

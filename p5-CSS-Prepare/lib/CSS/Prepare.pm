@@ -4,6 +4,7 @@ use Modern::Perl;
 
 use CSS::Prepare::Property::Background;
 use CSS::Prepare::Property::Border;
+use CSS::Prepare::Property::BorderRadius;
 use CSS::Prepare::Property::Color;
 use CSS::Prepare::Property::Effects;
 use CSS::Prepare::Property::Font;
@@ -24,8 +25,21 @@ use Storable            qw( dclone );
 use constant MAX_REDIRECT => 3;
 
 my @MODULES = qw(
-        Background  Border  Color    Effects  Font  Formatting  Hacks
-        Generated   Margin  Padding  Tables   Text  UI          Vendor
+        Background
+        Border
+        BorderRadius
+        Color
+        Effects
+        Font
+        Formatting
+        Hacks
+        Generated
+        Margin
+        Padding
+        Tables
+        Text
+        UI
+        Vendor
     );
 
 

@@ -1,18 +1,6 @@
 {{
-    # array not hash as the output order is significant
-    @subnav = (
-            'introduction' => 'Introduction',
-            'hacks'        => 'Supported CSS hacks',
-            'features'     => 'Features of CSS::Prepare',
-            'deploying'    => 'Deploying CSS',
-            'optimising'   => 'Optimising CSS',
-            'hierarchy'    => 'Using hierarchical CSS',
-            'command-line' => 'Command-line tool',
-        );
-    
     %pages = @subnav;
     $page_title = defined $pages{ $page } ? $pages{ $page } : '';
-    
     return;
 }}<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
@@ -56,7 +44,7 @@
   </div>
   
   <div id="page" class="pod">
-    {{$content}}
+    {{ $pods{ $page } }}
   </div>
 
 </div></body>

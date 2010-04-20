@@ -25,6 +25,9 @@ sub new {
             unless int( $self->{'base_header_level'} ) > 0;
     }
     
+    # accept a hash of possible link targets
+    $self->{'link_map'} = $args{'link_map'};
+    
     return $self;
 }
 
@@ -120,6 +123,37 @@ sub view_seq_italic {
     my $text = shift;
     
     return "<em>$text</em>";
+}
+sub view_seq_link {
+    my $self = shift;
+    my $link = shift;
+    
+    # view_seq_text has already taken care of L<http://example.com/>
+    if ($link =~ /^<a href=/ ) {
+        return $link;
+    }
+    
+    # full-blown URL's are emitted as-is
+    if ($link =~ m{^\w+://}s ) {
+        return make_href($link);
+    }
+    
+    $link =~ s/\n/ /gs;   # undo line-wrapped tags
+    
+    # links to other CPAN modules
+    if ( $link =~ m{::} ) {
+        return "<i>$link</i>";
+    }
+    
+    # already mapped links
+    my $link_map = $self->{'link_map'};
+    my $url      = $link_map->{ $link };
+    return "<a href='${url}'>$link</a>"
+        if defined $url;
+    
+    # *very* naive mailto: matching
+    return "<a href='mailto:${link}'>$link</a>"
+        if $link =~ m{^ \w+ \@ \w+ (?: \. \w+ )+ $}x;
 }
 
 sub generate_id {

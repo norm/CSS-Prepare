@@ -4,6 +4,7 @@ use CSS::Prepare;
 use Digest::SHA1        qw( sha1_base64 );
 use HTML::Entities;
 use IO::All             -utf8;
+use Module::Pluggable   require => 1, search_path => 'CSS::Prepare::Plugin';
 use Plack::App::File;
 use Plack::Builder;
 use Plack::Request;
@@ -12,6 +13,8 @@ use Pod::POM::View::InlineHTML;
 use Pod::POM::View::HTML;
 use Storable;
 use Text::Template;
+
+my %pod_html = render_pods();
 
 sub render {
     my $template = shift;
@@ -181,34 +184,75 @@ sub is_flagged {
     my $target = get_filename( $sha1, 'flagged' );
     return ( -f $target );
 }
-sub pod_to_html {
-    my $page = shift;
+sub render_pods {
+    my %POD_FILES = (
+            introduction      => 'lib/CSS/Prepare/Manual/Introduction.pod',
+            deploying         => 'lib/CSS/Prepare/Manual/Deploying.pod',
+            features          => 'lib/CSS/Prepare/Manual/Features.pod',
+            'extended-syntax' => 'lib/CSS/Prepare/Manual/Syntax.pod',
+            hacks             => 'lib/CSS/Prepare/Manual/Hacks.pod',
+            hierarchy         => 'lib/CSS/Prepare/Manual/Hierarchy.pod',
+            optimising        => 'lib/CSS/Prepare/Manual/Optimising.pod',
+            'command-line'    => 'bin/cssprepare',
+        );
     
-    # state %pod_cache;
-    # my $html = $pod_cache{ $page };
+    # first loop gathers headers for possible linking
+    my %header_map;
+    foreach my $pod ( keys %POD_FILES ) {
+        my $file   = $POD_FILES{ $pod };
+        my $parser = Pod::POM->new();
+        my $pom    = $parser->parse_file( $file );
+        
+        my $add_section = sub {
+                my $title = shift;
+                my $id    = Pod::POM::View::InlineHTML::generate_id( $title );
+                $header_map{ $title } = "${pod}";
+            };
+        
+        foreach my $section ( $pom->head1() ) {
+            my $title = $section->title();
+            my $id    = Pod::POM::View::InlineHTML::generate_id( $title );
+            $header_map{ $title } = "${pod}";
+            
+            foreach my $subsection ( $section->head2() ) {
+                my $title = $subsection->title();
+                &$add_section( $title );
+                
+                foreach my $subsubsection ( $section->head3() ) {
+                    my $title = $subsubsection->title();
+                    &$add_section( $title );
+                }
+            }
+        }
+    }
     
-    # if ( !defined $html ) {
-        my %PAGES = (
-                default        => 'lib/CSS/Prepare/Manual/Introduction.pod',
-                deploying      => 'lib/CSS/Prepare/Manual/Deploying.pod',
-                features       => 'lib/CSS/Prepare/Manual/Features.pod',
-                hacks          => 'lib/CSS/Prepare/Manual/Hacks.pod',
-                hierarchy      => 'lib/CSS/Prepare/Manual/Hierarchy.pod',
-                optimising     => 'lib/CSS/Prepare/Manual/Optimising.pod',
-                'command-line' => 'bin/cssprepare',
-            );
-        my $file   = $PAGES{ $page }
-                     // $PAGES{'default'};
+    # second loop renders HTML
+    my $viewer = Pod::POM::View::InlineHTML->new(
+            header_level => 2,
+            link_map     => \%header_map,
+        );
+    my %html;
+    foreach my $pod ( keys %POD_FILES ) {
+        my $file   = $POD_FILES{ $pod };
+        my $parser = Pod::POM->new();
+        my $pom    = $parser->parse_file( $file );
+        
+        $html{ $pod } = $viewer->print( $pom );
+    }
+    
+    # add any other extended syntax provided by plugins
+    my $preparer = CSS::Prepare->new( features => 1 );
+    my $viewer = Pod::POM::View::InlineHTML->new( header_level => 3 );
+    while ( my ( $module, $file ) = each %INC ) {
+        next unless $module =~ m{Prepare/Plugin};
         
         my $parser = Pod::POM->new();
         my $pom    = $parser->parse_file( $file );
-        my $viewer = Pod::POM::View::InlineHTML->new( header_level => 2 );
         
-        my $html = $viewer->print( $pom );
-        # $pod_cache{ $page } = $html;
-    # }
+        $html{'extended-syntax'} .= $viewer->print( $pom );
+    }
     
-    return $html;
+    return %html;
 }
 
 my $problems_page = sub { return render( 'problems.html', {} ); };
@@ -216,15 +260,31 @@ my $documentation_page = sub {
     my $environment = shift;
     my $request     = Plack::Request->new( $environment );
     
+    # array not hash as the output order is significant
+    my @subnav = (
+            'introduction'    => 'Introduction',
+            'hacks'           => 'Supported CSS hacks',
+            'features'        => 'Features of CSS::Prepare',
+            'extended-syntax' => 'Extended CSS syntax',
+            'deploying'       => 'Deploying CSS',
+            'optimising'      => 'Optimising CSS',
+            'hierarchy'       => 'Using hierarchical CSS',
+            'command-line'    => 'Command-line tool',
+        );
+    my %pages = @subnav;
+    
     my( undef, $page ) = split m{/}, $request->path_info;
-    $page = 'introduction'
+    return redirect( '/documentation/introduction' )
         unless $page;
+    return render_404()
+        unless defined $pages{ $page };
     
     return render(
             'documentation.html',
             {
                 page    => $page,
-                content => pod_to_html( $page ),
+                pods    => \%pod_html,
+                subnav  => \@subnav,
             }
         );
 };

@@ -257,13 +257,19 @@ code .line:before {
 }
 
 #page h2,
-#page h3 {
-    font-size:              1.5em;
+#page h3,
+#page h4 {
     font-weight:            normal;
     margin-bottom:          0;
 }
+#page h2 {
+    font-size:              1.5em;
+}
 #page h3 {
     font-size:              1.2em;
+}
+#page h4 {
+    font-size:              1em;
 }
 #page p {
     margin-top:             0;
@@ -293,6 +299,14 @@ code .line:before {
 
 #page.pod {
     padding:                0 2em;
+}
+#page.pod h3 {
+    margin-top:             1.667em;    /* 1.2em * 1.667 = 2em */
+    font-weight:            bold;
+}
+#page.pod h4 {
+    margin-top:             2em;
+    font-weight:            bold;
 }
 #page.pod h2 {
     margin-left:            -1.333em;   /* 1.5em * 1.333 = 2em */

@@ -69,7 +69,8 @@ sub process_stylesheet {
         
         $output = $preparer->output_as_string( @structure );
         
-        status( "\r  Time taken " . tv_interval( $start ) . " seconds" )
+        my $interval = tv_interval( $start );
+        status( "\r  Time taken ${interval} seconds" );
     }
     
     return ( $output, $saving, $error_count );
@@ -157,7 +158,10 @@ sub status {
     
     if ( !defined $options{'quiet'} ) {
         STDERR->autoflush(1);
-        print STDERR ( $temp ? "\r" : '' ) . $text;
+        print STDERR
+            ( $temp ? "\r" : '' )
+            . $text
+            . ( $temp ? '' : "\n" );
     }
 }
 

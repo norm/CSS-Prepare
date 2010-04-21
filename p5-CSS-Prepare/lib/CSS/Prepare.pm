@@ -1553,14 +1553,9 @@ sub status {
 }
 sub status_to_stderr {
     my $text = shift;
-    my $line = shift;
+    my $temp = shift;
     
-    if ( defined $line ) {
-        print STDERR "\r${text}";
-    }
-    else {
-        say STDERR $text;
-    }
+    print STDERR ( $temp ? "\r" : '' ) . $text;
 }
 
 1;

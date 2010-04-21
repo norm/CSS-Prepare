@@ -153,17 +153,11 @@ sub get_prepare_arguments {
 
 sub status {
     my $text = shift;
-    my $line = shift;
+    my $temp = shift;
     
     if ( !defined $options{'quiet'} ) {
         STDERR->autoflush(1);
-        
-        if ( defined $line ) {
-            print STDERR "\r${text}";
-        }
-        else {
-            say STDERR $text;
-        }
+        print STDERR ( $temp ? "\r" : '' ) . $text;
     }
 }
 

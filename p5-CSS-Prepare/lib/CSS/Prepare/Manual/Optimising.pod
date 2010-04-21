@@ -91,3 +91,17 @@ output as:
      body{background:#fff;}
     }
     body{background:#ccc;color:#000;}
+
+=head2 Suboptimal optimisation
+
+CSS::Prepare tries very hard to optimise CSS to produce the biggest savings by
+combining properties and selectors. The exhaustive search, however, can take
+some time (eg. nearly 13 minutes for a 260k stylesheet with 14,000
+declarations on a 2.4GHz Intel MacBook Pro), as it repeatedly compares the
+possible savings by combining different properties, rather than just combining
+the most obvious targets.
+
+After a certain amount of time (by default, ten seconds) has elapsed whilst
+optimising a style sheet, CSS::Prepare will switch to a much faster, less
+exhaustive method for combining rules that does just combine the most obvious
+targets.

@@ -1558,3 +1558,128 @@ sub status_to_stderr {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+B<CSS::Prepare> - pre-process cascading style sheets to make them ready for
+deployment
+
+=head1 SYNOPSIS
+
+In your code:
+
+    my $preparer = CSS::Prepare->new( %opts );
+    foreach my $stylesheet ( @ARGV ) {
+        print process_stylesheet( $stylesheet );
+    }
+
+In your build process:
+
+    % cssprepare -e -o styles/*.css > styles/combined.css
+
+=head1 OPTIONS
+
+The B<new()> method accepts a hash as arguments to control aspects of the
+eventual output.
+
+=over
+
+=item hacks I<(boolean)>
+
+Switch support for various CSS "hacks" on or off. See L<Supported CSS hacks>
+in L<CSS::Prepare::Manual>. Defaults to I<true>.
+
+=item extended I<(boolean)>
+
+Switch support for extensions to the CSS syntax, which are incompatible with
+the CSS specification (but can make life easier). See L<Extending the CSS
+syntax> in L<CSS::Prepare::Manual>. Defaults to I<false>.
+
+=item suboptimal_threshold I<(int)>
+
+Number of seconds that CSS::Prepare will spend optimising each CSS fragment in
+the more accurate way before switching to a less accurate but much faster
+algorithm. See <Optimising CSS> in L<CSS::Prepare::Manual>. Defaults to I<10>.
+
+If set to zero, it will never switch to the suboptimal method. Do note that
+large style sheets with thousands of rule sets can take several minutes to
+process fully, and the extra savings are quite minimal after the first few
+seconds have elapsed.
+
+=item http_timeout I<(int)>
+
+Number of seconds that CSS::Prepare will wait whilst trying to fetch a remote
+style sheet before giving up. Defaults to I<30>.
+
+=item pretty I<(boolean)>
+
+Switch to support pretty-printed output rather than highly compressed.
+Defaults to I<false>.
+
+Note that this only affects the amount of white space used in the output. All
+comments and invalid rule sets and declarations from the source style sheets
+are still dropped before output.
+
+=item status I<(callback)>
+
+Override how status reports are handled. The callback subroutine is given two
+parameters: the text to be printed and a flag to say if it is expected to be a
+temporary line (ie. can be overwritten).
+
+The default callback is:
+
+    sub status_to_stderr {
+        my $text = shift;
+        my $temp = shift;
+        
+        print STDERR ( $temp ? "\r" : '' ) . $text;
+    }
+
+Status reports can be silenced by providing a null callback, like so:
+
+    my $preparer = CSS::Prepare->new( status => sub {} );
+
+=back
+
+=head1 REQUIREMENTS
+
+The only fixed requirement CSS::Prepare has is that the version of the perl
+interpreter must be at least 5.10.
+
+If you wish to use C<@import url(...);> in your style sheets you will need
+one of L<HTTP::Lite> or L<LWP::UserAgent> installed.
+
+Some parts of the extended CSS syntax are implemented as optional plugins.
+For these to work you will need L<Module::Pluggable> installed.
+
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<cssprepare> (command-line script)
+
+=item *
+
+L<CSS::Prepare::Manual>
+
+=item *
+
+CSS::Prepare online: L<http://cssprepare.com/>
+
+=back
+
+=head1 AUTHOR
+
+Mark Norman Francis, L<norm@cackhanded.net>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2010 Mark Norman Francis.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+

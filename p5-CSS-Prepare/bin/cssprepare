@@ -199,7 +199,7 @@ characters.
 
 =item -b F<dir>, --hierarchy-base=F<dir>
 
-Use F<dir> as the hierarchy base. See B<Using hierarchies> for more details.
+Use F<dir> as the hierarchy base. See L<Using hierarchical CSS> for more details.
 
 =item -d F<dir>, --output-dir=F<dir>
 
@@ -207,29 +207,30 @@ Automatically create a file in F<dir> with the CSS output. This filename will
 be based upon the first five characters of the SHA1 checksum of the content.
 This means repeated runs of B<cssprepare> on the same files will only generate
 one output file, which is useful when using B<cssprepare> as part of a
-deployment script. See B<Deploying CSS> for more details.
+deployment script. See L<Deploying CSS> for more details.
 
 =item -f, --enable-features
 
 Turn on the extra features that cssprepare uses when parsing CSS. See
-B<Extending the CSS syntax> for details.
+L<Extending the CSS syntax> for details.
 
 =item -h, --disable-hacks
 
-Turn off support for the "star" and "underscore" CSS hacks, and the "zoom"
-and "filter" properties (the most common of the work-arounds needed to deal
-with earlier version of Internet Explorer). See B<CSS hacks> for more details.
+Turn off support for the "star" and "underscore" CSS hacks, and the "zoom" and
+"filter" properties (the most common of the work-arounds needed to deal with
+earlier version of Internet Explorer). See L<Supported CSS hacks> for more
+details.
 
 =item -l F<dir>, --location=F<dir>
 
-Set the hierarchy location to F<dir>. See B<Using hierarchies> for more 
+Set the hierarchy location to F<dir>. See L<Using hierarchical CSS> for more
 details.
 
 =item -o, --optimise
 
-Attempt to optimise the structure of the CSS before outputting it. 
-B<Warning:> this can break your CSS. See B<Optimising CSS> for a longer
-explanation as to why.
+Attempt to optimise the structure of the CSS before outputting it. B<Warning:>
+this can break your CSS. See L<Optimising CSS> for a longer explanation as to
+why.
 
 =item -q, --quiet
 
@@ -268,17 +269,27 @@ interpreter must be at least 5.10.
 If you wish to use C<@import url(...);> in your style sheets you will need
 one of L<HTTP::Lite> or L<LWP::UserAgent> installed.
 
-If you wish to run the test suite, you will need L<Data::Dumper::Concise>
-installed.
+Some parts of the extended CSS syntax are implemented as optional plugins. 
+For these to work you will need L<Module::Pluggable> installed.
 
 =head1 SEE ALSO
 
-L<CSS::Prepare::Introduction> and L<CSS::Prepare::Manual>.
+=over
 
-CSS::Prepare online -- L<http://cssprepare.com/>
+=item *
 
-Yahoo! Yslow rules on content delivery networks -- 
+L<CSS::Prepare::Manual>.
+
+=item *
+
+CSS::Prepare online: L<http://cssprepare.com/>
+
+=item * 
+
+Yahoo! Yslow rules on content delivery networks:
 L<http://developer.yahoo.com/performance/rules.html#cdn>.
+
+=back
 
 =head1 AUTHOR
 

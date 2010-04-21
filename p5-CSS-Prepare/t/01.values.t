@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 473;
+use Test::More  tests => 478;
 
 use CSS::Prepare::Property::Values;
 
@@ -122,6 +122,7 @@ use CSS::Prepare::Property::Values;
             'left', 'center', 'centre', 'right', 'top', 'bottom',
             'left center', 'center center', 'centre centre',
             'left top', 'top left', 'top right',
+            'bottom left', 'bottom right', 'top left', 'top right',
             '50%', '10px', '50% 50%', '10px top', 'left 50%',
             'inherit',
         );
@@ -131,6 +132,8 @@ use CSS::Prepare::Property::Values;
     }
     ok( ! is_background_position_value( '50% left' ),
         "not background-position: '50% left'" );
+    ok( ! is_background_position_value( 'bottom 50%' ),
+        "not background-position: 'bottom 50%'" );
 }
 
 # test border values

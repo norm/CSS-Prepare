@@ -232,17 +232,17 @@ our $background_position_value = qr{
                     )?
                 )
             |
-                (?: $background_positions_vertical )
+                (?:
+                    $background_positions_horizontal \s+
+                    $background_positions_vertical
+                )
             |
                 (?:
-                      $background_positions_horizontal
-                    | $background_positions_vertical
+                    $background_positions_vertical \s+
+                    $background_positions_horizontal
                 )
-                \s+
-                (?:
-                      $background_positions_horizontal
-                    | $background_positions_vertical
-                )
+            |
+                (?: $background_positions_vertical )
             |
                 inherit
         )

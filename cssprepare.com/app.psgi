@@ -241,7 +241,7 @@ sub render_pods {
     }
     
     # add any other extended syntax provided by plugins
-    my $preparer = CSS::Prepare->new( features => 1 );
+    my $preparer = CSS::Prepare->new( extended => 1 );
     my $viewer = Pod::POM::View::InlineHTML->new( header_level => 3 );
     while ( my ( $module, $file ) = each %INC ) {
         next unless $module =~ m{Prepare/Plugin};

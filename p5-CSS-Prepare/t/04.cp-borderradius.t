@@ -3,8 +3,8 @@ use Test::More  tests => 10;
 
 use CSS::Prepare;
 
-my $preparer_concise = CSS::Prepare->new( features => 1, );
-my $preparer_pretty  = CSS::Prepare->new( features => 1, pretty => 1 );
+my $preparer_concise = CSS::Prepare->new( extended => 1, );
+my $preparer_pretty  = CSS::Prepare->new( extended => 1, pretty => 1 );
 my( $css, @structure, $output );
 
 

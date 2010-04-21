@@ -10,8 +10,8 @@ local $Data::Dumper::Deparse   = 1;
 local $Data::Dumper::Quotekeys = 0;
 local $Data::Dumper::Sortkeys  = 1;
 
-my $preparer_with    = CSS::Prepare->new( features => 1 );
-my $preparer_without = CSS::Prepare->new( features => 0 );
+my $preparer_with    = CSS::Prepare->new( extended => 1 );
+my $preparer_without = CSS::Prepare->new( extended => 0 );
 my( $css, @structure, @parsed );
 
 

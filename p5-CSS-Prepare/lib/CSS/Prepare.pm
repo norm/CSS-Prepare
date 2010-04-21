@@ -49,13 +49,12 @@ sub new {
     my %args  = @_;
     
     my $self = {
-            hacks      => 1,
-            features   => 0,
-            suboptimal => 10,
-            timeout    => 30,
-            css3       => 0,
-            pretty     => 0,
-            status     => \&status_to_stderr,
+            hacks                => 1,
+            extended             => 0,
+            suboptimal_threshold => 10,
+            http_timeout         => 30,
+            pretty               => 0,
+            status               => \&status_to_stderr,
             %args
         };
     bless $self, $class;
@@ -78,7 +77,7 @@ sub new {
     }
     
     # check for ability to use plugins
-    if ( $self->support_features() ) {
+    if ( $self->support_extended_syntax() ) {
         eval "use Module::Pluggable require => 1;";
         unless ($@) {
             foreach my $plugin ( $self->plugins() ) {
@@ -103,33 +102,33 @@ sub support_hacks {
     my $self = shift;
     return $self->{'hacks'};
 }
-sub get_features {
+sub get_extended {
     my $self = shift;
-    return $self->{'features'};
+    return $self->{'extended'};
 }
-sub set_features {
+sub set_extended {
     my $self     = shift;
-    my $features = shift // 0;
+    my $extended = shift // 0;
     
-    $self->{'features'} = $features;
+    $self->{'extended'} = $extended;
 }
-sub support_features {
+sub support_extended_syntax {
     my $self = shift;
-    return $self->{'features'};
+    return $self->{'extended'};
 }
-sub get_suboptimal {
+sub get_suboptimal_threshold {
     my $self = shift;
-    return $self->{'suboptimal'};
+    return $self->{'suboptimal_threshold'};
 }
-sub set_suboptimal {
+sub set_suboptimal_threshold {
     my $self     = shift;
-    my $features = shift // 0;
+    my $suboptimal_threshold = shift // 0;
     
-    $self->{'suboptimal'} = $features;
+    $self->{'suboptimal_threshold'} = $suboptimal_threshold;
 }
 sub suboptimal_threshold {
     my $self = shift;
-    return $self->{'suboptimal'};
+    return $self->{'suboptimal_threshold'};
 }
 sub get_pretty {
     my $self = shift;
@@ -167,12 +166,12 @@ sub get_base_url {
 }
 sub get_http_timeout {
     my $self = shift;
-    return $self->{'timeout'};
+    return $self->{'http_timeout'};
 }
 sub set_http_timeout {
     my $self = shift;
     
-    $self->{'timeout'} = shift;
+    $self->{'http_timeout'} = shift;
 }
 sub has_http {
     my $self = shift;
@@ -643,7 +642,7 @@ sub strip_comments {
     $string =~ s{ <!-- }{}gsx;
     $string =~ s{ --> }{}gsx;
     
-    if ( $self->support_features ) {
+    if ( $self->support_extended_syntax ) {
         # remove line-level comments
         $string =~ s{ \s // [^\n]+ }{}gmx;
     }
@@ -1544,12 +1543,12 @@ sub is_valid_selector {
 sub status {
     my $self = shift;
     my $text = shift;
-    my $line = shift;
+    my $temp = shift;
     
     no strict 'refs';
     
     my $status = $self->{'status'};
-    &$status( $text, $line );
+    &$status( $text, $temp );
 }
 sub status_to_stderr {
     my $text = shift;

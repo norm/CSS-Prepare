@@ -100,7 +100,7 @@ sub get_options_or_exit {
                   use-all-shasum|a
                   hierarchy-base|b=s
                       output-dir|d=s
-                 enable-features|f
+               extendeded-syntax|e
                    disable-hacks|h
                         location|l=s
                         optimise|o
@@ -134,17 +134,17 @@ sub get_prepare_arguments {
     my %getopts = @_;
     
     my %args;
-    $args{'features'} = 1
-        if defined $getopts{'enable-features'};
+    $args{'extended'} = 1
+        if defined $getopts{'extended-syntax'};
     $args{'pretty'} = 1
         if defined $getopts{'pretty'};
     $args{'hacks'} = 0
         if defined $getopts{'disable-hacks'};
     $args{'base_directory'} = $getopts{'hierarchy-base'}
         if defined $getopts{'hierarchy-base'};
-    $args{'timeout'} = $getopts{'timeout'}
+    $args{'http_timeout'} = $getopts{'timeout'}
         if defined $getopts{'timeout'};
-    $args{'suboptimal'} = $getopts{'suboptimal-threshold'}
+    $args{'suboptimal_threshold'} = $getopts{'suboptimal-threshold'}
         if defined $getopts{'suboptimal-threshold'};
     $args{'status'} = \&status;
     
@@ -203,7 +203,7 @@ This means repeated runs of B<cssprepare> on the same files will only generate
 one output file, which is useful when using B<cssprepare> as part of a
 deployment script. See L<Deploying CSS> for more details.
 
-=item -f, --enable-features
+=item -e, --extended-syntax
 
 Turn on the extra features that cssprepare uses when parsing CSS. See
 L<Extending the CSS syntax> for details.

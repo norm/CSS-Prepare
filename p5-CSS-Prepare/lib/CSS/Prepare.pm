@@ -539,26 +539,42 @@ sub parse {
     my @split = $self->split_into_statements( $string, $location );
     
     my @statements;
+    my @appended;
     foreach my $statement ( @split ) {
         my $type = $statement->{'type'};
         
-        if ( 'import' eq $type ) {
+        if ( 'appended' eq $type ) {
+            push @statements, @{$statement->{'content'}};
+        }
+        elsif ( 'import' eq $type ) {
             push @statements, $statement;
         }
         elsif ( 'rulesets' eq $type ) {
-            my @rule_sets = $self->parse_rule_sets( $statement->{'content'} );
+            my ( $rule_sets, $appended )
+                = $self->parse_rule_sets( $statement->{'content'} );
             
-            push @statements, @rule_sets;
+            push @statements, @$rule_sets;
+            push @split, {
+                    type => 'appended',
+                    content => $appended,
+                }
+                if defined $appended;
         }
         elsif ( 'at-media' eq $type ) {
-            my @rule_sets = $self->parse_rule_sets( $statement->{'content'} );
+            my ( $rule_sets, $appended )
+                = $self->parse_rule_sets( $statement->{'content'} );
             
-            push @{$statement->{'blocks'}}, @rule_sets;
+            push @{$statement->{'blocks'}}, @$rule_sets;
             delete $statement->{'content'};
             push @statements, $statement;
+            push @split, {
+                    type => 'appended',
+                    content => $appended,
+                }
+                if defined $appended;
         }
         else {
-            die "unknown type";
+            die "unknown type '${type}'";
         }
     }
     
@@ -575,6 +591,7 @@ sub parse_rule_sets {
         = split_into_declaration_blocks( $styles );
     
     my @rule_sets;
+    my @appended;
     foreach my $block ( @declaration_blocks ) {
         my $type           = $block->{'type'} // '';
         my $preserve_as_is = defined $block->{'errors'}
@@ -591,15 +608,20 @@ sub parse_rule_sets {
             
             my $declarations       = {};
             my $declaration_errors = [];
+            my $append_blocks;
             
             # CSS2.1 4.1.6: "the whole statement should be ignored if
             # there is an error anywhere in the selector"
             if ( ! @$selectors_errors ) {
                 # extract from the string a data structure of
                 # declarations and their properties
-                ( $declarations, $declaration_errors )
-                    = $self->parse_declaration_block( $block->{'block'} );
+                ( $declarations, $declaration_errors, $append_blocks )
+                    = $self->parse_declaration_block( $block->{'block'},
+                                                      $selectors );
             }
+            
+            push @appended, @$append_blocks
+                if defined @$append_blocks;
             
             my $is_empty = !@$selectors_errors
                            && !@$declaration_errors
@@ -618,7 +640,7 @@ sub parse_rule_sets {
         }
     }
     
-    return @rule_sets;
+    return \@rule_sets, \@appended;
 }
 sub strip_charset {
     my $string = shift;
@@ -933,20 +955,22 @@ sub parse_selectors {
     return \@selectors, [];
 }
 sub parse_declaration_block {
-    my $self  = shift;
-    my $block = shift;
+    my $self      = shift;
+    my $block     = shift;
+    my $selectors = shift;
     
     # make '{' and '}' back into actual brackets again
     $block = unescape_braces( $block );
     
     my( $remainder, @declarations ) = get_declarations_from_block( $block );
-    @declarations = $self->expand_declarations( @declarations );
+    my( $declarations, $append_blocks )
+        = $self->expand_declarations( \@declarations, $selectors );
     
     my %canonical;
     my @errors;
     
     DECLARATION:
-    foreach my $declaration ( @declarations ) {
+    foreach my $declaration ( @$declarations ) {
         my %match = %{$declaration};
         
         my $star_hack       = 0;
@@ -1009,7 +1033,7 @@ sub parse_declaration_block {
             };
     }
     
-    return \%canonical, \@errors;
+    return \%canonical, \@errors, \@$append_blocks;
 }
 sub get_declarations_from_block {
     my $block = shift;
@@ -1064,12 +1088,14 @@ sub parse_declaration {
 }
 sub expand_declarations {
     my $self         = shift;
-    my @declarations = @_;
+    my $declarations = shift;
+    my $selectors    = shift;
     
     my @filtered;
+    my @append;
     if ( $self->has_plugins ) {
         DECLARATION:
-        foreach my $declaration ( @declarations ) {
+        foreach my $declaration ( @$declarations ) {
             my $property = $declaration->{'property'};
             my $value    = $declaration->{'value'};
             
@@ -1078,12 +1104,18 @@ sub expand_declarations {
                 no strict 'refs';
                 
                 my $try_with = "${plugin}::expand";
-                my $filtered = &$try_with( $self, $property, $value );
+                my( $filtered, $new_rulesets, $new_chunks )
+                    = &$try_with( $self, $property, $value, $selectors );
                 
-                if ( defined $filtered ) {
-                    push @filtered, @{$filtered};
-                    next DECLARATION;
-                }
+                push @filtered, @{$filtered}
+                    if defined $filtered;
+                push @$declarations, @$new_rulesets
+                    if defined $new_rulesets;
+                push @append, @$new_chunks
+                    if defined $new_chunks;
+                
+                next DECLARATION
+                    if defined $filtered;
             }
             
             # if we get here, no plugin has dealt with the property
@@ -1091,10 +1123,10 @@ sub expand_declarations {
         }
     }
     else {
-        @filtered = @declarations;
+        @filtered = @$declarations;
     }
     
-    return @filtered;
+    return \@filtered, \@append;
 }
 
 sub optimise {

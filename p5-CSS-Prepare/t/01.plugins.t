@@ -20,21 +20,16 @@ my( $css, @structure, @parsed, $output );
 
 # detect plugins working
 $css = <<CSS;
-div {
-    -cp-test-plugins: please;
-    -cp-test-plugins: thanks;
-}
+div { -cp-test-plugins: please; }
 CSS
 
 @structure = (
         {
-            original  => "\n    -cp-test-plugins: please;\n"
-                         . "    -cp-test-plugins: thanks;\n",
+            original  => ' -cp-test-plugins: please; ',
             errors    => [],
             selectors => [ 'div' ],
             block     => {
                 '-cp-test-plugins' => 'please',
-                '-cp-test-plugins' => 'thanks',
             },
         },
     );
@@ -44,8 +39,7 @@ is_deeply( \@structure, \@parsed )
 
 @structure = (
         {
-            original  => "\n    -cp-test-plugins: please;\n"
-                         . "    -cp-test-plugins: thanks;\n",
+            original  => ' -cp-test-plugins: please; ',
             errors    => [
                 {
                     error => "invalid plugin value 'please'"
@@ -54,6 +48,10 @@ is_deeply( \@structure, \@parsed )
             selectors => [ 'div' ],
             block     => { 'plugin' => 'thanks', },
         },
+        {
+            selectors => [ 'div' ],
+            block     => { 'plugin' => 'appended', },
+        },
     );
 @parsed = $preparer_with->parse_string( $css );
 is_deeply( \@structure, \@parsed )
@@ -61,6 +59,7 @@ is_deeply( \@structure, \@parsed )
 
 $css = <<CSS;
 div{plugin:thanks;}
+div{plugin:appended;}
 CSS
 $output = $preparer_with->output_as_string( @structure );
 ok( $output eq $css )
@@ -69,6 +68,9 @@ ok( $output eq $css )
 $css = <<CSS;
 div {
     plugin:                 thanks;
+}
+div {
+    plugin:                 appended;
 }
 CSS
 $output = $preparer_pretty->output_as_string( @structure );

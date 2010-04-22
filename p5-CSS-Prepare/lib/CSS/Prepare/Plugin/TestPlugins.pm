@@ -1,14 +1,22 @@
 package CSS::Prepare::Plugin::TestPlugins;
 
 sub expand {
-    my $self     = shift;
-    my $property = shift;
-    my $value    = shift;
+    my $self      = shift;
+    my $property  = shift;
+    my $value     = shift;
+    my $selectors = shift;
     
     return
         unless $property eq '-cp-test-plugins';
     
-    return [{ property => 'plugin', value => $value }];
+    # test replacing, appending to the current block
+    # and appending an entirely new block
+    return [{ property => 'plugin', value => $value }],
+           [{ property => 'plugin', value => 'thanks' }],
+           [{
+                block => { 'plugin' => 'appended' },
+                selectors => $selectors,
+           }],
 }
 sub parse {
     my $self        = shift;

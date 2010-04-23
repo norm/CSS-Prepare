@@ -360,13 +360,23 @@ sub output_block_as_string {
             return $a_hack ? 1 : -1
                 if 1 == $hack_count;
             
+            # sort properties with vendor prefixes before
+            # their matching properties
+            $a =~ m{^ \s* ( [_-] \w+ [-] )? ( .* ) $}sx;
+            my $a_vendor = defined $1;
+            $b =~ m{^ \s* ( [_-] \w+ [-] )? ( .* ) $}sx;
+            my $b_vendor = defined $1;
+            my $vendors = ( $a_vendor ) + ( $b_vendor );
+            return $a_vendor ? -1 : 1
+                if 1 == $vendors;
+
             # sort more-specific properties after less-specific properties
             $a =~ m{^ \s* ( [^:]+ ) : }x;
-            my $a_property = $1;
+            my $a_declaration = $1;
             $b =~ m{^ \s* ( [^:]+ ) : }x;
-            my $b_property = $1;
-            my $a_specifics = ( $a_property =~ tr{-}{-} );
-            my $b_specifics = ( $b_property =~ tr{-}{-} );
+            my $b_declaration = $1;
+            my $a_specifics = ( $a_declaration =~ tr{-}{-} );
+            my $b_specifics = ( $b_declaration =~ tr{-}{-} );
             return $a_specifics <=> $b_specifics
                 if $a_specifics != $b_specifics;
             

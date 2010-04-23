@@ -21,7 +21,7 @@ my( $css, @structure, $output );
             },
         );
     $css = <<CSS;
-div{border-top-right-radius:5px;-moz-border-radius-topright:5px;-webkit-border-top-right-radius:5px;}
+div{-moz-border-radius-topright:5px;-webkit-border-top-right-radius:5px;border-top-right-radius:5px;}
 CSS
     
     $output = $preparer_concise->output_as_string( @structure );
@@ -30,9 +30,9 @@ CSS
     
     $css = <<CSS;
 div {
-    border-top-right-radius: 5px;
     -moz-border-radius-topright: 5px;
     -webkit-border-top-right-radius: 5px;
+    border-top-right-radius: 5px;
 }
 CSS
     $output = $preparer_pretty->output_as_string( @structure );
@@ -54,7 +54,7 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-top-right-radius:5px !important;-moz-border-radius-topright:5px !important;-webkit-border-top-right-radius:5px !important;}
+div{-moz-border-radius-topright:5px !important;-webkit-border-top-right-radius:5px !important;border-top-right-radius:5px !important;}
 CSS
 
     $output = $preparer_concise->output_as_string( @structure );
@@ -63,11 +63,11 @@ CSS
     
     $css = <<CSS;
 div {
-    border-top-right-radius: 5px
-                            !important;
     -moz-border-radius-topright: 5px
                             !important;
     -webkit-border-top-right-radius: 5px
+                            !important;
+    border-top-right-radius: 5px
                             !important;
 }
 CSS
@@ -98,7 +98,7 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;}
+div{-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;}
 CSS
 
     $output = $preparer_concise->output_as_string( @structure );
@@ -107,9 +107,9 @@ CSS
     
     $css = <<CSS;
 div {
-    border-radius:          5px;
     -moz-border-radius:     5px;
     -webkit-border-radius:  5px;
+    border-radius:          5px;
 }
 CSS
     $output = $preparer_pretty->output_as_string( @structure );
@@ -141,7 +141,7 @@ CSS
             },
         );
     $css = <<CSS;
-div{border-radius:2em 1em 4em / 0.5em 3em;-moz-border-radius:2em 1em 4em / 0.5em 3em;-webkit-border-radius:2em 1em 4em / 0.5em 3em;}
+div{-moz-border-radius:2em 1em 4em / 0.5em 3em;-webkit-border-radius:2em 1em 4em / 0.5em 3em;border-radius:2em 1em 4em / 0.5em 3em;}
 CSS
 
     $output = $preparer_concise->output_as_string( @structure );
@@ -150,9 +150,9 @@ CSS
     
     $css = <<CSS;
 div {
-    border-radius:          2em 1em 4em / 0.5em 3em;
     -moz-border-radius:     2em 1em 4em / 0.5em 3em;
     -webkit-border-radius:  2em 1em 4em / 0.5em 3em;
+    border-radius:          2em 1em 4em / 0.5em 3em;
 }
 CSS
     $output = $preparer_pretty->output_as_string( @structure );
@@ -183,7 +183,7 @@ CSS
         );
     
     $css = <<CSS;
-div{border-radius:0 5px 5px;-moz-border-radius:0 5px 5px;-webkit-border-radius:0 5px 5px;}
+div{-moz-border-radius:0 5px 5px;-webkit-border-radius:0 5px 5px;border-radius:0 5px 5px;}
 CSS
 
     $output = $preparer_concise->output_as_string( @structure );
@@ -192,9 +192,9 @@ CSS
     
     $css = <<CSS;
 div {
-    border-radius:          0 5px 5px;
     -moz-border-radius:     0 5px 5px;
     -webkit-border-radius:  0 5px 5px;
+    border-radius:          0 5px 5px;
 }
 CSS
     $output = $preparer_pretty->output_as_string( @structure );

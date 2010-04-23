@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 27;
+use Test::More  tests => 28;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -580,6 +580,36 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "\@media block was:\n" . Dumper \@parsed;
+}
+
+# CSS3 media queries
+{
+    $css = <<CSS;
+\@media screen and ( -webkit-min-device-pixel-ratio: 0 ) {
+    h1 { color: red; }
+}
+CSS
+    @structure = (
+            {
+                type      => 'at-media',
+                query
+                    => 'screen and ( -webkit-min-device-pixel-ratio: 0 )',
+                blocks    => [
+                    {
+                        original  => ' color: red; ',
+                        selectors => [ 'h1' ],
+                        errors    => [],
+                        block     => {
+                            'color' => 'red',
+                        },
+                    },
+                ],
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "CSS3 \@media query was:\n" . Dumper \@parsed;
 }
 
 # not a stylesheet

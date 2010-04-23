@@ -2,6 +2,7 @@ package CSS::Prepare;
 
 use Modern::Perl;
 
+use CSS::Prepare::CSSGrammar;
 use CSS::Prepare::Property::Background;
 use CSS::Prepare::Property::Border;
 use CSS::Prepare::Property::BorderRadius;
@@ -745,15 +746,15 @@ sub split_into_statements {
     my $splitter = qr{
             ^
             ( .*? )                 # $1: everything before the media block
-            \@media \s+
-            ( [^ \{ ]+ )            # $2: the media query
-            \s*
+            \@media \s+ (           # $2: the media query
+                $grammar_media_query_list
+            ) \s*
             (                       # $3: (used in the nested expression)
                 \{ (?:              # the content of the media block,
-                    (?> [^\{\}]+ )  # which is a nested recursive match
-                    |               # ...
-                    (?3)            # <-- triggered here "(?3)" means use $3
-                )* \}               # matching again
+                    (?> [^\{\}]+ )  # which is a nested recursive match...
+                    |               # 
+                    (?3)            # ...triggered here ("(?3)" means use $3
+                )* \}               # matching again)
             )
         }sx;
     

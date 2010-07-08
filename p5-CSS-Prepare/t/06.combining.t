@@ -1,7 +1,13 @@
 use Modern::Perl;
-use Test::More  tests => 9;
+use Test::More;
 
 use CSS::Prepare;
+
+if ( $ENV{'OFFLINE'} ) {
+    plan skip_all => 'Not online.';
+    exit;
+}
+plan tests => 9;
 
 my $preparer = CSS::Prepare->new( status => sub{} );
 my( $input, $css, @parsed, @structure, $output );

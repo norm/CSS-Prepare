@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -9,6 +9,12 @@ local $Data::Dumper::Useqq     = 1;
 local $Data::Dumper::Deparse   = 1;
 local $Data::Dumper::Quotekeys = 0;
 local $Data::Dumper::Sortkeys  = 1;
+
+if ( $ENV{'OFFLINE'} ) {
+    plan skip_all => 'Not online.';
+    exit;
+}
+plan tests => 2;
 
 my $preparer = CSS::Prepare->new();
 my( @structure, $output, $css );

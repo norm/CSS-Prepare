@@ -1208,9 +1208,8 @@ sub optimise_blocks {
     my @properties = $self->array_of_properties( %styles );
     # my $before     = output_as_string( @properties );
     
-    my $property_count = scalar @properties;
-    
-    $self->status( "  Found ${property_count} properties." );
+    my $declaration_count = scalar @properties;
+    $self->status( "  Found ${declaration_count} declarations." );
     
     my ( $savings, %state ) = $self->get_optimal_state( @properties );
     
@@ -1307,8 +1306,10 @@ sub get_optimal_state {
     
     my $do_suboptimal_pass = 0;
     if ( scalar keys %multiples ) {
-        my $start_time = time();
-        my $count      = 0;
+        my $start_time        = time();
+        my $time_out_after    = $start_time + $self->suboptimal_threshold;
+        my $check_for_timeout = $self->suboptimal_threshold > 0;
+        my $count             = 0;
         my %cache;
         
         MIX:
@@ -1316,9 +1317,12 @@ sub get_optimal_state {
             # adopt a faster strategy if there are too many properties
             # to deal with, or the code tends towards infinite
             # time taken to calculate the results
-            if ( time() >= ( $start_time + $self->suboptimal_threshold ) ) {
+            my $timed_out = $check_for_timeout
+                            && ( time() >= $time_out_after );
+            
+            if ( $timed_out ) {
                 $do_suboptimal_pass = 1;
-                $self->status( "  Time threshold reached -- switching "
+                $self->status( "\r  Time threshold reached -- switching "
                                . 'to suboptimal optimisation.' );
                 last MIX;
             }

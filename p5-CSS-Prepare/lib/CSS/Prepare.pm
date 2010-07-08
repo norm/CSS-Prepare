@@ -1701,6 +1701,9 @@ one of L<HTTP::Lite> or L<LWP::UserAgent> installed.
 Some parts of the extended CSS syntax are implemented as optional plugins.
 For these to work you will need L<Module::Pluggable> installed.
 
+To use the C<--server> option in the C<cssprepare> script, you will need
+L<Plack::Runner> installed.
+
 =head1 SEE ALSO
 
 =over

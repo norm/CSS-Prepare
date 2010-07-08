@@ -14,33 +14,68 @@ my %prepare_args = get_prepare_arguments( %options );
 my $preparer     = CSS::Prepare->new( %prepare_args );
 my( $output, $total_saving, $total_errors );
 
-foreach my $stylesheet ( @ARGV ) {
-    my ( $processed, $saving, $error_count ) 
-        = process_stylesheet( $stylesheet );
-    
-    $total_saving += $saving;
-    $total_errors += $error_count;
-    $output       .= $processed;
-}
-
-exit $total_errors
-    if defined $options{'warnings-only'};
-die "Exiting - has ${total_errors} error(s)\n"
-    if $options{'exit-on-error'} && $total_errors;
-
-status( "Total: ${total_saving} saved bytes"
-        . ( $total_errors ? "; ${total_errors} errors." : '' ) );
-if ( $options{'output-dir'} ) {
-    my $filename = output_stylesheet_to_directory( $output );
-    status( "Saved to $filename" );
+if ( $options{'server'} ) {
+    run_server( @ARGV );
 }
 else {
-    print $output;
+    foreach my $stylesheet ( @ARGV ) {
+        my ( $processed, $saving, $error_count )
+            = process_stylesheet( $stylesheet );
+
+        $total_saving += $saving;
+        $total_errors += $error_count;
+        $output       .= $processed;
+    }
+
+    exit $total_errors
+        if defined $options{'warnings-only'};
+    die "Exiting - has ${total_errors} error(s)\n"
+        if $options{'exit-on-error'} && $total_errors;
+
+    status( "Total: ${total_saving} saved bytes"
+            . ( $total_errors ? "; ${total_errors} errors." : '' ) );
+    if ( $options{'output-dir'} ) {
+        my $filename = output_stylesheet_to_directory( $output );
+        status( "Saved to $filename" );
+    }
+    else {
+        print $output;
+    }
 }
 
 exit;
 
 
+
+sub run_server {
+    my @args = @_;
+    
+    eval {
+        use Plack::Runner;
+    };
+    
+    my $runner = Plack::Runner->new();
+    $runner->parse_options( @args );
+    
+    my $preparer = sub {
+        foreach my $stylesheet ( @args ) {
+            my ( $processed, $saving, $error_count )
+                = process_stylesheet( $stylesheet );
+            
+            $total_saving += $saving;
+            $total_errors += $error_count;
+            $output       .= $processed;
+        }
+        
+        return [
+                200,
+                [ 'Content-Type: text/css' ],
+                [ $output ]
+            ];
+    };
+    
+    $runner->run( $preparer );
+}
 
 sub process_stylesheet {
     my $stylesheet = shift;
@@ -107,6 +142,7 @@ sub get_options_or_exit {
                         optimise|o
                           pretty|p
                            quiet|q
+                          server
             suboptimal-threshold|s=i
                          timeout|t=i
                    warnings-only|w
@@ -230,9 +266,25 @@ Attempt to optimise the structure of the CSS before outputting it. B<Warning:>
 this can break your CSS. See L<Optimising CSS> for a longer explanation as to
 why.
 
+=item --port=I<number>
+
+In conjunction with the C<--server> option, specify on which port the server
+should listen. Default is to listen on 5000.
+
 =item -q, --quiet
 
 Silence the status updates sent to STDERR during processing.
+
+=item --server
+
+Runs a local web server (using L<Plack>) to deliver the output of the combined
+style sheets, rather than saving it to a file. This allows you to develop
+your styles within the context of a web page, and see changes reflected
+immediately. Set the style sheet link to point to localhost, like so:
+
+    <link rel="stylesheet" href="http://localhost:5000/">
+
+You can change the port from 5000 with C<--port>.
 
 =item -s I<seconds>, --suboptimal-threshold=I<seconds>
 

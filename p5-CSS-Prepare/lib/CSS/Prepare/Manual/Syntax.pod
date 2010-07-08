@@ -1,5 +1,6 @@
 =head1 Extending the CSS syntax
 
+=for text 
 It is possible to turn on extensions to the CSS syntax in cssprepare with the
 C<-e> (or C<--extended-syntax>).
 

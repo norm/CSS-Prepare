@@ -1,5 +1,6 @@
 =head1 Optimising CSS
 
+=for text
 When passed the C<-o> (C<--optimise>) option, cssprepare will restructure
 your CSS to save as much bandwidth as possible before outputting it.
 

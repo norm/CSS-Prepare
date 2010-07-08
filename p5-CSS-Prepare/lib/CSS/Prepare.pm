@@ -147,8 +147,12 @@ sub pretty_output {
 }
 sub set_base_directory {
     my $self = shift;
+    my $base = shift;
     
-    $self->{'base_directory'} = shift;
+    # ensure trailing slash
+    $base =~ s{/?$}{/};
+    
+    $self->{'base_directory'} = $base;
 }
 sub get_base_directory {
     my $self = shift;
@@ -306,8 +310,8 @@ sub parse_stylesheet {
                 $target = "${1}/${stylesheet}";
             }
             else {
-                my $base = $self->get_base_directory();
-                $target = "$base/$stylesheet";
+                my $base = $self->get_base_directory() || '';
+                $target = "${base}${stylesheet}";
             }
         }
     }

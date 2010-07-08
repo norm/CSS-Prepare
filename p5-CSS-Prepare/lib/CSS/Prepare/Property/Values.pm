@@ -52,6 +52,7 @@ our @EXPORT = qw(
         is_min_height_value
         is_min_width_value
         is_offset_value
+        is_opacity_value
         is_outline_colour_value
         is_outline_style_value
         is_outline_width_value
@@ -426,6 +427,7 @@ my $min_width_value
 
 my $offset_value
     = qr{ (?: $length_value | $percentage_value | auto | inherit ) }x;
+my $opacity_value = qr{ (?: $number_value | inherit ) }x;
 our $outline_colour_value = qr{ (?: invert | inherit | $colour_value ) }x;
 our $outline_style_value = qr{ (?: $border_style_value ) }x;
 our $outline_width_value = qr{ (?: $border_width_value ) }x;
@@ -666,6 +668,16 @@ sub is_min_width_value {
 sub is_offset_value {
     my $value = shift;
     return $value =~ m{^ $offset_value $}x;
+}
+sub is_opacity_value {
+    my $value = shift;
+    
+    if ( $value =~ m{^ $opacity_value $}x ) {
+        return 1
+            if ( 0 <= $value && 1 >= $value );
+    }
+    
+    return 0;
 }
 sub is_outline_colour_value {
     my $value = shift;

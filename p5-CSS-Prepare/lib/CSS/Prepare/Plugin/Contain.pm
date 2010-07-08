@@ -152,6 +152,7 @@ sub output {
     
     return @output;
 }
+sub parse {}
 
 sub expand_vendor_properties {
     my $corner = shift;

@@ -16,6 +16,30 @@ sub parse {
     my %canonical;
     my @errors;
     
+    my $valid_property_or_error = sub {
+            my $type  = shift;
+            
+            my $sub      = "is_${type}_value";
+            my $is_valid = 0;
+            
+            eval {
+                no strict 'refs';
+                $is_valid = &$sub( $value );
+            };
+            
+            if ( $is_valid ) {
+                $canonical{ $property } = $value;
+            }
+            else {
+                push @errors, {
+                        error => "invalid ${type} value: '${value}'"
+                    };
+            }
+            return $is_valid;
+        };
+    
+    
+    
     # allow for the correct spelling of colour
     if ( $property =~ m{^ colo u? r $}x ) {
         if ( is_colour_value( $value ) ) {
@@ -27,6 +51,9 @@ sub parse {
                 };
         }
     }
+    
+    &$valid_property_or_error( 'opacity' )
+        if 'opacity' eq $property;
     
     return \%canonical, \@errors;
 }

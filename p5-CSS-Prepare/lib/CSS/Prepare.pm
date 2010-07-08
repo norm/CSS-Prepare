@@ -1079,6 +1079,7 @@ sub parse_declaration {
             $self->plugins();
     }
     
+    PARSER:
     foreach my $module ( @parsers ) {
         my $parsed_as;
         my $errors;
@@ -1090,6 +1091,9 @@ sub parse_declaration {
                 = &$module( $self, $has_hack, %declaration );
         };
         say STDERR $@ if $@;
+        
+        next PARSER
+            unless ( defined $parsed_as || defined $errors );
         
         return( $parsed_as, $errors )
             if %$parsed_as or @$errors;

@@ -136,7 +136,7 @@ sub get_options_or_exit {
                   use-all-shasum|a
                   hierarchy-base|b=s
                       output-dir|d=s
-               extendeded-syntax|e
+                 extended-syntax|e
                    disable-hacks|h
                         location|l=s
                         optimise|o

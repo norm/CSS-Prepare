@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 82;
+use Test::More  tests => 84;
 
 use CSS::Prepare;
 
@@ -30,6 +30,7 @@ my @valid_selectors = (
         'DIV', '#DIV', '.DIV', 'DIV#DIV', 'DIV.DIV', 'div #DIV div',
         'DIV:link', 'DIV:first-child', 'DIV:first-child:hover',
         'DIV + DIV', 'DIV+DIV', 'DIV > DIV', 'DIV>DIV',
+        'div ~ div', 'div~div',
     );
 my @invalid_selectors = (
         'div!', ' div! ', '!div', ' !div ',

@@ -1582,7 +1582,7 @@ sub is_valid_selector {
         }x;
     my $parts           = qr{ (?: $pseudo | $hash | $class | $attrib ) }x;
     my $simple_selector = qr{ (?: $element $parts * | $parts + ) }x;
-    my $combinator      = qr{ (?: \+ \s* | \> \s* ) }x;
+    my $combinator      = qr{ (?: [\+\~] \s* | \> \s* ) }x;
     my $next_selector = qr{
             \s* (?: $combinator )? $simple_selector \s*
         }x;

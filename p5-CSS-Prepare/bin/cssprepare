@@ -12,7 +12,7 @@ use Time::HiRes     qw( gettimeofday tv_interval );
 my %options      = get_options_or_exit();
 my %prepare_args = get_prepare_arguments( %options );
 my $preparer     = CSS::Prepare->new( %prepare_args );
-my( $output, $total_saving, $total_errors );
+my( $output, $total_saving, $total_errors, %cache );
 
 if ( $options{'server'} ) {
     run_server( @ARGV );
@@ -80,35 +80,54 @@ sub run_server {
 sub process_stylesheet {
     my $stylesheet = shift;
     
-    my $start = [ gettimeofday() ];
-    status( "Processing stylesheet '$stylesheet'" );
+    $cache{ $stylesheet } = { timestamp => 0, }
+        unless defined $cache{ $stylesheet };
+    my $cache = $cache{ $stylesheet };
     
-    my @structure = $preparer->parse_stylesheet( $stylesheet );
+    my $stat = stat $stylesheet;
+    my $timestamp = $stat->mtime;
     
-    my $saving      = 0;    # TODO
-    my $error_count = 0;
-    my $output      = '';
-    foreach my $block ( @structure ) {
-        foreach my $error ( @{$block->{'errors'}} ) {
-            my $selector = join ', ', @{$block->{'selectors'}};
-            my( $level, $text ) = each %$error;
+    if ( $timestamp == $cache->{'timestamp'} ) {
+        status( "Using cached values for '$stylesheet'" );
+    }
+    else {
+        my $start = [ gettimeofday() ];
+        status( "Processing stylesheet '$stylesheet'" );
+        
+        my @structure = $preparer->parse_stylesheet( $stylesheet );
+        
+        $cache->{'saving'}      = 0;    # TODO
+        $cache->{'error_count'} = 0;
+        $cache->{'output'}      = '';
+        $cache->{'timestamp'}   = $timestamp;
+        
+        foreach my $block ( @structure ) {
+            foreach my $error ( @{$block->{'errors'}} ) {
+                my $selector = join ', ', @{$block->{'selectors'}};
+                my( $level, $text ) = each %$error;
+                
+                status( "  [${level}] '${selector}' - ${text}" );
+                $cache->{'error_count'}++;
+            }
+        }
+        
+        if ( !defined $options{'warnings-only'} ) {
+            @structure = $preparer->optimise( @structure )
+                if defined $options{'optimise'};
             
-            status( "  [${level}] '${selector}' - ${text}" );
-            $error_count++;
+            $cache->{'output'}
+                = $preparer->output_as_string( @structure );
+            
+            my $interval = tv_interval( $start );
+            status( "\r  Time taken ${interval} seconds" );
         }
     }
     
-    if ( !defined $options{'warnings-only'} ) {
-        @structure = $preparer->optimise( @structure )
-            if defined $options{'optimise'};
-        
-        $output = $preparer->output_as_string( @structure );
-        
-        my $interval = tv_interval( $start );
-        status( "\r  Time taken ${interval} seconds" );
-    }
-    
-    return ( $output, $saving, $error_count );
+    return (
+        $cache->{'output'},
+        $cache->{'saving'},
+        $cache->{'error_count'},
+    );
 }
 sub output_stylesheet_to_directory {
     my $output = shift;

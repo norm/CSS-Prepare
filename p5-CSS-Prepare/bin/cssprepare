@@ -1,12 +1,16 @@
 #!/usr/bin/env perl
 
 use Modern::Perl;
+
 use CSS::Prepare;
+use File::stat;
 use FileHandle;
 use Getopt::Long    qw( :config bundling );
 use IO::Handle;
+use POSIX           qw( mkfifo );
 use Pod::Usage;
 use Time::HiRes     qw( gettimeofday tv_interval );
+
 
 
 my %options      = get_options_or_exit();
@@ -16,6 +20,9 @@ my( $output, $total_saving, $total_errors, %cache );
 
 if ( $options{'server'} ) {
     run_server( @ARGV );
+}
+elsif ( $options{'pipe'} ) {
+    run_pipe( @ARGV );
 }
 else {
     foreach my $stylesheet ( @ARGV ) {
@@ -75,6 +82,54 @@ sub run_server {
     };
     
     $runner->run( $preparer );
+}
+
+sub run_pipe {
+    my @args      = @_;
+    
+    my $pipe_name = $options{'pipe'};
+    my $pipe_mode = 0700;
+    
+    # clean up after ourselves
+    $SIG{'INT'} = sub {
+        unlink $pipe_name;
+        exit 0;
+    };
+    
+    while (1) {
+        # (re-)create the named pipe
+        unless ( -p $pipe_name ) {
+            unlink $pipe_name;
+            mkfifo( $pipe_name, $pipe_mode )
+                or die "Cannot make pipe ${pipe_name}: $!";
+            status( "Re-opened pipe ${pipe_name}" );
+        }
+        
+        status( "\n-- Ready for request" );
+        
+        my $pipe;
+        my $output;
+        
+        # this blocks until there is a reader on the other end,
+        # so any CSS processing is done just-in-time
+        open( $pipe, '>', $pipe_name )
+            or die "Cannot write to ${pipe_name}: $!";
+        
+        foreach my $stylesheet ( @args ) {
+            my ( $processed, $saving, $error_count )
+                = process_stylesheet( $stylesheet );
+            
+            $total_saving += $saving;
+            $total_errors += $error_count;
+            $output       .= $processed;
+        }
+        
+        print {$pipe} $output;
+        close $pipe;
+        
+        # avoid dup signals
+        sleep 1;
+    }
 }
 
 sub process_stylesheet {
@@ -159,6 +214,7 @@ sub get_options_or_exit {
                    disable-hacks|h
                         location|l=s
                         optimise|o
+                            pipe=s
                           pretty|p
                            quiet|q
                           server
@@ -284,6 +340,13 @@ details.
 Attempt to optimise the structure of the CSS before outputting it. B<Warning:>
 this can break your CSS. See L<Optimising CSS> for a longer explanation as to
 why.
+
+=item --pipe=F<file>
+
+Create the output file F<file> as a named pipe; then enter an infinite loop.
+This allows you to use B<cssprepare> as a development environment, changing
+source files and seeing that change immediately reflected next time you read
+from the named pipe F<file>.
 
 =item --port=I<number>
 

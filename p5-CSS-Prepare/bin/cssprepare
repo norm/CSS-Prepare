@@ -136,6 +136,9 @@ sub run_pipe {
         print {$pipe} $output;
         close $pipe;
         
+        # touch the pipe to confound anything caching based upon the mtime
+        utime undef, undef, $pipe;
+        
         # avoid dup signals
         sleep 1;
     }

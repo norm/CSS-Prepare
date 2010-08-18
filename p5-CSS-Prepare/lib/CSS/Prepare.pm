@@ -681,7 +681,7 @@ sub strip_comments {
     
     if ( $self->support_extended_syntax ) {
         # remove line-level comments
-        $string =~ s{ \s // [^\n]+ }{}gmx;
+        $string =~ s{ (?: ^ | \s ) // [^\n]* $ }{}gmx;
     }
     
     # disguise verbatim comments

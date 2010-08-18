@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More  tests => 4;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -59,7 +59,7 @@ h1 {
 CSS
     @structure = (
             {
-                original  => q)
+                original  => q(
     colour: red;       
     font-size: 2em;
 ),
@@ -75,4 +75,36 @@ CSS
     @parsed = $preparer_with->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "line-level comment was:\n" . Dumper \@parsed;
+}
+
+# comment on a line by itself, also fine with no actual comment
+{
+    $css = <<CSS;
+// This is the main logo
+h1 { position: absolute; }
+CSS
+    @structure = (
+            {
+                original  => ' position: absolute; ',
+                selectors => [ 'h1' ],
+                errors    => [],
+                block     => {
+                    'position' => 'absolute',
+                },
+            },
+        );
+
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "line-level comment alone was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+//
+h1 { position: absolute; }
+CSS
+    
+    @parsed = $preparer_with->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "line-level comment without comment was:\n" . Dumper \@parsed;
 }

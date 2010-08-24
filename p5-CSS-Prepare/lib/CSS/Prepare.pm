@@ -296,12 +296,19 @@ sub parse_stylesheet {
     }
     else {
         if ( $stylesheet =~ m{^/} ) {
-            if ( $location =~ m{$match_hostname} ) {
-                $target = "${1}${stylesheet}";
+            my $base = $self->get_base_directory();
+            
+            if ( defined $base ) {
+                $target = "$base/$stylesheet";
             }
             else {
-                my $base = $self->get_base_directory();
-                $target = "$base/$stylesheet";
+                $target = $stylesheet;
+            }
+            
+            if ( defined $location ) {
+                if ( $location =~ m{$match_hostname} ) {
+                    $target = "${1}${stylesheet}";
+                }
             }
         }
         else {

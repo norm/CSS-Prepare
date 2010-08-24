@@ -1,7 +1,10 @@
 use Modern::Perl;
-use Test::More  tests => 2;
+use Test::More  tests => 3;
 
 use CSS::Prepare;
+
+use File::Temp;
+use File::Copy;
 use Data::Dumper;
 local $Data::Dumper::Terse     = 1;
 local $Data::Dumper::Indent    = 1;
@@ -40,6 +43,16 @@ my( @structure, @parsed );
     @parsed = $preparer->parse_file( 't/css/basic.css' );
     is_deeply( \@structure, \@parsed )
         or say "'t/css/basic.css' was:\n" . Dumper \@parsed;
+}
+
+# doesn't explode on an absolute filename
+{
+    my $temp_file = tmpnam();
+    copy 't/css/basic.css', $temp_file;
+    
+    @parsed = $preparer->parse_stylesheet( $temp_file );
+    is_deeply( \@structure, \@parsed )
+        or say "'t/css/basic.css' absolute path was:\n" . Dumper \@parsed;
 }
 
 # can read in a hierarchy of files

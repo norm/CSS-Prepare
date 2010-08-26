@@ -81,6 +81,7 @@ sub output {
     
     foreach my $property ( @outline_properties ) {
         my $value = $block->{ $property };
+        
         $value = shorten_colour_value( $value )
             if 'outline-color' eq $property;
         
@@ -100,7 +101,10 @@ sub output {
         push @output, @outline;
     }
     
-    push @output, sprintf $self->output_format, 'cursor:', $block->{'cursor'}
+    push @output,
+        sprintf( $self->output_format,
+            'cursor:', shorten_url_value( $block->{'cursor'} )
+        )
         if defined $block->{'cursor'};
     
     return @output;

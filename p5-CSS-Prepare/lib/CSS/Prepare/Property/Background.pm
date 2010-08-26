@@ -90,6 +90,8 @@ sub output {
         if ( defined $value ) {
             $value = shorten_background_position_value( $value )
                 if 'background-position' eq $property;
+            $value = shorten_url_value( $value )
+                if 'background-image' eq $property;
             $value = shorten_colour_value( $value )
                 if 'background-color' eq $property;
             
@@ -115,8 +117,11 @@ sub output {
 sub shorten_background_position_value {
     my $value = shift;
     
-    return unless defined $value;
+    return
+        unless defined $value;
     
+    # CSS2.1 14.2.1: "If only one value is specified, the second value
+    # is assumed to be ’center’."
     $value =~ s{(.+) \s+ (?: center | 50\% ) $}{$1}x;
     return $value;
 }

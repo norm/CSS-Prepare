@@ -259,11 +259,11 @@ CSS
 {
     @structure = (
             {
-                original  => ' list-style-image: url(dot.gif); ',
+                original  => ' list-style-image: url( "dot.gif" ); ',
                 errors    => [],
                 selectors => [ 'li' ],
-                block     => { 
-                    'list-style-image' => 'url(dot.gif)', 
+                block     => {
+                    'list-style-image' => 'url( "dot.gif" )',
                 },
             },
         );

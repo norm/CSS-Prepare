@@ -11,6 +11,7 @@ our @EXPORT = qw(
         expand_clip
         shorten_colour_value
         shorten_length_value
+        shorten_url_value
         validate_any_order_shorthand
         get_corner_values
         expand_corner_values
@@ -227,6 +228,18 @@ sub shorten_length_value {
     $value = '0'
         if $value =~ m{^0([ceimnptx]{2})};
     
+    return $value;
+}
+sub shorten_url_value {
+    my $value = shift;
+    
+    return
+        unless defined $value;
+    
+    # CSS2.1 4.3.4: "The format of a URI value is ’url(’ followed by
+    # optional white space followed by an optional single quote (’)
+    # or double quote (")..."
+    $value =~ s{ url\( \s* ['"] (.*?) ['"]? \s* \) }{url($1)}x;
     return $value;
 }
 

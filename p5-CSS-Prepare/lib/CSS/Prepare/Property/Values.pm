@@ -87,6 +87,7 @@ our @EXPORT = qw(
         $border_radius_value
         $border_style_value
         $border_width_value
+        $colour_value
         $font_family
         $font_family_value
         $font_style_value
@@ -159,7 +160,7 @@ our $positive_length_value = qr{
     }x;
 my $percentage_value = qr{ $number_value % }x;
 our $positive_percentage_value = qr{ $positive_number_value % }x;
-my $colour_value = qr{
+our $colour_value = qr{
         (?:
               aqua | black  | blue | fuchsia | gray   | green
             | lime | maroon | navy | olive   | orange | purple

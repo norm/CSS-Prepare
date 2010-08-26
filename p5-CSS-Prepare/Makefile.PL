@@ -8,12 +8,12 @@ WriteMakefile(
     VERSION_FROM        => 'lib/CSS/Prepare.pm',
     ABSTRACT_FROM       => 'lib/CSS/Prepare.pm',
     PL_FILES            => {},
-    EXE_FILES           => [ 
-    ],
+    EXE_FILES           => [ 'bin/cssprepare' ],
     PREREQ_PM => {
-        'Modern::Perl'               => 0,
-        'version'                    => 0,
+        'Test::More'   => 0,
+        'Modern::Perl' => 0,
+        'version'      => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Media-*' },
+    clean               => { FILES => 'CSS-Prepare-*' },
 );

@@ -1,0 +1,23 @@
+CSS::Prepare 0.9
+================
+CSS::Prepare is a pre-processor and minifier for CSS. It will take one or more
+style sheets and reformat them to take up less bandwidth. It can also 
+optionally optimise the CSS by rewriting it to be even smaller.
+
+It understands (almost) all of CSS2.1 and some aspects of CSS3.
+
+Plugins can extend the syntax of CSS, allowing features such as variables,
+server-side calculated values, compound elements and mixins.
+
+
+Dependencies
+------------
+- Perl v5.10 or better
+- Modern::Perl
+
+Copyright and license
+---------------------
+Copyright (c) 2010 Mark Norman Francis <norm@cackhanded.net>.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

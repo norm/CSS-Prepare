@@ -23,6 +23,9 @@ use FileHandle;
 use File::Basename;
 use Storable            qw( dclone );
 
+use version;
+our $VERSION = qv( 0.9 );
+
 use constant MAX_REDIRECT => 3;
 
 my @MODULES = qw(

@@ -28,6 +28,9 @@ use version;
 our $VERSION = qv( 0.9 );
 
 use constant MAX_REDIRECT       => 3;
+use constant RE_IS_URL          => qr{^ http s? : // }x;
+use constant RE_MATCH_HOSTNAME  => qr{^ ( http s? : // [^/]+ ) /? .* $}x;
+use constant RE_MATCH_DIRECTORY => qr{^ (.*?) (?: / [^/]* )? $}x;
 use constant NOT_VENDOR_PREFIX  => qw(
         background  border   empty    font  letter
         list        margin   padding  page  table
@@ -294,47 +297,53 @@ sub parse_stylesheet {
     my $stylesheet = shift;
     my $location   = shift;
     
-    my $is_url          = qr{^ http s? : // }x;
-    my $match_hostname  = qr{^ ( http s? : // [^/]+ ) /? .* $}x;
-    my $match_directory = qr{^ (.*?) (?: / [^/]* )? $}x;
+    my $target = $self->canonicalise_location( $stylesheet, $location );
+    
+    return $self->parse_url( $target, $location )
+        if $target =~ RE_IS_URL;
+    return $self->parse_file( $target, $location );
+}
+sub canonicalise_location {
+    my $self     = shift;
+    my $file     = shift;
+    my $location = shift;
+    
     my $target;
     
     # don't interfere with an absolute URL
-    if ( $stylesheet =~ $is_url ) {
-        $target = $stylesheet;
+    if ( $file =~ RE_IS_URL ) {
+        $target = $file;
     }
     else {
-        if ( $stylesheet =~ m{^/} ) {
+        if ( $file =~ m{^/} ) {
             my $base = $self->get_base_directory();
             
             if ( defined $base ) {
-                $target = "$base/$stylesheet";
+                $target = "$base/$file";
             }
             else {
-                $target = $stylesheet;
+                $target = $file;
             }
             
             if ( defined $location ) {
-                if ( $location =~ m{$match_hostname} ) {
-                    $target = "${1}${stylesheet}";
+                if ( $location =~ RE_MATCH_HOSTNAME ) {
+                    $target = "${1}${file}";
                 }
             }
         }
         else {
             if ( defined $location ) {
-                $location =~ m{$match_directory};
-                $target = "${1}/${stylesheet}";
+                $location =~ RE_MATCH_DIRECTORY;
+                $target = "${1}/${file}";
             }
             else {
                 my $base = $self->get_base_directory() || '';
-                $target = "${base}${stylesheet}";
+                $target = "${base}${file}";
             }
         }
     }
     
-    return $self->parse_url( $target, $location )
-        if $target =~ $is_url;
-    return $self->parse_file( $target, $location );
+    return $target;
 }
 sub output_as_string {
     my $self = shift;
@@ -585,8 +594,9 @@ sub parse {
             push @statements, $statement;
         }
         elsif ( 'rulesets' eq $type ) {
-            my ( $rule_sets, $appended )
-                = $self->parse_rule_sets( $statement->{'content'} );
+            my ( $rule_sets, $appended ) = $self->parse_rule_sets(
+                    $statement->{'content'}, $location
+                );
             
             push @statements, @$rule_sets;
             push @split, {
@@ -596,8 +606,9 @@ sub parse {
                 if defined $appended;
         }
         elsif ( 'at-media' eq $type ) {
-            my ( $rule_sets, $appended )
-                = $self->parse_rule_sets( $statement->{'content'} );
+            my ( $rule_sets, $appended ) = $self->parse_rule_sets(
+                    $statement->{'content'}, $location
+                );
             
             push @{$statement->{'blocks'}}, @$rule_sets;
             delete $statement->{'content'};
@@ -616,8 +627,9 @@ sub parse {
     return @statements;
 }
 sub parse_rule_sets {
-    my $self   = shift;
-    my $styles = shift;
+    my $self     = shift;
+    my $styles   = shift;
+    my $location = shift;
     
     return []
         unless defined $styles;
@@ -651,8 +663,9 @@ sub parse_rule_sets {
                 # extract from the string a data structure of
                 # declarations and their properties
                 ( $declarations, $declaration_errors, $append_blocks )
-                    = $self->parse_declaration_block( $block->{'block'},
-                                                      $selectors );
+                    = $self->parse_declaration_block(
+                          $block->{'block'}, $location, $selectors
+                      );
             }
             
             push @appended, @$append_blocks
@@ -992,6 +1005,7 @@ sub parse_selectors {
 sub parse_declaration_block {
     my $self      = shift;
     my $block     = shift;
+    my $location  = shift;
     my $selectors = shift;
     
     # make '{' and '}' back into actual brackets again
@@ -1028,7 +1042,7 @@ sub parse_declaration_block {
         $match{'value'} =~ s{ \s+ $}{}x;
         
         my( $parsed_as, $errors )
-            = $self->parse_declaration( $has_hack, %match );
+            = $self->parse_declaration( $has_hack, $location, %match );
         
         if ( defined $parsed_as or $errors ) {
             push @errors, @$errors
@@ -1093,6 +1107,7 @@ sub get_declarations_from_block {
 sub parse_declaration {
     my $self        = shift;
     my $has_hack    = shift;
+    my $location    = shift;
     my %declaration = @_;
     
     my @parsers;
@@ -1112,7 +1127,7 @@ sub parse_declaration {
             no strict 'refs';
             
             ( $parsed_as, $errors )
-                = &$module( $self, $has_hack, %declaration );
+                = &$module( $self, $has_hack, $location, %declaration );
         };
         say STDERR $@ if $@;
         

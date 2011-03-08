@@ -23,6 +23,7 @@ my $get_border_radius_values = qr{
 sub parse {
     my $self        = shift;
     my $has_hack    = shift;
+    my $location    = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};

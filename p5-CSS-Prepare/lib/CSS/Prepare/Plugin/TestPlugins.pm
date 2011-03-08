@@ -21,6 +21,7 @@ sub expand {
 sub parse {
     my $self        = shift;
     my $has_hack    = shift;
+    my $location    = shift;
     my %declaration = @_;
     
     my $property = $declaration{'property'};

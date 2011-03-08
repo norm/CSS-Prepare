@@ -21,12 +21,18 @@ use CSS::Prepare::Property::Values;
 use CSS::Prepare::Property::Vendor;
 use FileHandle;
 use File::Basename;
+use List::Util          qw( first );
 use Storable            qw( dclone );
 
 use version;
 our $VERSION = qv( 0.9 );
 
-use constant MAX_REDIRECT => 3;
+use constant MAX_REDIRECT       => 3;
+use constant NOT_VENDOR_PREFIX  => qw(
+        background  border   empty    font  letter
+        list        margin   padding  page  table
+        text        unicode  white    z
+    );
 
 my @MODULES = qw(
         Background
@@ -377,10 +383,14 @@ sub output_block_as_string {
             
             # sort properties with vendor prefixes before
             # their matching properties
-            $a =~ m{^ \s* ( [_-] \w+ [-] )? ( .* ) $}sx;
-            my $a_vendor = defined $1;
-            $b =~ m{^ \s* ( [_-] \w+ [-] )? ( .* ) $}sx;
-            my $b_vendor = defined $1;
+            $a =~ m{^ \s* ( [-] \w+ - )? ( .* ) $}sx;
+            my $a_vendor = defined $1
+                           && ! defined first
+                                    { $_ eq $1 } NOT_VENDOR_PREFIX;
+            $b =~ m{^ \s* ( [-] \w+ - )? ( .* ) $}sx;
+            my $b_vendor = defined $1
+                           && ! defined first
+                                    { $_ eq $1 } NOT_VENDOR_PREFIX;
             my $vendors = ( $a_vendor ) + ( $b_vendor );
             return $a_vendor ? -1 : 1
                 if 1 == $vendors;

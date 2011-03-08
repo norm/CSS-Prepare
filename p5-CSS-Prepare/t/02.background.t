@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 10;
+use Test::More  tests => 11;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -225,4 +225,25 @@ CSS
     @parsed = $preparer->parse_string( $css );
     is_deeply( \@structure, \@parsed )
         or say "more shorthand was:\n" . Dumper \@parsed;
+}
+
+# shorten url() values on input
+{
+    $css = <<CSS;
+h1 { background-image: url( "blah.gif" ); }
+CSS
+    @structure = (
+            {
+                original  => ' background-image: url( "blah.gif" ); ',
+                errors    => [],
+                selectors => [ 'h1' ],
+                block     => {
+                    'background-image' => 'url(blah.gif)',
+                },
+            },
+        );
+        
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "shorten url() values:\n" . Dumper \@parsed;
 }

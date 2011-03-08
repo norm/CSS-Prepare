@@ -233,11 +233,11 @@ CSS
 }
 {
     $css = <<CSS;
-        li { list-style-image: url(dot.gif); }
+        li { list-style-image: url( "dot.gif" ); }
 CSS
     @structure = (
             {
-                original  => ' list-style-image: url(dot.gif); ',
+                original  => ' list-style-image: url( "dot.gif" ); ',
                 errors    => [],
                 selectors => [ 'li' ],
                 block     => { 
@@ -273,11 +273,11 @@ CSS
 # list-style shorthand works
 {
     $css = <<CSS;
-        li { list-style: disc url(dot.gif) inside; }
+        li { list-style: disc url( 'dot.gif' ) inside; }
 CSS
     @structure = (
             {
-                original  => ' list-style: disc url(dot.gif) inside; ',
+                original  => q( list-style: disc url( 'dot.gif' ) inside; ),
                 errors    => [],
                 selectors => [ 'li' ],
                 block     => { 
@@ -380,11 +380,11 @@ CSS
 }
 {
     $css = <<CSS;
-        li { list-style: url(dot.gif) none; }
+        li { list-style: url(  dot.gif  ) none; }
 CSS
     @structure = (
             {
-                original  => ' list-style: url(dot.gif) none; ',
+                original  => ' list-style: url(  dot.gif  ) none; ',
                 errors    => [],
                 selectors => [ 'li' ],
                 block     => {

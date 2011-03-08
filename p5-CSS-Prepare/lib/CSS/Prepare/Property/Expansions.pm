@@ -231,7 +231,9 @@ sub shorten_length_value {
     return $value;
 }
 sub shorten_url_value {
-    my $value = shift;
+    my $value    = shift;
+    my $location = shift // '';
+    my $self     = shift // undef;
     
     return
         unless defined $value;
@@ -239,7 +241,17 @@ sub shorten_url_value {
     # CSS2.1 4.3.4: "The format of a URI value is ’url(’ followed by
     # optional white space followed by an optional single quote (’)
     # or double quote (")..."
-    $value =~ s{ url\( \s* ['"] (.*?) ['"]? \s* \) }{url($1)}x;
+    if ( $value =~ m{ (.*) url\( \s* ['"]? (.*?) ['"]? \s* \) (.*) }x ) {
+        my $url = $2;
+
+        if ( defined $self ) {
+            $url = $self->copy_file_to_static( $url, $location )
+                if $self->static_output;
+        }
+        
+        $value = "${1}url($url)${3}";
+    }
+    
     return $value;
 }
 

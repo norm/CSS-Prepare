@@ -72,6 +72,14 @@ sub parse {
             unless %canonical;
     }
     
+    if ( defined $canonical{'background-image'} ) {
+        $canonical{'background-image'} = shorten_url_value(
+                $canonical{'background-image'},
+                $location,
+                $self,
+            );
+    }
+    
     return \%canonical, \@errors;
 }
 
@@ -91,8 +99,6 @@ sub output {
         if ( defined $value ) {
             $value = shorten_background_position_value( $value )
                 if 'background-position' eq $property;
-            $value = shorten_url_value( $value )
-                if 'background-image' eq $property;
             $value = shorten_colour_value( $value )
                 if 'background-color' eq $property;
             

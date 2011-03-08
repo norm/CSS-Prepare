@@ -263,7 +263,7 @@ CSS
                 errors    => [],
                 selectors => [ 'li' ],
                 block     => {
-                    'list-style-image' => 'url( "dot.gif" )',
+                    'list-style-image' => 'url(dot.gif)',
                 },
             },
         );

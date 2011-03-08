@@ -19,8 +19,10 @@ use CSS::Prepare::Property::Text;
 use CSS::Prepare::Property::UI;
 use CSS::Prepare::Property::Values;
 use CSS::Prepare::Property::Vendor;
+use Digest::SHA1        qw( sha1_hex );
 use FileHandle;
 use File::Basename;
+use File::Path;
 use List::Util          qw( first );
 use Storable            qw( dclone );
 
@@ -67,6 +69,8 @@ sub new {
             suboptimal_threshold => 10,
             http_timeout         => 30,
             pretty               => 0,
+            static_output        => undef,
+            static_base          => undef,
             status               => \&status_to_stderr,
             %args
         };
@@ -156,6 +160,10 @@ sub set_pretty {
 sub pretty_output {
     my $self = shift;
     return $self->{'pretty'};
+}
+sub static_output {
+    my $self = shift;
+    return defined $self->{'static_output'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -503,6 +511,17 @@ sub output_separator {
                : $concise_separator;
 }
 
+sub fetch_file {
+    my $self     = shift;
+    my $file     = shift;
+    my $location = shift;
+    
+    my $target = $self->canonicalise_location( $file, $location );
+    
+    return $self->read_url( $target )
+        if $target =~ RE_IS_URL;
+    return $self->read_file( $target );
+}
 sub read_file {
     my $self = shift;
     my $file = shift;
@@ -564,6 +583,34 @@ sub get_url_lwp {
         when ( 200 ) { return $resp->decoded_content(); }
         default      { return; }
     }
+}
+sub copy_file_to_static {
+    my $self     = shift;
+    my $file     = shift;
+    my $location = shift;
+    
+    return unless $self->static_output;
+    my $content  = $self->fetch_file( $file, $location );
+    my $hex      = sha1_hex $content;
+    my $filename = basename $file;
+    
+    my $static_file = sprintf "%s/%s/%s-%s",
+                          $self->{'static_base'},
+                          substr( $hex, 0, 3 ),
+                          substr( $hex, 4 ),
+                          $filename;
+    my $output_file = sprintf "%s/%s/%s-%s",
+                          $self->{'static_output'},
+                          substr( $hex, 0, 3 ),
+                          substr( $hex, 4 ),
+                          $filename;
+    my $output_dir = dirname $output_file;
+    
+    mkpath $output_dir;
+    my $handle = FileHandle->new( $output_file, 'w' );
+    print {$handle} $content;
+    
+    return $static_file;
 }
 
 sub parse {

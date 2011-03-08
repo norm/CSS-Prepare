@@ -75,6 +75,14 @@ sub parse {
             unless %canonical;
     }
     
+    if ( defined $canonical{'list-style-image'} ) {
+        $canonical{'list-style-image'} = shorten_url_value(
+                $canonical{'list-style-image'},
+                $location,
+                $self,
+            );
+    }
+    
     return \%canonical, \@errors;
 }
 sub output {
@@ -113,9 +121,6 @@ sub output {
         my $value = $block->{ $property };
         
         if ( defined $value ) {
-            $value = shorten_url_value( $value )
-                if 'list-style-image' eq $property;
-            
             push @list, sprintf $self->output_format, "${property}:", $value;
             push @values, $value
                 if $value;

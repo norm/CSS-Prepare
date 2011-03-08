@@ -15,7 +15,7 @@ my( $css, @structure, $output );
             {
                 selectors => [ 'a' ],
                 block     => {
-                    'cursor' => 'url( "blah.gif" ) crosshair',
+                    'cursor' => 'url(blah.gif) crosshair',
                 },
             },
         );

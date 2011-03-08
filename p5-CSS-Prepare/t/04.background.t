@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 20;
+use Test::More  tests => 18;
 
 use CSS::Prepare;
 
@@ -304,33 +304,4 @@ CSS
     $output = $preparer_pretty->output_as_string( @structure );
     ok( $output eq $css )
         or say "background shorthanded value was:\n" . $output;
-}
-
-# shorten url values
-{
-    @structure = (
-        {
-            selectors => [ 'h1' ],
-            block     => {
-                'background-image' => 'url( "blah.gif" )',
-            },
-        },
-        );
-    $css = <<CSS;
-h1{background-image:url(blah.gif);}
-CSS
-
-    $output = $preparer_concise->output_as_string( @structure );
-    ok( $output eq $css )
-        or say "background image value was:\n" . $output;
-    
-    $css = <<CSS;
-h1 {
-    background-image:       url(blah.gif);
-}
-CSS
-
-    $output = $preparer_pretty->output_as_string( @structure );
-    ok( $output eq $css )
-        or say "background image value was:\n" . $output;
 }

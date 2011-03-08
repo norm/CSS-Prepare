@@ -18,11 +18,11 @@ my( $css, @structure, @parsed );
 # cursors
 {
     $css = <<CSS;
-        a { cursor: url(blah.gif) crosshair; }
+        a { cursor: url( "blah.gif" ) crosshair; }
 CSS
     @structure = (
             {
-                original  => ' cursor: url(blah.gif) crosshair; ',
+                original  => ' cursor: url( "blah.gif" ) crosshair; ',
                 errors    => [],
                 selectors => [ 'a' ],
                 block     => {

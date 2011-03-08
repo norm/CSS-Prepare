@@ -67,6 +67,14 @@ sub parse {
             unless %canonical;
     }
     
+    if ( defined $canonical{'cursor'} ) {
+        $canonical{'cursor'} = shorten_url_value(
+                $canonical{'cursor'},
+                $location,
+                $self,
+            );
+    }
+    
     return \%canonical, \@errors;
 }
 sub output {
@@ -104,7 +112,7 @@ sub output {
     
     push @output,
         sprintf( $self->output_format,
-            'cursor:', shorten_url_value( $block->{'cursor'} )
+            'cursor:', $block->{'cursor'},
         )
         if defined $block->{'cursor'};
     

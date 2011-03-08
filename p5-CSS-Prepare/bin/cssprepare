@@ -9,6 +9,7 @@ use Getopt::Long    qw( :config bundling );
 use IO::Handle;
 use POSIX           qw( mkfifo );
 use Pod::Usage;
+use Term::ANSIColor;
 use Time::HiRes     qw( gettimeofday tv_interval );
 
 
@@ -26,7 +27,7 @@ elsif ( $options{'pipe'} ) {
 }
 else {
     foreach my $stylesheet ( @ARGV ) {
-        my ( $processed, $saving, $error_count )
+        my ( $processed, $saving, $error_count, $not_cached )
             = process_stylesheet( $stylesheet );
 
         $total_saving += $saving;
@@ -75,7 +76,7 @@ sub run_server {
             unless $req->path_info eq '/';
         
         foreach my $stylesheet ( @args ) {
-            my ( $processed, $saving, $error_count )
+            my ( $processed, $saving, $error_count, $not_cached )
                 = process_stylesheet( $stylesheet );
             
             $total_saving += $saving;
@@ -114,8 +115,6 @@ sub run_pipe {
             status( "Re-opened pipe ${pipe_name}" );
         }
         
-        status( "\n-- Ready for request" );
-        
         my $pipe;
         my $output;
         
@@ -134,23 +133,27 @@ sub run_pipe {
             }
         }
         
+        our $updates = 0;
         foreach my $stylesheet ( @files ) {
-            my ( $processed, $saving, $error_count )
+            my ( $processed, $saving, $error_count, $not_cached )
                 = process_stylesheet( $stylesheet );
             
             $total_saving += $saving;
             $total_errors += $error_count;
             $output       .= $processed;
+            $updates      += $not_cached;
         }
         
         print {$pipe} $output;
         close $pipe;
         
-        # touch the pipe to confound anything caching based upon the mtime
-        utime undef, undef, $pipe;
+        status('') if $updates;
         
         # avoid dup signals
-        sleep 1;
+        select undef, undef, undef, 0.1;
+        
+        # touch the pipe to confound anything caching based upon the mtime
+        utime undef, undef, $pipe;
     }
 }
 
@@ -161,13 +164,12 @@ sub process_stylesheet {
         unless defined $cache{ $stylesheet };
     my $cache = $cache{ $stylesheet };
     
-    my $stat = stat $stylesheet;
-    my $timestamp = $stat->mtime;
+    my $stat        = stat $stylesheet;
+    my $timestamp   = $stat->mtime;
+    my $recalculate = $timestamp != $cache->{'timestamp'}
+                      || $cache->{'error_count'};
     
-    if ( $timestamp == $cache->{'timestamp'} ) {
-        status( "Using cached values for '$stylesheet'" );
-    }
-    else {
+    if ( $recalculate ) {
         my $start = [ gettimeofday() ];
         status( "Processing stylesheet '$stylesheet'" );
         
@@ -185,7 +187,11 @@ sub process_stylesheet {
                              : '';
                 my( $level, $text ) = each %$error;
                 
-                status( "  [${level}] '${selector}' - ${text}" );
+                status(
+                        "  [${level}] '${selector}' - ${text}",
+                        0,
+                        'bold red'
+                    );
                 $cache->{'error_count'}++;
             }
         }
@@ -206,6 +212,7 @@ sub process_stylesheet {
         $cache->{'output'},
         $cache->{'saving'},
         $cache->{'error_count'},
+        $recalculate,
     );
 }
 sub output_stylesheet_to_directory {
@@ -319,15 +326,16 @@ sub get_prepare_arguments {
 }
 
 sub status {
-    my $text = shift;
-    my $temp = shift;
+    my $text   = shift;
+    my $temp   = shift;
+    my $colour = shift // '';
     
     if ( !defined $options{'quiet'} ) {
         STDERR->autoflush(1);
-        print STDERR
-            ( $temp ? "\r" : '' )
-            . $text
-            . ( $temp ? '' : "\n" );
+        my $output = ( $temp ? "\r" : '' )
+                     . $text
+                     . ( $temp ? '' : "\n" );
+        print STDERR colored( $output, $colour );
     }
 }
 

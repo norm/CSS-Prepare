@@ -27,7 +27,7 @@ use List::Util          qw( first );
 use Storable            qw( dclone );
 
 use version;
-our $VERSION = qv( 0.9 );
+our $VERSION = qv( 0.9.1 );
 
 use constant MAX_REDIRECT       => 3;
 use constant RE_IS_URL          => qr{^ http s? : // }x;

@@ -1,4 +1,9 @@
 Revision history for CSS::Prepare
 
+0.9.1   Wed  9 Mar 2011 00:59:40 UTC
+    - Add concept of static asset preparation, including 'assets' command-line.
+    - Fixes some bugs in CSS parsing and output.
+    - 'cssprepare' command-line now handles directories.
+
 0.9     Tue 24 Aug 2010 13:44:41 UTC
     - First release to CPAN.

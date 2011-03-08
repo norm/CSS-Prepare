@@ -8,7 +8,6 @@ lib/CSS/Prepare/Manual/Features.pod
 lib/CSS/Prepare/Manual/Hacks.pod
 lib/CSS/Prepare/Manual/Hierarchy.pod
 lib/CSS/Prepare/Manual/Introduction.pod
-lib/CSS/Prepare/Manual/notes.txt
 lib/CSS/Prepare/Manual/Optimising.pod
 lib/CSS/Prepare/Manual/Support.pod
 lib/CSS/Prepare/Manual/Syntax.pod
@@ -36,6 +35,7 @@ lib/CSS/Prepare/Property/Values.pm
 lib/CSS/Prepare/Property/Vendor.pm
 lib/CSS/Prepare.pm
 bin/cssprepare
+bin/assets
 t/00.load.t
 t/01.expansion.t
 t/01.parse.t
@@ -93,6 +93,7 @@ t/06.files.t
 t/06.yui-fonts.t
 t/06.yui-grids.t
 t/06.yui-reset.t
+t/assets.t
 t/comments.t
 t/css/basic.css
 t/css/broken-import.css
@@ -109,3 +110,7 @@ t/css/print.css
 t/css/second.css
 t/css/site/subsite/basic.css
 t/css/site/subsite/combining.css
+t/static/css/placeholder.css
+t/static/img/placeholder.png
+t/static/img/placeholder20.png
+t/static/img/placeholder30.png

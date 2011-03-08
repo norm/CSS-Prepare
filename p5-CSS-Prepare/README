@@ -1,5 +1,5 @@
-CSS::Prepare 0.9
-================
+CSS::Prepare 0.9.1
+==================
 CSS::Prepare is a pre-processor and minifier for CSS. It will take one or more
 style sheets and reformat them to take up less bandwidth. It can also 
 optionally optimise the CSS by rewriting it to be even smaller.
@@ -14,10 +14,11 @@ Dependencies
 ------------
 - Perl v5.10 or better
 - Modern::Perl
+- Digest::SHA1
 
 Copyright and license
 ---------------------
-Copyright (c) 2010 Mark Norman Francis <norm@cackhanded.net>.
+Copyright (c) 2010-2011 Mark Norman Francis <norm@cackhanded.net>.
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

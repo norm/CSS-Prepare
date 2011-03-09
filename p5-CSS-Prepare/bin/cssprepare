@@ -248,7 +248,8 @@ sub get_files_in_directory {
         
         my $target = "$directory/$entry";
         
-        push( @files, $target ) if -f $target;
+        push( @files, $target )
+            if -f $target && $target =~ m{\.css$};
         push( @directories, $target ) if -d $target;
     }
     closedir $handle;
@@ -275,6 +276,8 @@ sub get_options_or_exit {
                  extended-syntax|e
                    disable-hacks|h
                         location|l=s
+                   static-output|m=s
+                     static-base|n=s
                         optimise|o
                             pipe=s
                           pretty|p
@@ -320,6 +323,10 @@ sub get_prepare_arguments {
         if defined $getopts{'timeout'};
     $args{'suboptimal_threshold'} = $getopts{'suboptimal-threshold'}
         if defined $getopts{'suboptimal-threshold'};
+    $args{'static_output'} = $getopts{'static-output'}
+        if defined $getopts{'static-output'};
+    $args{'static_base'} = $getopts{'static-base'}
+        if defined $getopts{'static-base'};
     $args{'status'} = \&status;
     
     return %args;

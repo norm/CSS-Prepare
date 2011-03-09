@@ -12,6 +12,27 @@ use Pod::Usage;
 use Term::ANSIColor;
 use Time::HiRes     qw( gettimeofday tv_interval );
 
+use constant OPTIONS => qw(
+              use-all-shasum|a
+              hierarchy-base|b=s
+                  output-dir|d=s
+             extended-syntax|e
+               disable-hacks
+                        help|h
+                    location|l=s
+               assets-output|m=s
+                 assets-base|n=s
+                    optimise|o
+                        pipe=s
+                      pretty|p
+                       quiet|q
+                      server
+        suboptimal-threshold|s=i
+                     timeout|t=i
+               warnings-only|w
+               exit-on-error|x
+    );
+
 
 
 my %options      = get_options_or_exit();
@@ -269,31 +290,10 @@ sub get_files_in_directory {
 
 
 sub get_options_or_exit {
-    use constant OPTIONS => qw( 
-                  use-all-shasum|a
-                  hierarchy-base|b=s
-                      output-dir|d=s
-                 extended-syntax|e
-                   disable-hacks|h
-                        location|l=s
-                   assets-output|m=s
-                     assets-base|n=s
-                        optimise|o
-                            pipe=s
-                          pretty|p
-                           quiet|q
-                          server
-            suboptimal-threshold|s=i
-                         timeout|t=i
-                   warnings-only|w
-                   exit-on-error|x
-        );
-    
     my %getopts;
     
     my $known = GetOptions( \%getopts, OPTIONS );
-    pod2usage()
-        unless $known or $getopts{'help'};
+    my $usage = ! $known || $getopts{'help'};
     
     if ( $getopts{'output-dir'} ) {
         eval {
@@ -304,6 +304,8 @@ sub get_options_or_exit {
              . "module 'Digest::SHA1' to be installed." )
                 if $@;
     }
+    
+    pod2usage() if $usage;
     
     return %getopts;
 }

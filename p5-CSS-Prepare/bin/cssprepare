@@ -276,8 +276,8 @@ sub get_options_or_exit {
                  extended-syntax|e
                    disable-hacks|h
                         location|l=s
-                   static-output|m=s
-                     static-base|n=s
+                   assets-output|m=s
+                     assets-base|n=s
                         optimise|o
                             pipe=s
                           pretty|p
@@ -323,10 +323,10 @@ sub get_prepare_arguments {
         if defined $getopts{'timeout'};
     $args{'suboptimal_threshold'} = $getopts{'suboptimal-threshold'}
         if defined $getopts{'suboptimal-threshold'};
-    $args{'static_output'} = $getopts{'static-output'}
-        if defined $getopts{'static-output'};
-    $args{'static_base'} = $getopts{'static-base'}
-        if defined $getopts{'static-base'};
+    $args{'assets_output'} = $getopts{'assets-output'}
+        if defined $getopts{'assets-output'};
+    $args{'assets_base'} = $getopts{'assets-base'}
+        if defined $getopts{'assets-base'};
     $args{'status'} = \&status;
     
     return %args;

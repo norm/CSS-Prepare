@@ -245,8 +245,8 @@ sub shorten_url_value {
         my $url = $2;
         
         if ( defined $location && defined $self ) {
-            $url = $self->copy_file_to_static( $url, $location )
-                if $self->static_output;
+            $url = $self->copy_file_to_staging( $url, $location )
+                if $self->assets_output;
         }
         
         $value = "${1}url($url)${3}";

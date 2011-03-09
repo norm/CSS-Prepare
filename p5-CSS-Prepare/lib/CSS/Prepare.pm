@@ -69,8 +69,8 @@ sub new {
             suboptimal_threshold => 10,
             http_timeout         => 30,
             pretty               => 0,
-            static_output        => undef,
-            static_base          => undef,
+            assets_output        => undef,
+            assets_base          => undef,
             status               => \&status_to_stderr,
             %args
         };
@@ -161,9 +161,9 @@ sub pretty_output {
     my $self = shift;
     return $self->{'pretty'};
 }
-sub static_output {
+sub assets_output {
     my $self = shift;
-    return defined $self->{'static_output'};
+    return defined $self->{'assets_output'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -584,24 +584,24 @@ sub get_url_lwp {
         default      { return; }
     }
 }
-sub copy_file_to_static {
+sub copy_file_to_staging {
     my $self     = shift;
     my $file     = shift;
     my $location = shift;
     
-    return unless $self->static_output;
+    return unless $self->assets_output;
     my $content  = $self->fetch_file( $file, $location );
     return unless $content;
     
     my $hex         = sha1_hex $content;
     my $filename    = basename $file;
-    my $static_file = sprintf "%s/%s/%s-%s",
-                          $self->{'static_base'},
+    my $assets_file = sprintf "%s/%s/%s-%s",
+                          $self->{'assets_base'},
                           substr( $hex, 0, 3 ),
                           substr( $hex, 4 ),
                           $filename;
     my $output_file = sprintf "%s/%s/%s-%s",
-                          $self->{'static_output'},
+                          $self->{'assets_output'},
                           substr( $hex, 0, 3 ),
                           substr( $hex, 4 ),
                           $filename;
@@ -611,7 +611,7 @@ sub copy_file_to_static {
     my $handle = FileHandle->new( $output_file, 'w' );
     print {$handle} $content;
     
-    return $static_file;
+    return $assets_file;
 }
 
 sub parse {

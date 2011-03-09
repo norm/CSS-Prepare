@@ -232,7 +232,7 @@ sub shorten_length_value {
 }
 sub shorten_url_value {
     my $value    = shift;
-    my $location = shift // '';
+    my $location = shift // undef;
     my $self     = shift // undef;
     
     return
@@ -243,8 +243,8 @@ sub shorten_url_value {
     # or double quote (")..."
     if ( $value =~ m{ (.*) url\( \s* ['"]? (.*?) ['"]? \s* \) (.*) }x ) {
         my $url = $2;
-
-        if ( defined $self ) {
+        
+        if ( defined $location && defined $self ) {
             $url = $self->copy_file_to_static( $url, $location )
                 if $self->static_output;
         }

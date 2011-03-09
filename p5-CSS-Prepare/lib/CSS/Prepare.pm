@@ -591,9 +591,10 @@ sub copy_file_to_static {
     
     return unless $self->static_output;
     my $content  = $self->fetch_file( $file, $location );
-    my $hex      = sha1_hex $content;
-    my $filename = basename $file;
+    return unless $content;
     
+    my $hex         = sha1_hex $content;
+    my $filename    = basename $file;
     my $static_file = sprintf "%s/%s/%s-%s",
                           $self->{'static_base'},
                           substr( $hex, 0, 3 ),
@@ -604,7 +605,7 @@ sub copy_file_to_static {
                           substr( $hex, 0, 3 ),
                           substr( $hex, 4 ),
                           $filename;
-    my $output_dir = dirname $output_file;
+    my $output_dir  = dirname $output_file;
     
     mkpath $output_dir;
     my $handle = FileHandle->new( $output_file, 'w' );

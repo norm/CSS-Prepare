@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use CSS::Prepare;
+use Getopt::Long    qw( :config bundling );
+use Pod::Usage;
+
+use constant OPTIONS => qw(
+             help|h
+    assets-output|m=s
+      assets-base|n=s
+);
+use constant REQUIRED_OPTIONS => qw( assets-output assets-base );
+
+
+
+my %option   = get_options_or_exit();
+my $preparer = CSS::Prepare->new(
+        assets_base   => $option{'assets-base'},
+        assets_output => $option{'assets-output'},
+    );
+
+foreach my $arg ( @ARGV ) {
+    my $output = $preparer->copy_file_to_staging( $arg );
+    say $output;
+}
+exit;
+
+
+
+sub get_options_or_exit {
+    my %getopts = @_;
+    
+    my $known = GetOptions( \%getopts, OPTIONS );
+    my $usage = ! $known || $getopts{'help'};
+    
+    foreach my $key ( REQUIRED_OPTIONS ) {
+        $usage = 1
+            unless defined $getopts{ $key };
+    }
+    
+    pod2usage() if $usage;
+    
+    return %getopts;
+}
+
+__END__
+
+=head1 NAME
+
+B<assets> - synchronise files to the assets staging area
+
+=head1 SYNOPSIS
+
+B<assets> B<--assets-output F<dir> --assets-base F<URI> F<file>> [...]
+    
+=head1 DESCRIPTION
+
+Copies all F<file> arguments to the output F<dir>, using the same SHA1
+naming scheme as L<CSS::Prepare> uses. This allows you to upload static
+assets in the same way, without the requirement of them needing to be 
+referenced in your CSS.
+
+Useful for content images, Flash files, video files and more.
+
+=head1 AUTHOR
+
+Mark Norman Francis, L<norm@cackhanded.net>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2011 Mark Norman Francis.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

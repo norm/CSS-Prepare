@@ -80,8 +80,8 @@ sub run_server {
     my @args = @_;
     
     eval {
-        use Plack::Runner;
-        use Plack::Request;
+        require Plack::Runner;
+        require Plack::Request;
     };
     
     my $runner = Plack::Runner->new();

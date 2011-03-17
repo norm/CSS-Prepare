@@ -10,7 +10,7 @@ use constant OPTIONS => qw(
     assets-output|m=s
       assets-base|n=s
 );
-use constant REQUIRED_OPTIONS => qw( assets-output assets-base );
+use constant REQUIRED_OPTIONS => qw( assets-output );
 
 
 
@@ -22,7 +22,8 @@ my $preparer = CSS::Prepare->new(
 
 foreach my $arg ( @ARGV ) {
     my $output = $preparer->copy_file_to_staging( $arg );
-    say $output;
+    say $output
+		if defined $option{'assets-base'};
 }
 exit;
 

@@ -71,6 +71,7 @@ sub new {
             pretty               => 0,
             assets_output        => undef,
             assets_base          => undef,
+            location             => undef,
             status               => \&status_to_stderr,
             %args
         };
@@ -164,6 +165,10 @@ sub pretty_output {
 sub assets_output {
     my $self = shift;
     return defined $self->{'assets_output'};
+}
+sub location {
+    my $self = shift;
+    return $self->{'location'};
 }
 sub set_base_directory {
     my $self = shift;
@@ -587,7 +592,8 @@ sub get_url_lwp {
 sub copy_file_to_staging {
     my $self     = shift;
     my $file     = shift;
-    my $location = shift;
+    my $location = $self->location()
+                   // shift;
     
     return unless $self->assets_output;
     my $content  = $self->fetch_file( $file, $location );

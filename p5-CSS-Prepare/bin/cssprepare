@@ -317,7 +317,7 @@ sub get_prepare_arguments {
         if defined $getopts{'extended-syntax'};
     $args{'pretty'} = 1
         if defined $getopts{'pretty'};
-    $args{'location'} = 1
+    $args{'location'} = $getopts{'location'}
         if defined $getopts{'location'};
     $args{'hacks'} = 0
         if defined $getopts{'disable-hacks'};

@@ -11,10 +11,12 @@ use POSIX           qw( mkfifo );
 use Pod::Usage;
 use Term::ANSIColor;
 use Time::HiRes     qw( gettimeofday tv_interval );
+use Storable        qw( retrieve nstore );
 
 use constant OPTIONS => qw(
               use-all-shasum|a
               hierarchy-base|b=s
+                 cache-store|c=s
                   output-dir|d=s
              extended-syntax|e
                disable-hacks
@@ -40,6 +42,13 @@ my %prepare_args = get_prepare_arguments( %options );
 my $preparer     = CSS::Prepare->new( %prepare_args );
 my( $output, $total_saving, $total_errors, %cache );
 
+if ( $options{'cache-store'} ) {
+    if ( -f $options{'cache-store'} ) {
+        my $store = retrieve $options{'cache-store'};
+        %cache = %$store;
+    }
+}
+
 if ( $options{'server'} ) {
     run_server( @ARGV );
 }
@@ -47,7 +56,17 @@ elsif ( $options{'pipe'} ) {
     run_pipe( @ARGV );
 }
 else {
-    foreach my $stylesheet ( @ARGV ) {
+    my @files;
+    foreach my $arg ( @ARGV ) {
+        if ( -d $arg ) {
+            push @files, get_files_in_directory( $arg );
+        }
+        else {
+            push @files, $arg;
+        }
+    }
+    
+    foreach my $stylesheet ( @files ) {
         my ( $processed, $saving, $error_count, $not_cached )
             = process_stylesheet( $stylesheet );
 
@@ -70,6 +89,10 @@ else {
     else {
         print $output;
     }
+}
+
+if ( $options{'cache-store'} ) {
+    nstore \%cache, $options{'cache-store'};
 }
 
 exit;

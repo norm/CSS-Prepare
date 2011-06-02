@@ -111,7 +111,7 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
-                    '_zoom' => '1',
+                    '*zoom' => '1',
                 },
             },
             {
@@ -154,7 +154,7 @@ CSS
                 errors    => [],
                 selectors => [ 'div' ],
                 block     => {
-                    '_zoom' => '1',
+                    '*zoom' => '1',
                 },
             },
             {

@@ -99,7 +99,7 @@ CSS
             {
                 selectors => [ 'div' ],
                 block     => {
-                    '_zoom' => '1',
+                    '*zoom' => '1',
                 },
             },
             {
@@ -115,7 +115,7 @@ CSS
         );
     
     $css = <<CSS;
-div{_zoom:1;}
+div{*zoom:1;}
 div:after{clear:both;content:".";display:block;height:0;visibility:hidden;}
 CSS
     
@@ -125,7 +125,7 @@ CSS
     
     $css = <<CSS;
 div {
-    _zoom:                  1;
+    *zoom:                  1;
 }
 div:after {
     clear:                  both;

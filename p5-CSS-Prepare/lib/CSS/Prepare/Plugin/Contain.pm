@@ -65,7 +65,7 @@ sub expand {
     }
     else {
         return
-            [{ property => '_zoom', value => '1' }],
+            [{ property => '*zoom', value => '1' }],
             [],
             [
                 {

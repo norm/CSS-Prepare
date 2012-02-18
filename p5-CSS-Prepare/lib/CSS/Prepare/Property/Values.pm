@@ -211,7 +211,7 @@ our $background_colour_value
     = qr{ (?: transparent | inherit | $colour_value ) }x;
 our $background_image_value = qr{ (?: none | inherit | $url_value ) }x;
 our $background_repeat_value
-    = qr{ (?: repeat | repeat-x | repeat-y | no-repeat | inherit ) }x;
+    = qr{ (?: repeat-x | repeat-y | repeat | no-repeat | inherit ) }x;
 my $background_positions_horizontal
     = qr{ (?: left | center | centre | right ) }x;
 my $background_positions_vertical

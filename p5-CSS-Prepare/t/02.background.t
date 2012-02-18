@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More  tests => 11;
+use Test::More  tests => 12;
 
 use CSS::Prepare;
 use Data::Dumper;
@@ -218,6 +218,29 @@ CSS
                     'background-image'      => 'url(dot.png)',
                     'background-position'   => 'bottom left',
                     'background-repeat'     => 'no-repeat',
+                },
+            },
+        );
+
+    @parsed = $preparer->parse_string( $css );
+    is_deeply( \@structure, \@parsed )
+        or say "more shorthand was:\n" . Dumper \@parsed;
+}
+{
+    $css = <<CSS;
+div { background: url(foo.png) repeat-x; }
+CSS
+    @structure = (
+            {
+                original  => ' background: url(foo.png) repeat-x; ',
+                errors    => [],
+                selectors => [ 'div' ],
+                block     => {
+                    'background-attachment' => '',
+                    'background-color'      => '',
+                    'background-image'      => 'url(foo.png)',
+                    'background-position'   => '',
+                    'background-repeat'     => 'repeat-x',
                 },
             },
         );

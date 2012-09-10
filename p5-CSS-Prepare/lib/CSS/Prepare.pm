@@ -95,14 +95,28 @@ sub new {
     }
     
     # check for ability to use plugins
+    my @parsers;
+    my @outputters;
+    map { push @parsers, "CSS::Prepare::Property::${_}::parse" }
+        @MODULES;
+    map { push @outputters, "CSS::Prepare::Property::${_}::output" }
+        @MODULES;
     if ( $self->support_extended_syntax() ) {
         eval "use Module::Pluggable require => 1;";
         unless ($@) {
+            my @expanders;
             foreach my $plugin ( $self->plugins() ) {
                 $self->{'has_plugins'} = 1;
+                push @expanders, "${plugin}::expand";
+                push @parsers, "${plugin}::parse";
+                push @outputters, "${plugin}::output";
             }
+
+            $self->{'expanders'} = [@expanders];
         }
     }
+    $self->{'parsers'} = [@parsers];
+    $self->{'outputters'} = [@outputters];
     
     return $self;
 }
@@ -216,6 +230,18 @@ sub get_http_provider {
 sub has_plugins {
     my $self = shift;
     return $self->{'has_plugins'};
+}
+sub parsers {
+    my $self = shift;
+    return @{$self->{'parsers'}};
+}
+sub outputters {
+    my $self = shift;
+    return @{$self->{'outputters'}};
+}
+sub expanders {
+    my $self = shift;
+    return @{$self->{'expanders'}};
 }
 
 my $elements_first = sub {
@@ -467,16 +493,8 @@ sub output_properties {
     }
     
     my %properties;
-    my @outputters;
     
-    if ( $self->has_plugins() ) {
-        map { push @outputters, "${_}::output" }
-            $self->plugins();
-    }
-    map { push @outputters, "CSS::Prepare::Property::${_}::output" }
-        @MODULES;
-    
-    foreach my $outputter ( @outputters ) {
+    foreach my $outputter ( $self->outputters ) {
         my( @normal, @important );
         
         eval {
@@ -1163,17 +1181,9 @@ sub parse_declaration {
     my $has_hack    = shift;
     my $location    = shift;
     my %declaration = @_;
-    
-    my @parsers;
-    map { push @parsers, "CSS::Prepare::Property::${_}::parse" }
-        @MODULES;
-    if ( $self->has_plugins() ) {
-        map { push @parsers, "${_}::parse" }
-            $self->plugins();
-    }
-    
+
     PARSER:
-    foreach my $module ( @parsers ) {
+    foreach my $module ( $self->parsers ) {
         my $parsed_as;
         my $errors;
         
@@ -1208,12 +1218,11 @@ sub expand_declarations {
             my $value    = $declaration->{'value'};
             
             PLUGIN:
-            foreach my $plugin ( $self->plugins() ) {
+            foreach my $plugin ( $self->expanders ) {
                 no strict 'refs';
                 
-                my $try_with = "${plugin}::expand";
                 my( $filtered, $new_rulesets, $new_chunks )
-                    = &$try_with( $self, $property, $value, $selectors );
+                    = &$plugin( $self, $property, $value, $selectors );
                 
                 push @filtered, @{$filtered}
                     if defined $filtered;
